@@ -24,14 +24,17 @@ header {
 
 .login-reg {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    height: 30px;
 }
 
 .login-reg-child {
-    height: 30px;
-    padding: 0 5px;
+    margin: 0 5px;
 }
 
 .login-reg button {
     border-radius: 50px;
+    height: 100%;
 }
