@@ -1,20 +1,21 @@
 package main
 
 import (
-	"database/sql"
 	"html/template"
 	"log"
 	"net/http"
 
+	"github.com/Anacardo89/tpsi25_blog.git/api"
+	"github.com/Anacardo89/tpsi25_blog.git/auth"
 	"github.com/Anacardo89/tpsi25_blog.git/db"
 	"github.com/Anacardo89/tpsi25_blog.git/fsops"
 	"github.com/Anacardo89/tpsi25_blog.git/logger"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 )
 
 var (
 	templates   = template.Must(template.ParseGlob("templates/*"))
-	dbase       *sql.DB
 	httpServer  = &http.Server{}
 	httpsServer = &http.Server{}
 )
@@ -27,7 +28,7 @@ func main() {
 	if err != nil {
 		logger.Error.Fatal(err)
 	}
-	dbase, err = db.LoginDB(dbConfig)
+	db.Dbase, err = db.LoginDB(dbConfig)
 	if err != nil {
 		logger.Error.Fatal(err)
 	}
@@ -42,12 +43,21 @@ func main() {
 		logger.Error.Fatal(err)
 	}
 
+	// Session Store
+	sessConfig, err := loadSessionConfig()
+	if err != nil {
+		logger.Error.Fatal(err)
+	}
+	auth.SessionStore = sessions.NewCookieStore([]byte(sessConfig.Pass))
+
 	// Router
 	r := mux.NewRouter()
 	r.HandleFunc("/", RedirIndex).Schemes("https")
 	r.HandleFunc("/home", ServeIndex).Schemes("https")
 	r.HandleFunc("/login", ServeLogin).Schemes("https")
 	r.HandleFunc("/register", ServeRegister).Schemes("https")
+
+	r.HandleFunc("api/register", api.RegisterPOST).Methods("POST").Schemes("https")
 
 	http.Handle("/", r)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))

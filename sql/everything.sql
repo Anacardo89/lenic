@@ -7,13 +7,14 @@ USE tpsi25_blog;
 CREATE TABLE users (
 	id int unsigned NOT NULL AUTO_INCREMENT,
 	user_name varchar(32) NOT NULL DEFAULT '',
-	user_guid varchar(256) NOT NULL DEFAULT '',
 	user_email varchar(128) NOT NULL DEFAULT '',
 	user_password varchar(128) NOT NULL DEFAULT '',
 	user_salt varchar(128) NOT NULL DEFAULT '',
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	PRIMARY KEY(id)
+	PRIMARY KEY(id),
+	UNIQUE KEY user_name (user_name),
+	UNIQUE KEY user_email (user_email)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE sessions (

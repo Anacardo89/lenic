@@ -1,8 +1,17 @@
 package auth
 
+import "github.com/gorilla/sessions"
+
+type SessionConfig struct {
+	Pass string `yaml:"pass"`
+}
+
 type User struct {
-	Id   int
-	Name string
+	Id         int
+	UserName   string
+	UserEmail  string
+	UserPass   string
+	HashedPass string
 }
 
 type Session struct {
@@ -10,3 +19,7 @@ type Session struct {
 	Authenticated bool
 	User          User
 }
+
+var (
+	SessionStore *sessions.CookieStore
+)
