@@ -7,6 +7,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+var (
+	Dbase *sql.DB
+)
+
 type DBConfig struct {
 	DBHost string `yaml:"dbHost"`
 	DBPort string `yaml:"dbPort"`
