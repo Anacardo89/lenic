@@ -1,0 +1,37 @@
+body {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    background-color: cornflowerblue;
+    color: darkslategray;
+}
+
+#title {
+    cursor: pointer;
+}
+
+input {
+    background-color: white;
+}
+
+header {
+    background-color: aquamarine;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 10px;
+}
+
+.login-reg {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.login-reg-child {
+    height: 30px;
+    padding: 0 5px;
+}
+
+.login-reg button {
+    border-radius: 50px;
+}
