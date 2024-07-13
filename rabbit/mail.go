@@ -1,6 +1,8 @@
 package rabbit
 
 import (
+	"fmt"
+
 	"github.com/streadway/amqp"
 )
 
@@ -14,8 +16,8 @@ var (
 )
 
 func (r *RabbitConfig) MQSendRegMail(data []byte) error {
-	url := "amqp://" + r.MQHost + r.MQPort
-	conn, err := amqp.Dial(url)
+	rabbitUrl := fmt.Sprintf("amqp://%s%s", r.MQHost, r.MQPort)
+	conn, err := amqp.Dial(rabbitUrl)
 	if err != nil {
 		return err
 	}
@@ -27,7 +29,7 @@ func (r *RabbitConfig) MQSendRegMail(data []byte) error {
 
 	q, err := channel.QueueDeclare(
 		"register_mail", // name
-		false,           // durable
+		true,            // durable
 		false,           // delete when unused
 		false,           // exclusive
 		false,           // no-wait
