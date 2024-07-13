@@ -10,6 +10,7 @@ import (
 	"github.com/Anacardo89/tpsi25_blog.git/db"
 	"github.com/Anacardo89/tpsi25_blog.git/fsops"
 	"github.com/Anacardo89/tpsi25_blog.git/logger"
+	"github.com/Anacardo89/tpsi25_blog.git/rabbit"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
@@ -50,6 +51,12 @@ func main() {
 	}
 	auth.SessionStore = sessions.NewCookieStore([]byte(sessConfig.Pass))
 
+	// RabbitMQ
+	rabbit.RabbitMQ, err = loadRabbitConfig()
+	if err != nil {
+		logger.Error.Fatal(err)
+	}
+
 	// Router
 	r := mux.NewRouter()
 	r.HandleFunc("/", RedirIndex).Schemes("https")
@@ -57,7 +64,7 @@ func main() {
 	r.HandleFunc("/login", ServeLogin).Schemes("https")
 	r.HandleFunc("/register", ServeRegister).Schemes("https")
 
-	r.HandleFunc("api/register", api.RegisterPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/api/register", api.RegisterPOST).Methods("POST").Schemes("https")
 
 	http.Handle("/", r)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))

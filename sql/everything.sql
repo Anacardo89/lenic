@@ -12,6 +12,7 @@ CREATE TABLE users (
 	user_salt varchar(128) NOT NULL DEFAULT '',
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	user_active tinyint NOT NULL,
 	PRIMARY KEY(id),
 	UNIQUE KEY user_name (user_name),
 	UNIQUE KEY user_email (user_email)
@@ -22,13 +23,13 @@ CREATE TABLE sessions (
 	session_id varchar(256) NOT NULL DEFAULT '',
 	user_id int DEFAULT NULL,
 	session_start timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	session_update timestamp NOT NULL DEFAULT '2023-01-01 00:00:00',
+	session_update timestamp NOT NULL DEFAULT '2023-01-01 23:59:59',
 	session_active tinyint NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY session_id (session_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE pages (
+CREATE TABLE posts (
 	id int unsigned NOT NULL AUTO_INCREMENT,
 	page_guid varchar(256) NOT NULL DEFAULT '',
 	page_title varchar(256) DEFAULT NULL,

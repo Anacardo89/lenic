@@ -7,6 +7,7 @@ import (
 
 	"github.com/Anacardo89/tpsi25_blog.git/auth"
 	"github.com/Anacardo89/tpsi25_blog.git/db"
+	"github.com/Anacardo89/tpsi25_blog.git/rabbit"
 )
 
 //go:embed dbConfig.yaml
@@ -20,11 +21,6 @@ var rabbitYaml []byte
 
 //go:embed sessionConfig.yaml
 var sessionConfig []byte
-
-type RabbitConfig struct {
-	MQHost string `yaml:"mqHost"`
-	MQPort string `yaml:"mqPort"`
-}
 
 type ServerConfig struct {
 	ProxyPORT string `yaml:"proxyPort"`
@@ -50,8 +46,8 @@ func loadServerConfig() (*ServerConfig, error) {
 	return &serverConfig, nil
 }
 
-func loadRabbitConfig() (*RabbitConfig, error) {
-	var rabbitConfig RabbitConfig
+func loadRabbitConfig() (*rabbit.RabbitConfig, error) {
+	var rabbitConfig rabbit.RabbitConfig
 	err := yaml.Unmarshal(rabbitYaml, &rabbitConfig)
 	if err != nil {
 		return nil, err
