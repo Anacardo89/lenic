@@ -38,3 +38,8 @@ header {
     border-radius: 50px;
     height: 100%;
 }
+
+.log-reg {
+    max-width: fit-content;
+    margin-inline: auto;
+}
