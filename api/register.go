@@ -51,18 +51,18 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if UserName or Email in use
-	dbUser := &db.User{}
+	dbUser := db.User{}
 	err = db.Dbase.QueryRow(db.SelectUserByName,
 		userReg.UserName).
 		Scan(dbUser.UserName)
-	if err == nil {
-		fmt.Fprintln(w, "User alreay exists")
+	if err != nil {
+		fmt.Fprintln(w, "User already exists")
 		return
 	}
 	err = db.Dbase.QueryRow(db.SelectUserByEmail,
 		userReg.UserEmail).
 		Scan(dbUser.UserEmail)
-	if err == nil {
+	if err != nil {
 		fmt.Fprintln(w, "Email already exists")
 		return
 	}
