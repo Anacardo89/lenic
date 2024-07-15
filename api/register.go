@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/Anacardo89/tpsi25_blog.git/auth"
 	"github.com/Anacardo89/tpsi25_blog.git/db"
@@ -40,12 +41,24 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	}
 	pass2 := r.FormValue("user_password2")
 	if userReg.UserPass != pass2 {
-		fmt.Fprintln(w, "Password strings don't match")
-		return
+		cookie := http.Cookie{Name: "errormsg",
+			Value:    "Password strings don't match",
+			Expires:  time.Now().Add(60 * time.Second),
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(w, &cookie)
+		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
 	}
 	if !isValidInput(userReg.UserName) || !isValidInput(userReg.UserEmail) || !isValidInput(userReg.UserPass) {
-		fmt.Fprintln(w, "Invalid character in form")
-		return
+		cookie := http.Cookie{Name: "errormsg",
+			Value:    "Invalid character in form",
+			Expires:  time.Now().Add(60 * time.Second),
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(w, &cookie)
+		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
 	}
 
 	// Check if UserName or Email in use
@@ -54,15 +67,27 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		userReg.UserName).
 		Scan(dbUser.UserName)
 	if err != sql.ErrNoRows {
-		fmt.Fprintln(w, "User already exists")
-		return
+		cookie := http.Cookie{Name: "errormsg",
+			Value:    "User already exists",
+			Expires:  time.Now().Add(60 * time.Second),
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(w, &cookie)
+		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
 	}
 	err = db.Dbase.QueryRow(db.SelectUserByEmail,
 		userReg.UserEmail).
 		Scan(dbUser.UserEmail)
 	if err != sql.ErrNoRows {
-		fmt.Fprintln(w, "Email already exists")
-		return
+		cookie := http.Cookie{Name: "errormsg",
+			Value:    "Email already exists",
+			Expires:  time.Now().Add(60 * time.Second),
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(w, &cookie)
+		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
 	}
 
 	// Password Hashing

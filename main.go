@@ -60,9 +60,10 @@ func main() {
 	// Router
 	r := mux.NewRouter()
 	r.HandleFunc("/", RedirIndex).Schemes("https")
-	r.HandleFunc("/home", ServeIndex).Schemes("https")
-	r.HandleFunc("/login", ServeLogin).Schemes("https")
-	r.HandleFunc("/register", ServeRegister).Schemes("https")
+	r.HandleFunc("/home", Index).Schemes("https")
+	r.HandleFunc("/login", Login).Schemes("https")
+	r.HandleFunc("/register", Register).Schemes("https")
+	r.HandleFunc("/error", Error).Schemes("https")
 
 	r.HandleFunc("/api/register", api.RegisterPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/login", api.LoginPOST).Methods("POST").Schemes("https")

@@ -2,8 +2,8 @@ package api
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Anacardo89/tpsi25_blog.git/auth"
 	"github.com/Anacardo89/tpsi25_blog.git/db"
@@ -16,14 +16,36 @@ func LoginPOST(w http.ResponseWriter, r *http.Request) {
 		UserName: r.FormValue("user_name"),
 		UserPass: r.FormValue("user_password"),
 	}
+	if !isValidInput(u.UserName) || !isValidInput(u.UserPass) {
+		cookie := http.Cookie{Name: "errormsg",
+			Value:    "Invalid character in form",
+			Expires:  time.Now().Add(60 * time.Second),
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(w, &cookie)
+		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+	}
 	err = db.Dbase.QueryRow(db.SelectLogin, u.UserName).Scan(&u.Id, &u.UserName, &u.HashedPass)
 	if err == sql.ErrNoRows {
-		fmt.Fprintln(w, "User does not exist")
-		return
+		cookie := http.Cookie{Name: "errormsg",
+			Value:    "User does not exist",
+			Expires:  time.Now().Add(60 * time.Second),
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(w, &cookie)
+		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
 	}
 	if !auth.CheckPasswordHash(u.UserPass, u.HashedPass) {
-		fmt.Fprintln(w, "Password does not match")
-		return
+		cookie := http.Cookie{Name: "errormsg",
+			Value:    "Password does not match",
+			Expires:  time.Now().Add(60 * time.Second),
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(w, &cookie)
+		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
 	}
 	usrSession := auth.CreateSession(w, r)
 	db.UpdateSession(usrSession.Id, u.Id)
@@ -38,26 +60,4 @@ func LogoutPOST(w http.ResponseWriter, r *http.Request) {
 	session.Options.MaxAge = -1
 	session.Save(r, w)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
-}
-
-func ValidateSession(r *http.Request) auth.Session {
-	usrSession := auth.Session{}
-	session, err := auth.SessionStore.Get(r, "tpsi25blog")
-	if err != nil {
-		logger.Error.Println(err)
-	}
-	if sid, valid := session.Values["sid"]; valid {
-		user := db.GetSessionUID(sid.(string))
-		usrSession.User = auth.User{
-			Id:        user.Id,
-			UserName:  user.UserName,
-			UserEmail: user.UserEmail,
-		}
-		db.UpdateSession(sid.(string), user.Id)
-		usrSession.Id = sid.(string)
-		usrSession.Authenticated = true
-	} else {
-		usrSession.Authenticated = false
-	}
-	return usrSession
 }
