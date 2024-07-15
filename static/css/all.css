@@ -1,8 +1,9 @@
 body {
+    font-family: 'Courier New', Courier, monospace;
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    background-color: cornflowerblue;
+    background-color: aqua;
     color: darkslategray;
 }
 
@@ -15,7 +16,8 @@ input {
 }
 
 header {
-    background-color: aquamarine;
+    background-color: cornflowerblue;
+    color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -32,11 +34,6 @@ header {
 
 .login-reg-child {
     margin: 0 5px;
-}
-
-.login-reg button {
-    border-radius: 50px;
-    height: 100%;
 }
 
 .log-reg {
@@ -57,15 +54,111 @@ header {
     height: 30px;
 }
 
-.add-post button {
-    border-radius: 50px;
-    height: 100%;
+.post-form {
+    width: 90%;
+    max-width: 2000px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 5px;
 }
 
-.post-form {
+.post-form form {
+    width: 100%;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: row;
-    height: 30px;
+    flex-direction: column;
+}
+
+.post-form input[type="text"], .post-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.post-form textarea {
+    height: 200px;
+    resize: vertical;
+}
+
+input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 10px;
+}
+
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+button a:link {
+    color: white;
+    text-decoration: none; 
+}
+
+button a:visited {
+    color: white;
+    text-decoration: none; 
+}
+
+.post-preview-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 80%;
+    max-width: 1400px;
+}
+
+.post-preview {
+    margin: 20px;
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    transition: transform 0.2s;
+}
+
+.post-preview:hover {
+    transform: scale(1.05);
+}
+
+.post-preview h2 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.post-preview p {
+    margin: 10px 0;
+}
+
+.post-preview a {
+    text-decoration: none;
+    color: #333;
+}
+
+.post-preview a:hover {
+    color: #007BFF;
 }

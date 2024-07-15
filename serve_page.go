@@ -6,11 +6,15 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Anacardo89/tpsi25_blog.git/api"
 	"github.com/Anacardo89/tpsi25_blog.git/auth"
+	"github.com/Anacardo89/tpsi25_blog.git/db"
 	"github.com/Anacardo89/tpsi25_blog.git/logger"
+	"github.com/gorilla/mux"
 )
 
 type IndexPage struct {
+	Posts   []api.PostPage
 	Session auth.Session
 }
 
@@ -18,26 +22,32 @@ type ErrorPage struct {
 	ErrorMsg string
 }
 
-type PostPage struct {
-	Id         int
-	User       string
-	Title      string
-	RawContent string
-	Content    template.HTML
-	Date       string
-	Comments   []Comment
-	Session    auth.Session
-}
-
-type Comment struct {
-	Id          int
-	UserName    string
-	CommentText string
-}
-
 func Index(w http.ResponseWriter, r *http.Request) {
 	index := IndexPage{}
 	index.Session = auth.ValidateSession(r)
+	rows, err := db.Dbase.Query(db.SelectPosts)
+	if err != nil {
+		logger.Error.Println(err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		thisPost := api.PostPage{}
+		err := rows.Scan(
+			&thisPost.GUID,
+			&thisPost.Title,
+			&thisPost.User,
+			&thisPost.RawContent,
+			&thisPost.Date,
+		)
+		if err != nil {
+			logger.Error.Println(err)
+			return
+		}
+		thisPost.Content = template.HTML(thisPost.RawContent)
+		index.Posts = append(index.Posts, thisPost)
+	}
 	t, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		logger.Error.Println(err)
@@ -80,8 +90,8 @@ func Error(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, errpg)
 }
 
-func Post(w http.ResponseWriter, r *http.Request) {
-	postpg := PostPage{
+func NewPost(w http.ResponseWriter, r *http.Request) {
+	postpg := api.PostPage{
 		Session: auth.ValidateSession(r),
 	}
 	t, err := template.ParseFiles("templates/post.html")
@@ -89,4 +99,29 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err)
 	}
 	t.Execute(w, postpg)
+}
+
+func Post(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	p := api.PostPage{
+		Session: auth.ValidateSession(r),
+		GUID:    vars["post_guid"],
+	}
+	err := db.Dbase.QueryRow(db.SelectPostByGUID, p.GUID).Scan(
+		&p.Title,
+		&p.RawContent,
+		&p.Date,
+	)
+	if err != nil {
+		logger.Error.Println(err)
+		http.Error(w, http.StatusText(404), http.StatusNotFound)
+		return
+	}
+	p.Content = template.HTML(p.RawContent)
+	t, err := template.ParseFiles("templates/posts.html")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	t.Execute(w, p)
+
 }

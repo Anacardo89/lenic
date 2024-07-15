@@ -17,6 +17,17 @@ type User struct {
 	IsActive   bool
 }
 
+type Post struct {
+	Id          int
+	PostGUID    string
+	PostTitle   string
+	PostUser    string
+	PostContent string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	IsActive    bool
+}
+
 func UpdateSession(sid string, uid int) {
 	const timeFmt = "2006-01-02T15:04:05.999999999"
 	tstamp := time.Now().Format(timeFmt)

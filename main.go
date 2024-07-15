@@ -64,11 +64,13 @@ func main() {
 	r.HandleFunc("/login", Login).Schemes("https")
 	r.HandleFunc("/register", Register).Schemes("https")
 	r.HandleFunc("/error", Error).Schemes("https")
-	r.HandleFunc("/post", Post).Schemes("https")
+	r.HandleFunc("/post", NewPost).Schemes("https")
+	r.HandleFunc("/posts/{post_guid:[0-9a-zA-Z\\-]+}", Post).Schemes("https")
 
 	r.HandleFunc("/api/register", api.RegisterPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/login", api.LoginPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/logout", api.LogoutPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/api/post", api.PostPOST).Methods("POST").Schemes("https")
 
 	http.Handle("/", r)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
