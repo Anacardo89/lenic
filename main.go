@@ -65,6 +65,8 @@ func main() {
 	r.HandleFunc("/register", ServeRegister).Schemes("https")
 
 	r.HandleFunc("/api/register", api.RegisterPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/api/login", api.LoginPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/api/logout", api.LogoutPOST).Methods("POST").Schemes("https")
 
 	http.Handle("/", r)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
