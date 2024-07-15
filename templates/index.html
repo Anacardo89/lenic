@@ -28,6 +28,11 @@
     <div class="title">
         <h1>Index</h1>
     </div>
+    {{if .Session.Authenticated}}
+            <div class="add-post">
+                <button ><a href="/post">Create a new Post</a></button>
+            </div>
+        {{end}}
     <script src="/static/js/all.js"></script>
 </body>
 </html>

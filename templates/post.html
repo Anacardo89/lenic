@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TPSI.25 Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/css/all.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1 id="home-link">TPSI.25 Blog - O Blog da malta</h1>
+        <div class="login-reg">
+            <p class="login-reg-child">You are logged in as {{.Session.User.UserName}}</p>
+            <form class="login-reg-child" action="/api/logout" method="POST">
+                <input type="submit" value="Logout">
+            </form>
+        </div>
+    </header>
+    <div class="post-form">
+        <form action="/api/post" method="POST">
+            <div><input type="text" name="post_title" placeholder="Post Title" /></div>
+            <div><input type="textarea" name="post_content" placeholder="The post" /></div>
+            <div><input type="submit" value="Post" /></div>
+        </form>
+    </div>
+    <script src="/static/js/all.js"></script>
+</body>
+</html>
