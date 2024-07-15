@@ -26,22 +26,11 @@
         {{end}}
     </header>
     <div class="title">
-        <h1>Index</h1>
+        <h1>{{.Title}}</h1>
     </div>
-    {{if .Session.Authenticated}}
-        <div class="add-post">
-            <button ><a href="/post">Create a new Post</a></button>
-        </div>
-    {{end}}
-    <div class="post-preview-container">
-    {{range .Posts}}
-        <div class="post-preview">
-            <div><a href="/posts/{{.GUID}}">{{.Title}}</a></div>
-            <div>{{.User}}</div>
-            <div>{{.Date}}</div>
-            <div>{{.TruncatedText}}</div>
-        </div>
-    {{end}}
+    <div>{{.User}}</div>
+    <div>{{.Date}}</div>
+    <div>{{.Content}}</div>
     </div>
     <script src="/static/js/all.js"></script>
 </body>

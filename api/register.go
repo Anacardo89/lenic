@@ -31,7 +31,6 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		logger.Error.Println(err.Error())
-		fmt.Fprintln(w, err.Error())
 		return
 	}
 	var userReg = &auth.User{
