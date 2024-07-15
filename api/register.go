@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -55,14 +56,14 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	err = db.Dbase.QueryRow(db.SelectUserByName,
 		userReg.UserName).
 		Scan(dbUser.UserName)
-	if err != nil {
+	if err != sql.ErrNoRows {
 		fmt.Fprintln(w, "User already exists")
 		return
 	}
 	err = db.Dbase.QueryRow(db.SelectUserByEmail,
 		userReg.UserEmail).
 		Scan(dbUser.UserEmail)
-	if err != nil {
+	if err != sql.ErrNoRows {
 		fmt.Fprintln(w, "Email already exists")
 		return
 	}
