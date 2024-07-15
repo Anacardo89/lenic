@@ -38,3 +38,12 @@ func ServeRegister(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprint(w, string(body))
 }
+
+func ServeError(w http.ResponseWriter, r *http.Request) {
+	index := IndexPage{}
+	t, err := template.ParseFiles("templates/index.html")
+	if err != nil {
+		logger.Error.Println(err)
+	}
+	t.Execute(w, index)
+}

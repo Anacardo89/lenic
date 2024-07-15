@@ -22,10 +22,7 @@ type RegisterData struct {
 }
 
 func isValidInput(input string) bool {
-	if strings.Contains(input, ";") {
-		return false
-	}
-	return true
+	return !strings.Contains(input, ";")
 }
 
 func RegisterPOST(w http.ResponseWriter, r *http.Request) {
