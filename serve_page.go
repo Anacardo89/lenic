@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
-	"text/template"
 
 	"github.com/Anacardo89/tpsi25_blog.git/auth"
 	"github.com/Anacardo89/tpsi25_blog.git/logger"
@@ -16,6 +16,23 @@ type IndexPage struct {
 
 type ErrorPage struct {
 	ErrorMsg string
+}
+
+type PostPage struct {
+	Id         int
+	User       string
+	Title      string
+	RawContent string
+	Content    template.HTML
+	Date       string
+	Comments   []Comment
+	Session    auth.Session
+}
+
+type Comment struct {
+	Id          int
+	UserName    string
+	CommentText string
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -61,4 +78,15 @@ func Error(w http.ResponseWriter, r *http.Request) {
 		MaxAge: -1,
 	})
 	t.Execute(w, errpg)
+}
+
+func Post(w http.ResponseWriter, r *http.Request) {
+	postpg := PostPage{
+		Session: auth.ValidateSession(r),
+	}
+	t, err := template.ParseFiles("templates/post.html")
+	if err != nil {
+		logger.Error.Println(err)
+	}
+	t.Execute(w, postpg)
 }

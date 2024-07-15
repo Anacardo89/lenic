@@ -48,3 +48,24 @@ header {
     max-width: fit-content;
     margin-inline: auto;
 }
+
+.add-post {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    height: 30px;
+}
+
+.add-post button {
+    border-radius: 50px;
+    height: 100%;
+}
+
+.post-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    height: 30px;
+}
