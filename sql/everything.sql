@@ -21,9 +21,9 @@ CREATE TABLE users (
 CREATE TABLE sessions (
 	id int unsigned NOT NULL AUTO_INCREMENT,
 	session_id varchar(256) NOT NULL DEFAULT '',
-	user_id int DEFAULT NULL,
-	session_start timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	session_update timestamp NOT NULL DEFAULT '2023-01-01 23:59:59',
+	user_id int NOT NULL REFERENCES users(id),
+	session_start timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	session_update timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	session_active tinyint NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY session_id (session_id)
@@ -31,25 +31,29 @@ CREATE TABLE sessions (
 
 CREATE TABLE posts (
 	id int unsigned NOT NULL AUTO_INCREMENT,
-	page_guid varchar(256) NOT NULL DEFAULT '',
-	page_title varchar(256) DEFAULT NULL,
-	page_content mediumtext,
+	post_guid varchar(256) NOT NULL DEFAULT '',
+	post_title varchar(256) DEFAULT NULL,
+	post_user varchar(32) NOT NULL REFERENCES users(user_name),
+	post_content mediumtext,
 	created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	post_active tinyint NOT NULL,
 	PRIMARY KEY (id),
-	UNIQUE KEY page_guid (page_guid)
+	UNIQUE KEY post_guid (post_guid)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE comments (
 	id int unsigned NOT NULL AUTO_INCREMENT,
-	page_guid varchar(256) NOT NULL,
+	post_guid varchar(256) NOT NULL REFERENCES posts(post_guid),
 	comment_guid varchar(256) DEFAULT NULL,
-	comment_name varchar(64) DEFAULT NULL,
-	comment_email varchar(128) DEFAULT NULL,
+	comment_user varchar(64) DEFAULT NULL,
 	comment_text mediumtext,
 	comment_date timestamp NULL DEFAULT NULL,
+	created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	comment_active tinyint NOT NULL,
 	PRIMARY KEY (id),
-	KEY page_guiid (page_guid)
+	UNIQUE KEY comment_guid (comment_guid)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 

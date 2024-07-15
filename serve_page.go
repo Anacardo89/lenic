@@ -14,8 +14,13 @@ type IndexPage struct {
 	Session auth.Session
 }
 
-func ServeIndex(w http.ResponseWriter, r *http.Request) {
+type ErrorPage struct {
+	ErrorMsg string
+}
+
+func Index(w http.ResponseWriter, r *http.Request) {
 	index := IndexPage{}
+	index.Session = auth.ValidateSession(r)
 	t, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		logger.Error.Println(err)
@@ -23,7 +28,7 @@ func ServeIndex(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, index)
 }
 
-func ServeLogin(w http.ResponseWriter, r *http.Request) {
+func Login(w http.ResponseWriter, r *http.Request) {
 	body, err := os.ReadFile("templates/login.html")
 	if err != nil {
 		logger.Error.Println(err)
@@ -31,7 +36,7 @@ func ServeLogin(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(body))
 }
 
-func ServeRegister(w http.ResponseWriter, r *http.Request) {
+func Register(w http.ResponseWriter, r *http.Request) {
 	body, err := os.ReadFile("templates/register.html")
 	if err != nil {
 		logger.Error.Println(err)
@@ -39,11 +44,21 @@ func ServeRegister(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(body))
 }
 
-func ServeError(w http.ResponseWriter, r *http.Request) {
-	index := IndexPage{}
-	t, err := template.ParseFiles("templates/index.html")
+func Error(w http.ResponseWriter, r *http.Request) {
+	cookieVal, err := r.Cookie("errormsg")
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	t.Execute(w, index)
+	errpg := ErrorPage{
+		ErrorMsg: cookieVal.Value,
+	}
+	t, err := template.ParseFiles("templates/error.html")
+	if err != nil {
+		logger.Error.Println(err)
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:   "errormsg",
+		MaxAge: -1,
+	})
+	t.Execute(w, errpg)
 }

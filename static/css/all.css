@@ -6,7 +6,7 @@ body {
     color: darkslategray;
 }
 
-#title {
+#home-link {
     cursor: pointer;
 }
 
@@ -40,6 +40,11 @@ header {
 }
 
 .log-reg {
+    max-width: fit-content;
+    margin-inline: auto;
+}
+
+.title {
     max-width: fit-content;
     margin-inline: auto;
 }
