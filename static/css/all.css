@@ -41,6 +41,10 @@ header {
     margin-inline: auto;
 }
 
+.content {
+    margin: 20px;
+}
+
 .title {
     max-width: fit-content;
     margin-inline: auto;
@@ -57,7 +61,6 @@ header {
 .post-form {
     width: 90%;
     max-width: 2000px;
-    margin: 20px auto;
     padding: 20px;
     border-radius: 5px;
 }
@@ -130,6 +133,14 @@ button a:visited {
     max-width: 1400px;
 }
 
+a {
+    text-decoration: none;
+}
+
+a .post-preview {
+    color: #333;
+}
+
 .post-preview {
     margin: 20px;
     background: #fff;
@@ -154,17 +165,8 @@ button a:visited {
     margin: 10px 0;
 }
 
-.post-preview a {
-    text-decoration: none;
-    color: #333;
-}
-
-.post-preview a:hover {
-    color: #007BFF;
-}
-
-.comment, .post-content{
-    margin-left: 20px;
+#comments {
+    margin-bottom: 30px;
 }
 
 .comment{

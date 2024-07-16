@@ -25,23 +25,28 @@
             </div>
         {{end}}
     </header>
-    <div class="title">
-        <h1>Index</h1>
-    </div>
-    {{if .Session.Authenticated}}
+    <div class="content">
+        <div class="title">
+            <h1>Index</h1>
+        </div>
+        {{if .Session.Authenticated}}
         <div class="add-post">
             <button ><a href="/newPost">Create a new Post</a></button>
         </div>
-    {{end}}
-    <div class="post-preview-container">
-    {{range .Posts}}
-        <div class="post-preview">
-            <div><a href="/post/{{.GUID}}">{{.Title}}</a></div>
-            <div>{{.User}}</div>
-            <div>{{.Date}}</div>
-            <div>{{.TruncatedText}}</div>
+        {{end}}
+       
+        <div class="post-preview-container">
+            {{range .Posts}}
+                <a href="/post/{{.GUID}}">
+                    <div class="post-preview">
+                        <div>{{.Title}}</div>
+                        <div>{{.User}}</div>
+                        <div>{{.Date}}</div>
+                        <div>{{.TruncatedText}}</div>
+                    </div>
+                </a>
+            {{end}}
         </div>
-    {{end}}
     </div>
     <script src="/static/js/all.js"></script>
 </body>
