@@ -7,11 +7,13 @@ title.addEventListener('click', function() {
 let visiv = false;
 coment_editor = document.getElementById('comment-editor-button');
 coment_editor.addEventListener('click', function() {
+    edit_form = document.getElementById('comment-editor')
     if (!visiv){
-        document.querySelector('#comment-editor').style.display = '';
+        edit_form.style.display = 'block';
     } else{
-        document.querySelector('#comment-editor').style.display = 'none';
+        edit_form.style.display = 'none';
     }
+    visiv = !visiv;
 })
 
 function putComment(el) {
