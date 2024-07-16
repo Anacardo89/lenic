@@ -45,15 +45,12 @@ CREATE TABLE posts (
 CREATE TABLE comments (
 	id int unsigned NOT NULL AUTO_INCREMENT,
 	post_guid varchar(256) NOT NULL REFERENCES posts(post_guid),
-	comment_guid varchar(256) DEFAULT NULL,
 	comment_user varchar(64) DEFAULT NULL,
 	comment_text mediumtext,
-	comment_date timestamp NULL DEFAULT NULL,
 	created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	comment_active tinyint NOT NULL,
 	PRIMARY KEY (id),
-	UNIQUE KEY comment_guid (comment_guid)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 

@@ -94,7 +94,7 @@ func NewPost(w http.ResponseWriter, r *http.Request) {
 	postpg := api.PostPage{
 		Session: auth.ValidateSession(r),
 	}
-	t, err := template.ParseFiles("templates/post.html")
+	t, err := template.ParseFiles("templates/newPost.html")
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -118,7 +118,21 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p.Content = template.HTML(p.RawContent)
-	t, err := template.ParseFiles("templates/posts.html")
+	comments, err := db.Dbase.Query(db.SelectComments, p.GUID)
+	if err != nil {
+		logger.Error.Println(err)
+	}
+	for comments.Next() {
+		var c api.Comment
+		comments.Scan(
+			&c.Id,
+			&c.UserName,
+			&c.CommentText,
+			&c.Date,
+		)
+		p.Comments = append(p.Comments, c)
+	}
+	t, err := template.ParseFiles("templates/post.html")
 	if err != nil {
 		fmt.Println(err.Error())
 	}

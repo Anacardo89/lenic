@@ -27,12 +27,6 @@ type PostPage struct {
 	Session    auth.Session
 }
 
-type Comment struct {
-	Id          int
-	UserName    string
-	CommentText string
-}
-
 func (p PostPage) TruncatedText() string {
 	chars := 0
 	for i := range p.RawContent {
