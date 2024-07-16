@@ -163,7 +163,14 @@ button a:visited {
     color: #007BFF;
 }
 
-.post-content {
-    font-size: 16px;
+.comment, .post-content{
     margin-left: 20px;
+}
+
+.comment{
+    margin-top: 30px;
+}
+
+#comment-editor {
+    display: none;
 }
