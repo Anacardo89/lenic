@@ -4,6 +4,16 @@ title.addEventListener('click', function() {
     location.href = "/home";
 })
 
+let visiv = false;
+coment_editor = document.getElementById('comment-editor-button');
+coment_editor.addEventListener('click', function() {
+    if (!visiv){
+        document.querySelector('#comment-editor').style.display = '';
+    } else{
+        document.querySelector('#comment-editor').style.display = 'none';
+    }
+})
+
 function putComment(el) {
 
     var id = $(el).find('.comment_id').val();
