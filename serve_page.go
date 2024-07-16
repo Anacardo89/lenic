@@ -109,6 +109,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 	}
 	err := db.Dbase.QueryRow(db.SelectPostByGUID, p.GUID).Scan(
 		&p.Title,
+		&p.User,
 		&p.RawContent,
 		&p.Date,
 	)

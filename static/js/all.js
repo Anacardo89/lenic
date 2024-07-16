@@ -6,13 +6,13 @@ title.addEventListener('click', function() {
 
 function putComment(el) {
 
-    var id = $(el).find('.edit_id').val();
-    var comments = $(el).find('.edit_comments').val();
+    var id = $(el).find('.comment_id').val();
+    var edited_comment = $(el).find('.edit_comment').val();
     $.ajax({
-        url: '/api/page/{{.GUID}}/comments/' + id,
+        url: '/api/page/{{.GUID}}/comment/' + id,
         method: 'PUT',
         data: ({
-            comments: comments
+            comment: edited_comment
         }),
         success: function(res) {
             window.location.replace('/page/{{.GUID}}')

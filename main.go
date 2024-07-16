@@ -71,6 +71,8 @@ func main() {
 	r.HandleFunc("/api/login", api.LoginPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/logout", api.LogoutPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/post", api.PostPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/api/post/{post_guid:[0-9a-zA-Z\\-=]+}/comment", api.CommentPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/api/post/{post_guid:[0-9a-zA-Z\\-=]+}/comment/{comment_id:[0-9]+}", api.CommentPUT).Methods("PUT").Schemes("https")
 
 	http.Handle("/", r)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
