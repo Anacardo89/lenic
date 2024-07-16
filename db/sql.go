@@ -63,4 +63,23 @@ const (
 		FROM posts
 		WHERE post_guid=?
 	;`
+
+	SelectComments = `
+	SELECT id, comment_user, comment_text, created_at
+		FROM comments
+		WHERE post_guid=?
+	;`
+
+	InsertComment = `
+	INSERT INTO comments
+		SET post_guid=?,
+			comment_user=?,
+			comment_text=?
+	;`
+
+	UpdateComment = `
+	UPDATE comments
+		SET comment_text=?
+		WHERE id=?
+	;`
 )
