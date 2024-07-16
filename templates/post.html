@@ -25,8 +25,9 @@
             </div>
         {{end}}
     </header>
-    <div class="title">
-        <h1>{{.Title}}</h1>
+    <div class="content">
+        <div class="title">
+            <h1>{{.Title}}</h1>
     </div>
     <div class="post-content">
         <div>Author: {{.User}}</div>
@@ -34,17 +35,17 @@
         <div>{{.Content}}</div>
     </div>
     {{if .Session.Authenticated}}
-        <div><p>Add a comment: </p></div>
-        <div id="comments">
-            <form action="/api/post/{{.GUID}}/comment" method="POST">
+    <div><p>Add a comment: </p></div>
+    <div id="comments">
+        <form action="/api/post/{{.GUID}}/comment" method="POST">
                 <input type="hidden" name="post_guid" value="{{.GUID}}" />
                 <div><textarea name="comment_text" placeholder="Your Comments"></textarea></div>
                 <div><input type="submit" value="Add Comment" /></div>
             </form>
         </div>
-    {{end}}
-    {{range .Comments}}
-    {{if eq .UserName $.Session.User.UserName}}
+        {{end}}
+        {{range .Comments}}
+        {{if eq .UserName $.Session.User.UserName}}
         <div>Comment by {{.UserName}}</div>
         <div>{{.CommentText}}</div>
         <button id="comment-editor-button">Edit</button>
@@ -56,13 +57,14 @@
                 <input type="submit" value="Confirm" />
             </form>
         </div>
-    {{else}}
+        {{else}}
         <div class="comment">
             <div>Comment by {{.UserName}}</div>
             <div>{{.CommentText}}</div>
         </div>
-    {{end}}
-    {{end}}
+        {{end}}
+        {{end}}
+    </div>
     <script src="/static/js/all.js"></script>
 </body>
 </html>
