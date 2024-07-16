@@ -42,12 +42,10 @@ func CommentPOST(w http.ResponseWriter, r *http.Request) {
 
 func CommentPUT(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	postGUID := vars["post_guid"]
 	id, err := strconv.Atoi(vars["comment_id"])
 	if err != nil {
 		logger.Error.Println(err)
 	}
-
 	err = r.ParseForm()
 	if err != nil {
 		logger.Error.Println(err)
@@ -68,5 +66,5 @@ func CommentPUT(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	http.Redirect(w, r, fmt.Sprintf("/post/%s", postGUID), http.StatusSeeOther)
+	w.WriteHeader(http.StatusOK)
 }

@@ -7,15 +7,16 @@ title.addEventListener('click', function() {
 function putComment(el) {
 
     var id = $(el).find('.comment_id').val();
+    var guid = $(el).find('.post_guid').val();
     var edited_comment = $(el).find('.edit_comment').val();
     $.ajax({
-        url: '/api/page/{{.GUID}}/comment/' + id,
+        url: '/api/post/' + guid + '/comment/' + id,
         method: 'PUT',
         data: ({
             comment: edited_comment
         }),
         success: function(res) {
-            window.location.replace('/page/{{.GUID}}')
+            location.reload()
         }
     })
     return false;
