@@ -59,7 +59,7 @@ const (
 	;`
 
 	SelectPostByGUID = `
-	SELECT post_title, post_content, created_at
+	SELECT post_title, post_user, post_content, created_at
 		FROM posts
 		WHERE post_guid=?
 	;`
@@ -74,7 +74,8 @@ const (
 	INSERT INTO comments
 		SET post_guid=?,
 			comment_user=?,
-			comment_text=?
+			comment_text=?,
+			comment_active=?
 	;`
 
 	UpdateComment = `

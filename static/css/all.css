@@ -162,3 +162,8 @@ button a:visited {
 .post-preview a:hover {
     color: #007BFF;
 }
+
+.post-content {
+    font-size: 16px;
+    margin-left: 20px;
+}

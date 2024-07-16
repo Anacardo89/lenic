@@ -2,12 +2,12 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/Anacardo89/tpsi25_blog.git/auth"
 	"github.com/Anacardo89/tpsi25_blog.git/db"
+	"github.com/Anacardo89/tpsi25_blog.git/logger"
 	"github.com/gorilla/mux"
 )
 
@@ -25,31 +25,36 @@ func CommentPOST(w http.ResponseWriter, r *http.Request) {
 
 	c := Comment{
 		UserName:    session.User.UserName,
-		CommentText: r.FormValue("comment"),
+		CommentText: r.FormValue("comment_text"),
 	}
 
 	_, err := db.Dbase.Exec(db.InsertComment,
 		postGUID,
 		c.UserName,
 		c.CommentText,
+		1,
 	)
 	if err != nil {
-		log.Println(err.Error())
+		logger.Error.Println(err)
 	}
 	http.Redirect(w, r, fmt.Sprintf("/post/%s", postGUID), http.StatusSeeOther)
 }
 
 func CommentPUT(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	err := r.ParseForm()
-	if err != nil {
-		log.Println(err.Error())
-	}
-	id, err := strconv.Atoi(vars["comment_id"])
 	postGUID := vars["post_guid"]
+	id, err := strconv.Atoi(vars["comment_id"])
+	if err != nil {
+		logger.Error.Println(err)
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		logger.Error.Println(err)
+	}
 	c := Comment{
 		Id:          id,
-		CommentText: r.FormValue("edit_comment"),
+		CommentText: r.FormValue("comment"),
 	}
 	if c.CommentText == "" {
 		http.Error(w, "All form fields must be filled out", http.StatusBadRequest)
@@ -60,5 +65,8 @@ func CommentPUT(w http.ResponseWriter, r *http.Request) {
 		c.CommentText,
 		c.Id,
 	)
+	if err != nil {
+		logger.Error.Println(err)
+	}
 	http.Redirect(w, r, fmt.Sprintf("/post/%s", postGUID), http.StatusSeeOther)
 }
