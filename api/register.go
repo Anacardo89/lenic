@@ -100,6 +100,10 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	regData := RegisterData{
 		Email: userReg.UserEmail,
 	}
+	mailData := RegisterMail{
+		User: userReg.UserName,
+		Link: generateActiveLink(userReg.UserName),
+	}
 	mailSubject, err := template.New("registerSubject").Parse(registerSubject)
 	if err != nil {
 		logger.Error.Println(err.Error())
@@ -111,14 +115,14 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var mbuf bytes.Buffer
-	err = mailSubject.Execute(&mbuf, userReg)
+	err = mailSubject.Execute(&mbuf, mailData)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
 	regData.Subject = mbuf.String()
 	mbuf.Reset()
-	err = mailBody.Execute(&mbuf, userReg)
+	err = mailBody.Execute(&mbuf, mailData)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
@@ -138,7 +142,7 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 
 	// Insert User in DB
 	_, err = db.Dbase.Exec(db.InsertUser,
-		userReg.UserName, userReg.UserEmail, userReg.HashedPass, 1)
+		userReg.UserName, userReg.UserEmail, userReg.HashedPass, 0)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		fmt.Fprintln(w, err.Error())
@@ -146,4 +150,8 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+}
+
+func generateActiveLink(user string) string {
+	return "https://192.168.200.205:8082/activate/" + user
 }

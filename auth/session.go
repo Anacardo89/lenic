@@ -21,6 +21,7 @@ type User struct {
 	UserEmail  string
 	UserPass   string
 	HashedPass string
+	Active     int
 }
 
 type Session struct {

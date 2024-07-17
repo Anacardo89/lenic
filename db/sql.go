@@ -24,8 +24,14 @@ const (
 			user_active=?
 	;`
 
+	UpdateUserActive = `
+	UPDATE users
+		SET user_active=1
+		WHERE user_name=?
+	;`
+
 	SelectLogin = `
-	SELECT id, user_name, user_password FROM users
+	SELECT id, user_name, user_password, user_active FROM users
 		WHERE user_name=?
 	;`
 

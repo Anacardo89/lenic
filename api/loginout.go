@@ -26,10 +26,20 @@ func LoginPOST(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
 	}
-	err = db.Dbase.QueryRow(db.SelectLogin, u.UserName).Scan(&u.Id, &u.UserName, &u.HashedPass)
+	err = db.Dbase.QueryRow(db.SelectLogin, u.UserName).Scan(&u.Id, &u.UserName, &u.HashedPass, &u.Active)
 	if err == sql.ErrNoRows {
 		cookie := http.Cookie{Name: "errormsg",
 			Value:    "User does not exist",
+			Expires:  time.Now().Add(60 * time.Second),
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(w, &cookie)
+		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+	}
+	if u.Active == 0 {
+		cookie := http.Cookie{Name: "errormsg",
+			Value:    "User is not active, check your mail",
 			Expires:  time.Now().Add(60 * time.Second),
 			HttpOnly: true,
 			Path:     "/",

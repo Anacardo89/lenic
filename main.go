@@ -1,7 +1,6 @@
 package main
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 
@@ -16,7 +15,6 @@ import (
 )
 
 var (
-	templates   = template.Must(template.ParseGlob("templates/*"))
 	httpServer  = &http.Server{}
 	httpsServer = &http.Server{}
 )
@@ -63,16 +61,17 @@ func main() {
 	r.HandleFunc("/home", Index).Schemes("https")
 	r.HandleFunc("/login", Login).Schemes("https")
 	r.HandleFunc("/register", Register).Schemes("https")
+	r.HandleFunc("/activate/{user_name:[0-9a-zA-Z\\-=_]+}", ActivateUser).Schemes("https")
 	r.HandleFunc("/error", Error).Schemes("https")
 	r.HandleFunc("/newPost", NewPost).Schemes("https")
-	r.HandleFunc("/post/{post_guid:[0-9a-zA-Z\\-=]+}", Post).Schemes("https")
+	r.HandleFunc("/post/{post_guid:[0-9a-zA-Z\\-=_]+}", Post).Schemes("https")
 
 	r.HandleFunc("/api/register", api.RegisterPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/login", api.LoginPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/logout", api.LogoutPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/post", api.PostPOST).Methods("POST").Schemes("https")
-	r.HandleFunc("/api/post/{post_guid:[0-9a-zA-Z\\-=]+}/comment", api.CommentPOST).Methods("POST").Schemes("https")
-	r.HandleFunc("/api/post/{post_guid:[0-9a-zA-Z\\-=]+}/comment/{comment_id:[0-9]+}", api.CommentPUT).Methods("PUT").Schemes("https")
+	r.HandleFunc("/api/post/{post_guid:[0-9a-zA-Z\\-=_]+}/comment", api.CommentPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/api/post/{post_guid:[0-9a-zA-Z\\-=_]+}/comment/{comment_id:[0-9]+}", api.CommentPUT).Methods("PUT").Schemes("https")
 
 	http.Handle("/", r)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))

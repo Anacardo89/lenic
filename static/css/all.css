@@ -180,3 +180,7 @@ a .post-preview {
 .comment-edit {
     display: none;
 }
+
+.post-text {
+    margin-top: 15px;
+}

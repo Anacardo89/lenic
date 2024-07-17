@@ -140,3 +140,13 @@ func Post(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, p)
 
 }
+
+func ActivateUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userName := vars["user_name"]
+	_, err := db.Dbase.Exec(db.UpdateUserActive, userName)
+	if err != nil {
+		logger.Error.Println(err)
+	}
+	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+}
