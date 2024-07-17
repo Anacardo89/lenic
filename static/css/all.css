@@ -3,7 +3,7 @@ body {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    background-color: aqua;
+    background-color:azure;
     color: darkslategray;
 }
 
@@ -124,6 +124,10 @@ button a:visited {
     text-decoration: none; 
 }
 
+.post-content {
+    overflow-wrap: break-word;
+}
+
 .post-preview-container {
     display: flex;
     justify-content: flex-start;
@@ -173,6 +177,6 @@ a .post-preview {
     margin-top: 30px;
 }
 
-#comment-editor {
+.comment-edit {
     display: none;
 }
