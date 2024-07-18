@@ -23,6 +23,7 @@ type Post struct {
 	PostTitle   string
 	PostUser    string
 	PostContent string
+	PostImage   []byte
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	IsActive    bool

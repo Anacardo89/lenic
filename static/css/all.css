@@ -84,6 +84,17 @@ header {
     resize: vertical;
 }
 
+input[type="file"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
 input[type="submit"] {
     background-color: #4CAF50;
     color: white;
@@ -92,7 +103,6 @@ input[type="submit"] {
     border-radius: 5px;
     cursor: pointer;
     font-size: 1em;
-    margin-top: 10px;
 }
 
 input[type="submit"]:hover {
@@ -183,4 +193,9 @@ a .post-preview {
 
 .post-text {
     margin-top: 15px;
+}
+
+img {
+    max-width: 200px;
+    max-height: 200px;
 }

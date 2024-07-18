@@ -16,7 +16,7 @@ CREATE TABLE users (
 	PRIMARY KEY(id),
 	UNIQUE KEY user_name (user_name),
 	UNIQUE KEY user_email (user_email)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE sessions (
 	id int unsigned NOT NULL AUTO_INCREMENT,
@@ -27,7 +27,7 @@ CREATE TABLE sessions (
 	session_active tinyint NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY session_id (session_id)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE posts (
 	id int unsigned NOT NULL AUTO_INCREMENT,
@@ -35,12 +35,14 @@ CREATE TABLE posts (
 	post_title varchar(256) DEFAULT NULL,
 	post_user varchar(32) NOT NULL REFERENCES users(user_name),
 	post_content mediumtext,
+	post_image longblob,
+	post_image_ext varchar(10),
 	created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	post_active tinyint NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY post_guid (post_guid)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE comments (
 	id int unsigned NOT NULL AUTO_INCREMENT,
@@ -51,7 +53,7 @@ CREATE TABLE comments (
 	updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	comment_active tinyint NOT NULL,
 	PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 

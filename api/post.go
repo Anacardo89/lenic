@@ -4,8 +4,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"html/template"
+	"io"
 	"math/rand/v2"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -62,7 +64,8 @@ func PostGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostPOST(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	var fileBytes []byte
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
@@ -71,11 +74,27 @@ func PostPOST(w http.ResponseWriter, r *http.Request) {
 		PostTitle:   r.FormValue("post_title"),
 		PostContent: r.FormValue("post_content"),
 	}
+	file, header, err := r.FormFile("image")
+	if err != nil {
+		if err == http.ErrMissingFile {
+		} else {
+			logger.Error.Println(err)
+			return
+		}
+	} else {
+		fileBytes, err = io.ReadAll(file)
+		if err != nil {
+			logger.Error.Println(err)
+			return
+		}
+	}
+	defer file.Close()
+	post.PostImage = fileBytes
 	session := auth.ValidateSession(r)
 	post.PostUser = session.User.UserName
 	post.PostGUID = createGUID(post.PostTitle, post.PostUser)
 	_, err = db.Dbase.Exec(db.InsertPost,
-		post.PostGUID, post.PostTitle, post.PostUser, post.PostContent, 1)
+		post.PostGUID, post.PostTitle, post.PostUser, post.PostContent, post.PostImage, filepath.Ext(header.Filename), 1)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		fmt.Fprintln(w, err.Error())

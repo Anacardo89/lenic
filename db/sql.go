@@ -55,6 +55,8 @@ const (
 			post_title=?,
 			post_user=?,
 			post_content=?,
+			post_image=?,
+			post_image_ext=?,
 			post_active=?
 	;`
 

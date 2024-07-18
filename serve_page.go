@@ -1,10 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"html/template"
+	"mime"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/Anacardo89/tpsi25_blog.git/api"
 	"github.com/Anacardo89/tpsi25_blog.git/auth"
@@ -149,4 +152,31 @@ func ActivateUser(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err)
 	}
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+}
+
+func ServeImage(w http.ResponseWriter, r *http.Request) {
+	guid := r.URL.Query().Get("guid")
+	if guid == "" {
+		return
+	}
+
+	var postImage []byte
+	var imageExtension string
+	err := db.Dbase.QueryRow("SELECT post_image, post_image_ext FROM posts WHERE post_guid = ?", guid).Scan(&postImage, &imageExtension)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return
+		}
+		logger.Error.Println(err)
+		return
+	}
+	if strings.HasPrefix(imageExtension, ".") {
+		imageExtension = imageExtension[1:]
+	}
+	mimeType := mime.TypeByExtension(imageExtension)
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+	w.Header().Set("Content-Type", mimeType)
+	w.Write(postImage)
 }
