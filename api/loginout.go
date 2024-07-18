@@ -25,6 +25,7 @@ func LoginPOST(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		return
 	}
 	err = db.Dbase.QueryRow(db.SelectLogin, u.UserName).Scan(&u.Id, &u.UserName, &u.HashedPass, &u.Active)
 	if err == sql.ErrNoRows {
@@ -36,6 +37,7 @@ func LoginPOST(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		return
 	}
 	if u.Active == 0 {
 		cookie := http.Cookie{Name: "errormsg",
@@ -46,6 +48,7 @@ func LoginPOST(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		return
 	}
 	if !auth.CheckPasswordHash(u.UserPass, u.HashedPass) {
 		cookie := http.Cookie{Name: "errormsg",
@@ -56,6 +59,7 @@ func LoginPOST(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		return
 	}
 	usrSession := auth.CreateSession(w, r)
 	db.UpdateSession(usrSession.Id, u.Id)

@@ -48,6 +48,7 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		return
 	}
 	if !isValidInput(userReg.UserName) || !isValidInput(userReg.UserEmail) || !isValidInput(userReg.UserPass) {
 		cookie := http.Cookie{Name: "errormsg",
@@ -58,6 +59,7 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		return
 	}
 
 	// Check if UserName or Email in use
@@ -74,6 +76,7 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		return
 	}
 	err = db.Dbase.QueryRow(db.SelectUserByEmail,
 		userReg.UserEmail).
@@ -87,6 +90,7 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		return
 	}
 
 	// Password Hashing

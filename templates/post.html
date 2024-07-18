@@ -34,6 +34,7 @@
         <div>Author: {{.User}}</div>
         <div>Posted in: {{.Date}}</div>
         <div class="post-text">{{.Content}}</div>
+        <div><img src="/api/image?guid={{.GUID}}"></div>
     </div>
     {{if .Session.Authenticated}}
     <div><p>Add a comment: </p></div>
@@ -42,31 +43,31 @@
                 <input type="hidden" name="post_guid" value="{{.GUID}}" />
                 <div><textarea name="comment_text" placeholder="Your Comments"></textarea></div>
                 <div><input type="submit" value="Add Comment" /></div>
-            </form>
-        </div>
-        {{end}}
-        {{range .Comments}}
-        {{if eq .UserName $.Session.User.UserName}}
-        <div class="comment">
-            <div>Comment by {{.UserName}}</div>
-            <div>{{.CommentText}}</div>
-        </div>
-        <button class="comment-editor-button" data-id="{{.Id}}">Edit</button>
-        <div class="comment-edit" id="comment-editor-{{.Id}}">
-            <h2>Edit</h2>
-            <form onsubmit="return putComment(this);">
-                <input type="hidden" class="comment_id" value="{{.Id}}" />
-                <textarea type="text" class="edit_comment" name="comment">{{.CommentText}}</textarea>
-                <input type="submit" value="Confirm" />
-            </form>
-        </div>
-        {{else}}
-        <div class="comment">
-            <div>Comment by {{.UserName}}</div>
-            <div>{{.CommentText}}</div>
-        </div>
-        {{end}}
-        {{end}}
+        </form>
+    </div>
+    {{end}}
+    {{range .Comments}}
+    {{if eq .UserName $.Session.User.UserName}}
+    <div class="comment">
+        <div>Comment by {{.UserName}}</div>
+        <div>{{.CommentText}}</div>
+    </div>
+    <button class="comment-editor-button" data-id="{{.Id}}">Edit</button>
+    <div class="comment-edit" id="comment-editor-{{.Id}}">
+        <h2>Edit</h2>
+        <form onsubmit="return putComment(this);">
+            <input type="hidden" class="comment_id" value="{{.Id}}" />
+            <textarea type="text" class="edit_comment" name="comment">{{.CommentText}}</textarea>
+            <input type="submit" value="Confirm" />
+        </form>
+    </div>
+    {{else}}
+    <div class="comment">
+        <div>Comment by {{.UserName}}</div>
+        <div>{{.CommentText}}</div>
+    </div>
+    {{end}}
+    {{end}}
     </div>
     <script src="/static/js/all.js"></script>
 </body>

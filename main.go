@@ -65,6 +65,7 @@ func main() {
 	r.HandleFunc("/error", Error).Schemes("https")
 	r.HandleFunc("/newPost", NewPost).Schemes("https")
 	r.HandleFunc("/post/{post_guid:[0-9a-zA-Z\\-=_]+}", Post).Schemes("https")
+	r.HandleFunc("/api/image", ServeImage).Schemes("https")
 
 	r.HandleFunc("/api/register", api.RegisterPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/login", api.LoginPOST).Methods("POST").Schemes("https")
