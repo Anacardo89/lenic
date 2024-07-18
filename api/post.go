@@ -24,6 +24,7 @@ type PostPage struct {
 	Title      string
 	RawContent string
 	Content    template.HTML
+	Image      []byte
 	Date       string
 	Comments   []Comment
 	Session    auth.Session
@@ -70,29 +71,52 @@ func PostPOST(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err.Error())
 		return
 	}
+
 	post := db.Post{
 		PostTitle:   r.FormValue("post_title"),
 		PostContent: r.FormValue("post_content"),
 	}
+
 	file, header, err := r.FormFile("image")
 	if err != nil {
-		if err == http.ErrMissingFile {
-		} else {
+		if err != http.ErrMissingFile { // Check for other errors
 			logger.Error.Println(err)
 			return
 		}
-	} else {
-		fileBytes, err = io.ReadAll(file)
+
+		// No image file uploaded
+		session := auth.ValidateSession(r)
+		post.PostUser = session.User.UserName
+		post.PostGUID = createGUID(post.PostTitle, post.PostUser)
+
+		// Insert post without image data
+		_, err = db.Dbase.Exec(db.InsertPost,
+			post.PostGUID, post.PostTitle, post.PostUser, post.PostContent, []byte{}, "", 1)
 		if err != nil {
-			logger.Error.Println(err)
+			logger.Error.Println(err.Error())
+			fmt.Fprintln(w, err.Error())
 			return
 		}
+
+		// Redirect to /home
+		http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+		return
+	}
+
+	// Handle uploaded image
+	fileBytes, err = io.ReadAll(file)
+	if err != nil {
+		logger.Error.Println(err)
+		return
 	}
 	defer file.Close()
+
 	post.PostImage = fileBytes
 	session := auth.ValidateSession(r)
 	post.PostUser = session.User.UserName
 	post.PostGUID = createGUID(post.PostTitle, post.PostUser)
+
+	// Insert post with image data
 	_, err = db.Dbase.Exec(db.InsertPost,
 		post.PostGUID, post.PostTitle, post.PostUser, post.PostContent, post.PostImage, filepath.Ext(header.Filename), 1)
 	if err != nil {
@@ -100,6 +124,8 @@ func PostPOST(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, err.Error())
 		return
 	}
+
+	// Redirect to /home
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
