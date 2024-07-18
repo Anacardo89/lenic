@@ -114,6 +114,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		&p.Title,
 		&p.User,
 		&p.RawContent,
+		&p.Image,
 		&p.Date,
 	)
 	if err != nil {

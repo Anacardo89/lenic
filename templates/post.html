@@ -34,7 +34,10 @@
         <div>Author: {{.User}}</div>
         <div>Posted in: {{.Date}}</div>
         <div class="post-text">{{.Content}}</div>
+        {{if eq (len .Image) 0}}
+        {{else}}
         <div><img src="/api/image?guid={{.GUID}}"></div>
+        {{end}}
     </div>
     {{if .Session.Authenticated}}
     <div><p>Add a comment: </p></div>
