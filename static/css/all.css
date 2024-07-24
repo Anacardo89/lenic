@@ -7,8 +7,23 @@ body {
     color: darkslategray;
 }
 
-#home-link {
+a:link {
+    color: white;
+    text-decoration: none; 
+}
+
+a:visited {
+    color: white;
+    text-decoration: none; 
+}
+
+.home-link {
     cursor: pointer;
+    margin: 0 0 -10px 0;
+}
+
+.logo-bottom {
+    margin: -10px 0 0 0;
 }
 
 input {
@@ -20,20 +35,43 @@ header {
     color: white;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 10px 10px;
+    align-items: stretch;
+    min-height: 60px;
+    padding: 0 0 0 10px;
 }
 
-.login-reg {
+.logo {
+    align-self: center;
+}
+
+.header-buttons {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-end;
+    align-items: stretch;
     flex-direction: row;
-    height: 30px;
 }
 
-.login-reg-child {
-    margin: 0 5px;
+.button {
+    display: flex; /* Set display flex for the button */
+    align-items: center; /* Center the text vertically */
+    justify-content: center; /* Center the text horizontally */
+    flex: 1; /* Allow the button to grow and fill the container */
+    padding: 0 15px; /* Remove padding to let height be flexible */
+    height: 100%; /* Ensure button height is 100% of header */
+    margin: 0; /* Remove margin */
+    border: none; /* Remove any borders */
+    background-color: orange; /* Existing background color */
+    cursor: pointer; /* Keep cursor pointer */
+}
+
+.logout {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.logout p {
+    margin: 0 10px;
 }
 
 .log-reg {
@@ -96,42 +134,29 @@ input[type="file"] {
 }
 
 input[type="submit"] {
-    background-color: #4CAF50;
+    background-color: orange;
     color: white;
     padding: 10px;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
     font-size: 1em;
 }
 
 input[type="submit"]:hover {
-    background-color: #45a049;
+    background-color: orangered;
 }
 
 button {
-    background-color: #4CAF50;
-    color: white;
+    background-color: orange;
     padding: 10px;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
     font-size: 1em;
     margin-top: 10px;
 }
 
 button:hover {
-    background-color: #45a049;
-}
-
-button a:link {
-    color: white;
-    text-decoration: none; 
-}
-
-button a:visited {
-    color: white;
-    text-decoration: none; 
+    background-color: orangered;
 }
 
 .post-content {

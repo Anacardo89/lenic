@@ -10,7 +10,10 @@
 </head>
 <body>
     <header>
-        <h1 id="home-link">TPSI.25 Blog - O Blog da malta</h1>
+        <div class="logo">
+            <h1 class="home-link"><a href="/home">TPSI.25 Blog</a></h1>
+            <p class="logo-bottom">O Blog da malta</p>
+        </div>
         {{if not .Session.Authenticated}}
             <div class="login-reg">
                 <button class="login-reg-child"><a href="/login">Login</a></button>
