@@ -4,8 +4,8 @@
     <title>TPSI.25 Blog</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/static/css/all.css">
-    
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/header.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
@@ -15,18 +15,17 @@
             <p class="logo-bottom">O Blog da malta</p>
         </div>
         {{if not .Session.Authenticated}}
-            <div class="login-reg">
-                <button class="login-reg-child"><a href="/login">Login</a></button>
-                <p class="login-reg-child">or</p>
-                <button class="login-reg-child"><a href="/register">Register</a></button>
-            </div>
+        <div class="header-buttons">
+            <a href="/login"><button class="header-button"><strong>Login</strong></button></a>
+            <a href="/register"><button class="header-button"><strong>Register</strong></button></a>
+        </div>
         {{else}}
-            <div class="login-reg">
-                <p class="login-reg-child">You are logged in as {{.Session.User.UserName}}</p>
-                <form class="login-reg-child" action="/api/logout" method="POST">
-                    <input type="submit" value="Logout">
-                </form>
-            </div>
+        <div class="logout">
+            <p>You are logged in as <strong>{{.Session.User.UserName}}</strong></p>
+            <form action="/api/logout" method="POST">
+                <button class="header-button" onsubmit="return logout(this);"><strong>Logout</strong></button>
+            </form>
+        </div>
         {{end}}
     </header>
     <div class="content">

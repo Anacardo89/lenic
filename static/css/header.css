@@ -1,0 +1,69 @@
+
+/*Header*/
+header {
+    background-color: cornflowerblue;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    min-height: 60px;
+    padding: 0 0 0 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+/*  Logo Left*/
+.logo {
+    align-self: center;
+}
+
+.home-link {
+    cursor: pointer;
+    margin: 0 0 -10px 0;
+}
+
+.logo-bottom {
+    margin: -10px 0 0 0;
+}
+
+/* Logout input*/
+.logout {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.logout p {
+    margin: 0 10px;
+    align-self: center;
+}
+
+/* Buttons right*/
+.header-buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: stretch;
+    flex-direction: row;
+}
+
+.header-button {
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    height: 100%;
+    margin: 0;
+    background-color: orange;
+    color: white;
+    cursor: pointer;
+}
+
+.header-button:hover {
+    background-color: rgb(255, 198, 66);
+}
+
+.header-button:active {
+    background-color: rgb(209, 136, 0);
+}
