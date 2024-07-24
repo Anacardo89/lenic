@@ -9,7 +9,10 @@
 </head>
 <body>
     <header>
-        <h1 id="home-link">TPSI.25 Blog - O Blog da malta</h1>
+        <div class="logo">
+            <h1 class="home-link"><a href="/home">TPSI.25 Blog</a></h1>
+            <p class="logo-bottom">O Blog da malta</p>
+        </div>
         <div class="login-reg">
             <p class="login-reg-child">You are logged in as {{.Session.User.UserName}}</p>
             <form class="login-reg-child" action="/api/logout" method="POST">

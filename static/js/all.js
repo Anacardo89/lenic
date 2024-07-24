@@ -1,9 +1,4 @@
 
-title = document.getElementById('home-link');
-title.addEventListener('click', function() {
-    location.href = "/home";
-})
-
 comment_buttons = document.getElementsByClassName('comment-editor-button')
 for (let i = 0; i < comment_buttons.length; i++) {
     const button = comment_buttons[i];

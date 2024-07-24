@@ -5,22 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/css/all.css">
-    
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
     <header>
-        <h1 id="home-link">TPSI.25 Blog - O Blog da malta</h1>
+        <div class="logo">
+            <h1 class="home-link"><a href="/home">TPSI.25 Blog</a></h1>
+            <p class="logo-bottom">O Blog da malta</p>
+        </div>
         {{if not .Session.Authenticated}}
-            <div class="login-reg">
-                <button class="login-reg-child"><a href="/login">Login</a></button>
-                <p class="login-reg-child">or</p>
-                <button class="login-reg-child"><a href="/register">Register</a></button>
+            <div class="header-buttons">
+                <button class="button"><a href="/login">Login</a></button>
+                <button class="button"><a href="/register">Register</a></button>
             </div>
         {{else}}
-            <div class="login-reg">
-                <p class="login-reg-child">You are logged in as {{.Session.User.UserName}}</p>
-                <form class="login-reg-child" action="/api/logout" method="POST">
+            <div class="logout">
+                <p>You are logged in as <strong>{{.Session.User.UserName}}</strong></p>
+                <form class="button" action="/api/logout" method="POST">
                     <input type="submit" value="Logout">
                 </form>
             </div>
