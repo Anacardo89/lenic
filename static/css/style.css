@@ -1,10 +1,14 @@
-body {
-    font-family: 'Courier New', Courier, monospace;
-    box-sizing: border-box;
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', Courier, monospace;
     background-color:azure;
     color: darkslategray;
+    margin-top: 60px;
 }
 
 a:link {
@@ -17,61 +21,8 @@ a:visited {
     text-decoration: none; 
 }
 
-.home-link {
-    cursor: pointer;
-    margin: 0 0 -10px 0;
-}
-
-.logo-bottom {
-    margin: -10px 0 0 0;
-}
-
 input {
     background-color: white;
-}
-
-header {
-    background-color: cornflowerblue;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: stretch;
-    min-height: 60px;
-    padding: 0 0 0 10px;
-}
-
-.logo {
-    align-self: center;
-}
-
-.header-buttons {
-    display: flex;
-    justify-content: flex-end;
-    align-items: stretch;
-    flex-direction: row;
-}
-
-.button {
-    display: flex; /* Set display flex for the button */
-    align-items: center; /* Center the text vertically */
-    justify-content: center; /* Center the text horizontally */
-    flex: 1; /* Allow the button to grow and fill the container */
-    padding: 0 15px; /* Remove padding to let height be flexible */
-    height: 100%; /* Ensure button height is 100% of header */
-    margin: 0; /* Remove margin */
-    border: none; /* Remove any borders */
-    background-color: orange; /* Existing background color */
-    cursor: pointer; /* Keep cursor pointer */
-}
-
-.logout {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-}
-
-.logout p {
-    margin: 0 10px;
 }
 
 .log-reg {

@@ -31,3 +31,14 @@ function putComment(el) {
     })
     return false;
 }
+
+function logout(el) {
+    $.ajax({
+        url: '/api/logout/',
+        method: 'POST',
+        success: function(res) {
+            window.location.href = '/home';
+        }
+    })
+    return false;
+}
