@@ -1,0 +1,84 @@
+
+
+.register-title {
+    text-align: center;
+    padding: 50px 0 15px;
+}
+
+.register-form {
+    background-color: rgb(254 186 109 / 75%);
+    margin: 0 auto;
+    width: fit-content;
+    min-height: 300px;
+    padding: 0 20px 0 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 5px 5px #ab7c27;
+}
+
+.register-user-field {
+    margin: 30px 0 0;
+}
+
+.register-user-field input,
+.register-email-field input,
+.register-password-field input,
+.register-password2-field input {
+    background-color:azure;
+    border: 0;
+}
+
+.register-user-field input:focus,
+.register-email-field input:focus,
+.register-password-field input:focus,
+.register-password2-field input:focus {
+    background-color: azure;
+    outline: none;
+}
+
+.register-user-field,
+.register-email-field,
+.register-password-field,
+.register-password2-field {
+    display: flex;
+    background-color:azure;
+    align-items: center;
+    justify-content: space-between;
+    height: 2rem;
+    padding: 5px;
+    width: 100%;
+}
+
+.register-user-img {
+    width: 100%;
+    height: 100%;
+}
+
+.register-mail-img {
+    width: 150%;
+    height: 150%;
+}
+
+.register-password-img {
+    width: 40%;
+    height: 70%;
+}
+
+.register-button {
+    width: calc(100% + 40px);
+    justify-self: flex-end;
+}
+
+.register-button input {
+    width: 100%
+}
+
+.register-button input:hover {
+    background-color: rgb(255, 198, 66);
+}
+
+.register-button input:active {
+    background-color: rgb(209, 136, 0);
+}
