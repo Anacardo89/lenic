@@ -27,9 +27,19 @@
     border: 0;
 }
 
+.login-field input:focus, .password-field input:focus {
+    background-color: azure;
+    outline: none;
+}
+
+.login-field input:-webkit-autofill {
+    background-color: azure !important; /* Use !important to override browser styles */
+}
+
 .login-field, .password-field {
     display: flex;
     background-color:azure;
+    align-items: center;
     height: 2rem;
     padding: 5px;
 }
@@ -39,9 +49,9 @@
     height: 100%;
 }
 
-.password-field > img {
-    width: 80%;
-    height: 80%;
+.password-img {
+    width: 70%;
+    height: 70%;
 }
 
 .login-button {
