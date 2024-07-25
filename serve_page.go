@@ -171,9 +171,7 @@ func ServeImage(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err)
 		return
 	}
-	if strings.HasPrefix(imageExtension, ".") {
-		imageExtension = imageExtension[1:]
-	}
+	imageExtension = strings.TrimPrefix(imageExtension, ".")
 	mimeType := mime.TypeByExtension(imageExtension)
 	if mimeType == "" {
 		mimeType = "application/octet-stream"
