@@ -66,6 +66,7 @@ func main() {
 	r.HandleFunc("/newPost", NewPost).Schemes("https")
 	r.HandleFunc("/post/{post_guid:[0-9a-zA-Z\\-=_]+}", Post).Schemes("https")
 	r.HandleFunc("/api/image", ServeImage).Schemes("https")
+	r.HandleFunc("/forgot-password", ForgotPassword).Schemes("https")
 
 	r.HandleFunc("/api/register", api.RegisterPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/login", api.LoginPOST).Methods("POST").Schemes("https")
@@ -73,6 +74,7 @@ func main() {
 	r.HandleFunc("/api/post", api.PostPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/post/{post_guid:[0-9a-zA-Z\\-=_]+}/comment", api.CommentPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/post/{post_guid:[0-9a-zA-Z\\-=_]+}/comment/{comment_id:[0-9]+}", api.CommentPUT).Methods("PUT").Schemes("https")
+	r.HandleFunc("/api/forgot-password", api.ForgotPassword).Methods("POST").Schemes("https")
 
 	http.Handle("/", r)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
