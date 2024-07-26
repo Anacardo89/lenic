@@ -28,16 +28,13 @@
             </div>
         {{end}}
     </header>
-    <div class="content">
-        <div class="title">
-            <h1>Index</h1>
-        </div>
+    <main>
+        <h1 class="index-title">Index</h1>
         {{if .Session.Authenticated}}
         <div class="add-post">
             <button ><a href="/newPost">Create a new Post</a></button>
         </div>
         {{end}}
-       
         <div class="post-preview-container">
             {{range .Posts}}
                 <a href="/post/{{.GUID}}">
@@ -50,7 +47,7 @@
                 </a>
             {{end}}
         </div>
-    </div>
+    </main>
     <script src="/static/js/all.js"></script>
 </body>
 </html>

@@ -44,19 +44,15 @@
     padding: 5px;
 }
 
-.login-img {
+.login-img,
+.password-img {
     width: 100%;
     height: 100%;
 }
 
-.password-img {
-    width: 70%;
-    height: 70%;
-}
-
 .login-button {
     width: calc(100% + 40px);
-    justify-self: flex-end;
+    margin-left: -20px;
 }
 
 .login-button input {
@@ -69,4 +65,26 @@
 
 .login-button input:active {
     background-color: rgb(209, 136, 0);
+}
+
+main div {
+    margin: 0 auto;
+    width: fit-content;
+}
+
+main div p {
+    font-size: 10px;
+    margin: 10px 0 0 0;
+}
+
+main a:link {
+    font-size: 10px;
+    color: orange;
+    text-decoration: none; 
+}
+
+main a:visited {
+    font-size: 10px;
+    color: orange;
+    text-decoration: none; 
 }
