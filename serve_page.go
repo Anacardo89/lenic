@@ -155,6 +155,14 @@ func ActivateUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
+func ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	body, err := os.ReadFile("templates/forgot-password.html")
+	if err != nil {
+		logger.Error.Println(err)
+	}
+	fmt.Fprint(w, string(body))
+}
+
 func ServeImage(w http.ResponseWriter, r *http.Request) {
 	guid := r.URL.Query().Get("guid")
 	if guid == "" {
