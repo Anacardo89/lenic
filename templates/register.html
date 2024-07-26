@@ -18,13 +18,16 @@
     </header>
     <main>
         <h1 class="register-title">Register</h1>
-        <form class="register-form" action="/api/register" method="POST">
-            <div class="register-user-field"><input type="text" name="user_name" placeholder="User name" /><img class="register-user-img" src="/static/img/person_logo.png"></div>
-            <div class="register-email-field"><input type="email" name="user_email" placeholder="Your email" /><img class="register-mail-img" src="/static/img/mail_logo.png"></div>
-            <div class="register-password-field"><input type="password" name="user_password" placeholder="Password" /><img class="register-password-img" src="/static/img/cadeado_logo.png"></div>
-            <div class="register-password2-field"><input type="password" name="user_password2" placeholder="Password (repeat)" /><img class="register-password-img" src="/static/img/cadeado_logo.png"></div>
-            <div class="register-button"><input type="submit" value="Register" /></div>
-        </form>
+        <div>
+            <form class="register-form" action="/api/register" method="POST">
+                <div class="register-user-field"><input type="text" name="user_name" placeholder="User name" /><img class="register-user-img" src="/static/img/person_logo.png"></div>
+                <div class="register-email-field"><input type="email" name="user_email" placeholder="Your email" /><img class="register-mail-img" src="/static/img/arroba_logo.png"></div>
+                <div class="register-password-field"><input type="password" name="user_password" placeholder="Password" /><img class="register-password-img" src="/static/img/padlock_logo.png"></div>
+                <div class="register-password2-field"><input type="password" name="user_password2" placeholder="Password (repeat)" /><img class="register-password-img" src="/static/img/padlock_logo.png"></div>
+                <div class="register-button"><input type="submit" value="Register" /></div>
+            </form>
+            <p>Already have an account? <strong><a href="/login">Login</a></strong></p>
+        </div>
     </main>
     <script src="/static/js/all.js"></script>
 </body>
