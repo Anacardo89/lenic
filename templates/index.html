@@ -4,8 +4,9 @@
     <title>TPSI.25 Blog</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/base.css">
     <link rel="stylesheet" href="/static/css/header.css">
+    <link rel="stylesheet" href="/static/css/index.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
@@ -31,8 +32,8 @@
     <main>
         <h1 class="index-title">Index</h1>
         {{if .Session.Authenticated}}
-        <div class="add-post">
-            <button ><a href="/newPost">Create a new Post</a></button>
+        <div class="add-post-container">
+            <button class="add-post-button"><a href="/newPost">Create a new Post</a></button>
         </div>
         {{end}}
         <div class="post-preview-container">
@@ -40,8 +41,7 @@
                 <a href="/post/{{.GUID}}">
                     <div class="post-preview">
                         <div><h2>{{.Title}}</h2></div>
-                        <div>{{.User}}</div>
-                        <div>{{.Date}}</div>
+                        <div>By <strong>{{.User}}</strong> on <strong>{{.Date}}</strong></div>
                         <div>{{.TruncatedText}}</div>
                     </div>
                 </a>
