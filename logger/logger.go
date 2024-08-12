@@ -12,6 +12,7 @@ var (
 )
 
 func CreateLogger() error {
+	makeLogsDir()
 	infoFile, err := os.OpenFile("logs/info.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
 	if err != nil {
 		log.Fatal("Cannot access INFO log file:", err)
@@ -25,7 +26,15 @@ func CreateLogger() error {
 		log.Fatal("Cannot access ERROR log file:", err)
 	}
 	Info = log.New(infoFile, "INFO:", log.Ldate|log.Ltime|log.Lshortfile)
-	Warn = log.New(warnFile, "WARN:", log.Ldate|log.Ltime|log.Lshortfile)
+	Warn = log.New(warnFile, "INFO:", log.Ldate|log.Ltime|log.Lshortfile)
 	Error = log.New(errorFile, "ERROR:", log.Ldate|log.Ltime|log.Lshortfile)
 	return nil
+}
+
+func makeLogsDir() {
+	if _, err := os.Stat("./logs"); err != nil {
+		if os.IsNotExist(err) {
+			os.Mkdir("./logs", 0777)
+		}
+	}
 }
