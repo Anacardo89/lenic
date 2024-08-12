@@ -61,10 +61,10 @@ func main() {
 	r.HandleFunc("/home", Index).Schemes("https")
 	r.HandleFunc("/login", Login).Schemes("https")
 	r.HandleFunc("/register", Register).Schemes("https")
-	r.HandleFunc("/activate/{user_name:[0-9a-zA-Z\\-=_]+}", ActivateUser).Schemes("https")
+	r.HandleFunc("/activate/{user_name}", ActivateUser).Schemes("https")
 	r.HandleFunc("/error", Error).Schemes("https")
 	r.HandleFunc("/newPost", NewPost).Schemes("https")
-	r.HandleFunc("/post/{post_guid:[0-9a-zA-Z\\-=_]+}", Post).Schemes("https")
+	r.HandleFunc("/post/{post_guid}", Post).Schemes("https")
 	r.HandleFunc("/api/image", ServeImage).Schemes("https")
 	r.HandleFunc("/forgot-password", ForgotPassword).Schemes("https")
 
@@ -72,8 +72,8 @@ func main() {
 	r.HandleFunc("/api/login", api.LoginPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/logout", api.LogoutPOST).Methods("POST").Schemes("https")
 	r.HandleFunc("/api/post", api.PostPOST).Methods("POST").Schemes("https")
-	r.HandleFunc("/api/post/{post_guid:[0-9a-zA-Z\\-=_]+}/comment", api.CommentPOST).Methods("POST").Schemes("https")
-	r.HandleFunc("/api/post/{post_guid:[0-9a-zA-Z\\-=_]+}/comment/{comment_id:[0-9]+}", api.CommentPUT).Methods("PUT").Schemes("https")
+	r.HandleFunc("/api/post/{post_guid}/comment", api.CommentPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/api/post/{post_guid}/comment/{comment_id}", api.CommentPUT).Methods("PUT").Schemes("https")
 	r.HandleFunc("/api/forgot-password", api.ForgotPassword).Methods("POST").Schemes("https")
 
 	http.Handle("/", r)

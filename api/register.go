@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/Anacardo89/tpsi25_blog.git/auth"
@@ -17,9 +16,9 @@ import (
 )
 
 type RegisterData struct {
-	Email    string `json:"email"`
-	Subject  string `json:"subject"`
-	MailBody string `json:"mail_body"`
+	Email string `json:"email"`
+	User  string `json:"user"`
+	Link  string `json:"link"`
 }
 
 func isValidInput(input string) bool {
@@ -100,45 +99,26 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send Regiter Mail to Queue
+	// Send Regsiter Mail to Queue
 	regData := RegisterData{
 		Email: userReg.UserEmail,
+		User:  userReg.UserName,
+		Link:  generateActiveLink(userReg.UserName),
 	}
-	mailData := RegisterMail{
-		User: userReg.UserName,
-		Link: generateActiveLink(userReg.UserName),
-	}
-	mailSubject, err := template.New("registerSubject").Parse(registerSubject)
-	if err != nil {
-		logger.Error.Println(err.Error())
-		return
-	}
-	mailBody, err := template.New("registerBody").Parse(registerBody)
-	if err != nil {
-		logger.Error.Println(err.Error())
-		return
-	}
+
 	var mbuf bytes.Buffer
-	err = mailSubject.Execute(&mbuf, mailData)
-	if err != nil {
-		logger.Error.Println(err.Error())
-		return
-	}
-	regData.Subject = mbuf.String()
+	regData.Email = mbuf.String()
 	mbuf.Reset()
-	err = mailBody.Execute(&mbuf, mailData)
-	if err != nil {
-		logger.Error.Println(err.Error())
-		return
-	}
-	regData.MailBody = mbuf.String()
+	regData.User = mbuf.String()
+	mbuf.Reset()
+	regData.Link = mbuf.String()
 	data, err := json.Marshal(regData)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	err = rabbit.RabbitMQ.MQSendRegMail(data)
+	err = rabbit.RabbitMQ.MQSendRegisterMail(data)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
