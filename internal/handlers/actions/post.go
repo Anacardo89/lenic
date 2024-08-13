@@ -1,4 +1,4 @@
-package pages
+package actions
 
 import (
 	"encoding/base64"
@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
+	"github.com/Anacardo89/tpsi25_blog/internal/data/query"
 	"github.com/Anacardo89/tpsi25_blog/internal/model"
-	"github.com/Anacardo89/tpsi25_blog/internal/query"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/mux"

@@ -10,7 +10,7 @@ const (
 	;`
 
 	SelectUserById = `
-	SELECT user_name FROM users
+	SELECT * FROM users
 		WHERE id=?
 	;`
 

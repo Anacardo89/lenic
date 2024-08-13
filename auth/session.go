@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Anacardo89/tpsi25_blog/internal/data/query"
 	"github.com/Anacardo89/tpsi25_blog/internal/model"
-	"github.com/Anacardo89/tpsi25_blog/internal/query"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/sessions"

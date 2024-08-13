@@ -22,7 +22,7 @@
         {{else}}
         <div class="logout">
             <p>You are logged in as <strong>{{.Session.User.UserName}}</strong></p>
-            <form action="/api/logout" method="POST">
+            <form action="/action/logout" method="POST">
                 <button class="header-button" onsubmit="return logout(this);"><strong>Logout</strong></button>
             </form>
         </div>
@@ -38,13 +38,13 @@
         <div class="post-text">{{.Content}}</div>
         {{if eq (len .Image) 0}}
         {{else}}
-        <div><img src="/api/image?guid={{.GUID}}"></div>
+        <div><img src="/action/image?guid={{.GUID}}"></div>
         {{end}}
     </div>
     {{if .Session.Authenticated}}
     <div><p>Add a comment: </p></div>
     <div id="comments">
-        <form action="/api/post/{{.GUID}}/comment" method="POST">
+        <form action="/action/post/{{.GUID}}/comment" method="POST">
                 <input type="hidden" name="post_guid" value="{{.GUID}}" />
                 <div><textarea name="comment_text" placeholder="Your Comments"></textarea></div>
                 <div><input type="submit" value="Add Comment" /></div>

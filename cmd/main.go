@@ -6,7 +6,8 @@ import (
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
 	"github.com/Anacardo89/tpsi25_blog/internal/config"
-	"github.com/Anacardo89/tpsi25_blog/internal/pages"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/actions"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/pages"
 	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/fsops"
@@ -66,16 +67,16 @@ func main() {
 	r.HandleFunc("/error", pages.Error).Schemes("https")
 	r.HandleFunc("/newPost", pages.NewPost).Schemes("https")
 	r.HandleFunc("/post/{post_guid}", pages.Post).Schemes("https")
-	r.HandleFunc("/api/image", pages.ServeImage).Schemes("https")
-	r.HandleFunc("/forgot-password", pages.ServeForgotPassword).Schemes("https")
+	r.HandleFunc("/forgot-password", pages.ForgotPassword).Schemes("https")
 
-	r.HandleFunc("/api/register", pages.RegisterPOST).Methods("POST").Schemes("https")
-	r.HandleFunc("/api/login", pages.LoginPOST).Methods("POST").Schemes("https")
-	r.HandleFunc("/api/logout", pages.LogoutPOST).Methods("POST").Schemes("https")
-	r.HandleFunc("/api/post", pages.PostPOST).Methods("POST").Schemes("https")
-	r.HandleFunc("/api/post/{post_guid}/comment", pages.CommentPOST).Methods("POST").Schemes("https")
-	r.HandleFunc("/api/post/{post_guid}/comment/{comment_id}", pages.CommentPUT).Methods("PUT").Schemes("https")
-	r.HandleFunc("/api/forgot-password", pages.ForgotPassword).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/register", actions.RegisterPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/login", actions.LoginPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/logout", actions.LogoutPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/post", actions.PostPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/post/{post_guid}/comment", actions.CommentPOST).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/post/{post_guid}/comment/{comment_id}", actions.CommentPUT).Methods("PUT").Schemes("https")
+	r.HandleFunc("/action/forgot-password", actions.ForgotPassword).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/image", actions.Image).Schemes("https")
 
 	http.Handle("/", r)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))

@@ -7,8 +7,6 @@ type User struct {
 	UserName  string
 	UserEmail string
 	UserPass  string
-	FirstName string
-	LastName  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Active    int

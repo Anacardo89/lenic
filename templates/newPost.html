@@ -16,14 +16,14 @@
         </div>
         <div class="logout">
             <p>You are logged in as {{.Session.User.UserName}}</p>
-            <form class="header-button" action="/api/logout" method="POST">
+            <form class="header-button" action="/action/logout" method="POST">
                 <input type="submit" value="Logout">
             </form>
         </div>
     </header>
     <div class="content">
         <div class="post-form">
-            <form action="/api/post" method="POST" enctype="multipart/form-data">
+            <form action="/action/post" method="POST" enctype="multipart/form-data">
                 <div><input type="text" name="post_title" placeholder="Post Title" /></div>
                 <div><textarea name="post_content" placeholder="The post"></textarea></div>
                 <div><input type="file" name="image" accept="image/*"/></div>
