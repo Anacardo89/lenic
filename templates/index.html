@@ -23,7 +23,7 @@
         {{else}}
             <div class="logout">
                 <p>You are logged in as <strong>{{.Session.User.UserName}}</strong></p>
-                <form action="/api/logout" method="POST">
+                <form action="/action/logout" method="POST">
                     <button class="header-button" onsubmit="return logout(this);"><strong>Logout</strong></button>
                 </form>
             </div>

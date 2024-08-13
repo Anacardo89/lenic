@@ -1,4 +1,4 @@
-package pages
+package actions
 
 import (
 	"bytes"
@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
+	"github.com/Anacardo89/tpsi25_blog/internal/data/query"
 	"github.com/Anacardo89/tpsi25_blog/internal/model"
-	"github.com/Anacardo89/tpsi25_blog/internal/query"
 	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
