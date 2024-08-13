@@ -1,10 +1,11 @@
-package main
+package pages
 
 import (
 	"net"
 	"net/http"
 
-	"github.com/Anacardo89/tpsi25_blog.git/logger"
+	"github.com/Anacardo89/tpsi25_blog/internal/routes"
+	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
 func RedirectNonSecure(w http.ResponseWriter, r *http.Request) {
@@ -13,7 +14,7 @@ func RedirectNonSecure(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err)
 		host = r.Host
 	}
-	redirectURL := "https://" + host + httpsServer.Addr + r.RequestURI
+	redirectURL := "https://" + host + routes.Server.HttpsPORT + r.RequestURI
 	http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)
 }
 

@@ -6,16 +6,16 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type RabbitConfig struct {
+type Config struct {
 	MQHost string `yaml:"mqHost"`
 	MQPort string `yaml:"mqPort"`
 }
 
 var (
-	RabbitMQ *RabbitConfig
+	RabbitMQ *Config
 )
 
-func (r *RabbitConfig) MQSendRegisterMail(data []byte) error {
+func (r *Config) MQSendRegisterMail(data []byte) error {
 	rabbitUrl := fmt.Sprintf("amqp://%s%s", r.MQHost, r.MQPort)
 	conn, err := amqp.Dial(rabbitUrl)
 	if err != nil {
@@ -55,7 +55,7 @@ func (r *RabbitConfig) MQSendRegisterMail(data []byte) error {
 	return nil
 }
 
-func (r *RabbitConfig) MQSendPasswordRecoveryMail(data []byte) error {
+func (r *Config) MQSendPasswordRecoveryMail(data []byte) error {
 	rabbitUrl := fmt.Sprintf("amqp://%s%s", r.MQHost, r.MQPort)
 	conn, err := amqp.Dial(rabbitUrl)
 	if err != nil {
