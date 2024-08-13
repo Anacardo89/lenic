@@ -1,4 +1,4 @@
-package main
+package pages
 
 import (
 	"database/sql"
@@ -9,15 +9,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Anacardo89/tpsi25_blog.git/api"
-	"github.com/Anacardo89/tpsi25_blog.git/auth"
-	"github.com/Anacardo89/tpsi25_blog.git/db"
-	"github.com/Anacardo89/tpsi25_blog.git/logger"
+	"github.com/Anacardo89/tpsi25_blog/auth"
+	"github.com/Anacardo89/tpsi25_blog/internal/query"
+	"github.com/Anacardo89/tpsi25_blog/pkg/db"
+	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
 type IndexPage struct {
-	Posts   []api.PostPage
+	Posts   []PostPage
 	Session auth.Session
 }
 
@@ -28,7 +28,7 @@ type ErrorPage struct {
 func Index(w http.ResponseWriter, r *http.Request) {
 	index := IndexPage{}
 	index.Session = auth.ValidateSession(r)
-	rows, err := db.Dbase.Query(db.SelectPosts)
+	rows, err := db.Dbase.Query(query.SelectPosts)
 	if err != nil {
 		logger.Error.Println(err)
 		return
@@ -36,7 +36,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	for rows.Next() {
-		thisPost := api.PostPage{}
+		thisPost := PostPage{}
 		err := rows.Scan(
 			&thisPost.GUID,
 			&thisPost.Title,
@@ -51,7 +51,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		thisPost.Content = template.HTML(thisPost.RawContent)
 		index.Posts = append(index.Posts, thisPost)
 	}
-	t, err := template.ParseFiles("templates/index.html")
+	t, err := template.ParseFiles("../templates/index.html")
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -59,7 +59,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	body, err := os.ReadFile("templates/login.html")
+	body, err := os.ReadFile("../templates/login.html")
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -67,7 +67,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
-	body, err := os.ReadFile("templates/register.html")
+	body, err := os.ReadFile("../templates/register.html")
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -82,7 +82,7 @@ func Error(w http.ResponseWriter, r *http.Request) {
 	errpg := ErrorPage{
 		ErrorMsg: cookieVal.Value,
 	}
-	t, err := template.ParseFiles("templates/error.html")
+	t, err := template.ParseFiles("../templates/error.html")
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -94,10 +94,10 @@ func Error(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewPost(w http.ResponseWriter, r *http.Request) {
-	postpg := api.PostPage{
+	postpg := PostPage{
 		Session: auth.ValidateSession(r),
 	}
-	t, err := template.ParseFiles("templates/newPost.html")
+	t, err := template.ParseFiles("../templates/newPost.html")
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -106,11 +106,11 @@ func NewPost(w http.ResponseWriter, r *http.Request) {
 
 func Post(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	p := api.PostPage{
+	p := PostPage{
 		Session: auth.ValidateSession(r),
 		GUID:    vars["post_guid"],
 	}
-	err := db.Dbase.QueryRow(db.SelectPostByGUID, p.GUID).Scan(
+	err := db.Dbase.QueryRow(query.SelectPostByGUID, p.GUID).Scan(
 		&p.Title,
 		&p.User,
 		&p.RawContent,
@@ -123,12 +123,12 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p.Content = template.HTML(p.RawContent)
-	comments, err := db.Dbase.Query(db.SelectComments, p.GUID)
+	comments, err := db.Dbase.Query(query.SelectComments, p.GUID)
 	if err != nil {
 		logger.Error.Println(err)
 	}
 	for comments.Next() {
-		var c api.Comment
+		var c Comment
 		comments.Scan(
 			&c.Id,
 			&c.UserName,
@@ -137,7 +137,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		)
 		p.Comments = append(p.Comments, c)
 	}
-	t, err := template.ParseFiles("templates/post.html")
+	t, err := template.ParseFiles("../templates/post.html")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -148,15 +148,15 @@ func Post(w http.ResponseWriter, r *http.Request) {
 func ActivateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userName := vars["user_name"]
-	_, err := db.Dbase.Exec(db.UpdateUserActive, userName)
+	_, err := db.Dbase.Exec(query.UpdateUserActive, userName)
 	if err != nil {
 		logger.Error.Println(err)
 	}
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
-func ForgotPassword(w http.ResponseWriter, r *http.Request) {
-	body, err := os.ReadFile("templates/forgot-password.html")
+func ServeForgotPassword(w http.ResponseWriter, r *http.Request) {
+	body, err := os.ReadFile("../templates/forgot-password.html")
 	if err != nil {
 		logger.Error.Println(err)
 	}

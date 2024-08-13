@@ -1,4 +1,4 @@
-package api
+package pages
 
 import (
 	"bytes"
@@ -9,10 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Anacardo89/tpsi25_blog.git/auth"
-	"github.com/Anacardo89/tpsi25_blog.git/db"
-	"github.com/Anacardo89/tpsi25_blog.git/logger"
-	"github.com/Anacardo89/tpsi25_blog.git/rabbit"
+	"github.com/Anacardo89/tpsi25_blog/auth"
+	"github.com/Anacardo89/tpsi25_blog/internal/model"
+	"github.com/Anacardo89/tpsi25_blog/internal/query"
+	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
+	"github.com/Anacardo89/tpsi25_blog/pkg/db"
+	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
 type RegisterData struct {
@@ -62,8 +64,8 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if UserName or Email in use
-	dbUser := db.User{}
-	err = db.Dbase.QueryRow(db.SelectUserByName,
+	dbUser := model.User{}
+	err = db.Dbase.QueryRow(query.SelectUserByName,
 		userReg.UserName).
 		Scan(dbUser.UserName)
 	if err != sql.ErrNoRows {
@@ -77,7 +79,7 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
 		return
 	}
-	err = db.Dbase.QueryRow(db.SelectUserByEmail,
+	err = db.Dbase.QueryRow(query.SelectUserByEmail,
 		userReg.UserEmail).
 		Scan(dbUser.UserEmail)
 	if err != sql.ErrNoRows {
@@ -125,7 +127,7 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert User in DB
-	_, err = db.Dbase.Exec(db.InsertUser,
+	_, err = db.Dbase.Exec(query.InsertUser,
 		userReg.UserName, userReg.UserEmail, userReg.HashedPass, 0)
 	if err != nil {
 		logger.Error.Println(err.Error())

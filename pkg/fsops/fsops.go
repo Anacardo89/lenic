@@ -16,8 +16,8 @@ func MakePaths() (*Certificate, error) {
 		return nil, err
 	}
 	cert := &Certificate{
-		CertPath: HomeDir + "/security/openssl/certificate.pem",
-		KeyPath:  HomeDir + "/security/openssl/key.pem",
+		CertPath: HomeDir + "/.ssl/tpsi25_blog/certificate.pem",
+		KeyPath:  HomeDir + "/.ssl/tpsi25_blog/key.pem",
 	}
 	return cert, nil
 

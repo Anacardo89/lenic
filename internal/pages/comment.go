@@ -1,13 +1,14 @@
-package api
+package pages
 
 import (
 	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/Anacardo89/tpsi25_blog.git/auth"
-	"github.com/Anacardo89/tpsi25_blog.git/db"
-	"github.com/Anacardo89/tpsi25_blog.git/logger"
+	"github.com/Anacardo89/tpsi25_blog/auth"
+	"github.com/Anacardo89/tpsi25_blog/internal/query"
+	"github.com/Anacardo89/tpsi25_blog/pkg/db"
+	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
@@ -28,7 +29,7 @@ func CommentPOST(w http.ResponseWriter, r *http.Request) {
 		CommentText: r.FormValue("comment_text"),
 	}
 
-	_, err := db.Dbase.Exec(db.InsertComment,
+	_, err := db.Dbase.Exec(query.InsertComment,
 		postGUID,
 		c.UserName,
 		c.CommentText,
@@ -59,7 +60,7 @@ func CommentPUT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Dbase.Exec(db.UpdateComment,
+	_, err = db.Dbase.Exec(query.UpdateComment,
 		c.CommentText,
 		c.Id,
 	)

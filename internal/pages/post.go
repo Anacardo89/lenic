@@ -1,4 +1,4 @@
-package api
+package pages
 
 import (
 	"encoding/base64"
@@ -11,9 +11,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Anacardo89/tpsi25_blog.git/auth"
-	"github.com/Anacardo89/tpsi25_blog.git/db"
-	"github.com/Anacardo89/tpsi25_blog.git/logger"
+	"github.com/Anacardo89/tpsi25_blog/auth"
+	"github.com/Anacardo89/tpsi25_blog/internal/model"
+	"github.com/Anacardo89/tpsi25_blog/internal/query"
+	"github.com/Anacardo89/tpsi25_blog/pkg/db"
+	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
@@ -46,7 +48,7 @@ func PostGET(w http.ResponseWriter, r *http.Request) {
 	p := PostPage{
 		GUID: vars["post_guid"],
 	}
-	err := db.Dbase.QueryRow(db.SelectPostByGUID,
+	err := db.Dbase.QueryRow(query.SelectPostByGUID,
 		p.GUID).Scan(
 		&p.Title,
 		&p.User,
@@ -58,8 +60,7 @@ func PostGET(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(404), http.StatusNotFound)
 		return
 	}
-	p.Content = template.HTML(p.RawContent)
-
+	// p.Content = template.HTML(p.RawContent)
 	// TODO or not TODO
 
 }
@@ -72,9 +73,9 @@ func PostPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post := db.Post{
-		PostTitle:   r.FormValue("post_title"),
-		PostContent: r.FormValue("post_content"),
+	post := model.Post{
+		Title:   r.FormValue("post_title"),
+		Content: r.FormValue("post_content"),
 	}
 
 	file, header, err := r.FormFile("image")
@@ -86,12 +87,12 @@ func PostPOST(w http.ResponseWriter, r *http.Request) {
 
 		// No image file uploaded
 		session := auth.ValidateSession(r)
-		post.PostUser = session.User.UserName
-		post.PostGUID = createGUID(post.PostTitle, post.PostUser)
+		post.User = session.User.UserName
+		post.GUID = createGUID(post.Title, post.User)
 
 		// Insert post without image data
-		_, err = db.Dbase.Exec(db.InsertPost,
-			post.PostGUID, post.PostTitle, post.PostUser, post.PostContent, []byte{}, "", 1)
+		_, err = db.Dbase.Exec(query.InsertPost,
+			post.GUID, post.Title, post.User, post.Content, []byte{}, "", 1)
 		if err != nil {
 			logger.Error.Println(err.Error())
 			fmt.Fprintln(w, err.Error())
@@ -111,14 +112,14 @@ func PostPOST(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	post.PostImage = fileBytes
+	post.Image = fileBytes
 	session := auth.ValidateSession(r)
-	post.PostUser = session.User.UserName
-	post.PostGUID = createGUID(post.PostTitle, post.PostUser)
+	post.User = session.User.UserName
+	post.GUID = createGUID(post.Title, post.User)
 
 	// Insert post with image data
-	_, err = db.Dbase.Exec(db.InsertPost,
-		post.PostGUID, post.PostTitle, post.PostUser, post.PostContent, post.PostImage, filepath.Ext(header.Filename), 1)
+	_, err = db.Dbase.Exec(query.InsertPost,
+		post.GUID, post.Title, post.User, post.Content, post.Image, filepath.Ext(header.Filename), 1)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		fmt.Fprintln(w, err.Error())

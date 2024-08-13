@@ -11,7 +11,7 @@ var (
 	Dbase *sql.DB
 )
 
-type DBConfig struct {
+type Config struct {
 	DBHost string `yaml:"dbHost"`
 	DBPort string `yaml:"dbPort"`
 	DBUser string `yaml:"dbUser"`
@@ -19,7 +19,7 @@ type DBConfig struct {
 	Dbase  string `yaml:"dbase"`
 }
 
-func LoginDB(db *DBConfig) (*sql.DB, error) {
+func LoginDB(db *Config) (*sql.DB, error) {
 	dbConn := fmt.Sprintf("%s:%s@tcp(%s)/%s", db.DBUser, db.DBPass, db.DBHost, db.Dbase)
 	database, err := sql.Open("mysql", dbConn)
 	if err != nil {

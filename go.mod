@@ -1,4 +1,4 @@
-module github.com/Anacardo89/tpsi25_blog.git
+module github.com/Anacardo89/tpsi25_blog
 
 go 1.22.4
 
