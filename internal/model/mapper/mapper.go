@@ -17,6 +17,15 @@ func User(u *database.User) *presentation.User {
 	}
 }
 
+func UserToDB(u *presentation.User) *database.User {
+	return &database.User{
+		UserName:  u.UserName,
+		UserEmail: u.UserEmail,
+		UserPass:  u.HashedPass,
+		Active:    u.Active,
+	}
+}
+
 func Session(s *database.Session) *presentation.Session {
 	return &presentation.Session{
 		Id:            s.Id,
