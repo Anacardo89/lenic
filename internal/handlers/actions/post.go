@@ -3,7 +3,6 @@ package actions
 import (
 	"encoding/base64"
 	"fmt"
-	"html/template"
 	"io"
 	"math/rand/v2"
 	"net/http"
@@ -12,40 +11,17 @@ import (
 	"strings"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
-	"github.com/Anacardo89/tpsi25_blog/internal/data/query"
-	"github.com/Anacardo89/tpsi25_blog/internal/model"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
-type PostPage struct {
-	Id         int
-	GUID       string
-	User       string
-	Title      string
-	RawContent string
-	Content    template.HTML
-	Image      []byte
-	Date       string
-	Comments   []Comment
-	Session    auth.Session
-}
-
-func (p PostPage) TruncatedText() string {
-	chars := 0
-	for i := range p.RawContent {
-		chars++
-		if chars > 150 {
-			return p.RawContent[:i] + `...`
-		}
-	}
-	return p.RawContent
-}
-
 func PostGET(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	p := PostPage{
+	p := presentation.Post{
 		GUID: vars["post_guid"],
 	}
 	err := db.Dbase.QueryRow(query.SelectPostByGUID,
@@ -73,7 +49,7 @@ func PostPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post := model.Post{
+	post := database.Post{
 		Title:   r.FormValue("post_title"),
 		Content: r.FormValue("post_content"),
 	}

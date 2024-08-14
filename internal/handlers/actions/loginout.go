@@ -6,14 +6,15 @@ import (
 	"time"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
-	"github.com/Anacardo89/tpsi25_blog/internal/data/query"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
 func LoginPOST(w http.ResponseWriter, r *http.Request) {
 	var err error
-	u := auth.User{
+	u := presentation.User{
 		UserName: r.FormValue("user_name"),
 		UserPass: r.FormValue("user_password"),
 	}
@@ -28,7 +29,7 @@ func LoginPOST(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
 		return
 	}
-	err = db.Dbase.QueryRow(query.SelectLogin, u.UserName).Scan(&u.Id, &u.UserName, &u.HashedPass, &u.Active)
+	err = db.Dbase.QueryRow(query.SelectUserByName, u.UserName).Scan(&u.Id, &u.UserName, &u.HashedPass, &u.Active)
 	if err == sql.ErrNoRows {
 		cookie := http.Cookie{Name: "errormsg",
 			Value:    "User does not exist",
@@ -63,7 +64,7 @@ func LoginPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	usrSession := auth.CreateSession(w, r)
-	auth.UpdateSession(usrSession.Id, u.Id)
+	auth.UpdateSession(usrSession.SessionId, u.Id)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 

@@ -1,21 +1,20 @@
 package query
 
 const (
-	SelectComments = `
-	SELECT id, comment_user, comment_text, created_at
-		FROM comments
-		WHERE post_guid=?
-	;`
-
 	InsertComment = `
 	INSERT INTO comments
 		SET post_guid=?,
-			comment_user=?,
+			comment_author=?,
 			comment_text=?,
 			comment_active=?
 	;`
 
-	UpdateComment = `
+	SelectCommentsByPost = `
+	SELECT * FROM comments
+		WHERE post_guid=?
+	;`
+
+	UpdateCommentText = `
 	UPDATE comments
 		SET comment_text=?
 		WHERE id=?

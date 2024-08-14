@@ -6,32 +6,26 @@ import (
 	"strconv"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
-	"github.com/Anacardo89/tpsi25_blog/internal/data/query"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/mux"
 )
-
-type Comment struct {
-	Id          int
-	UserName    string
-	CommentText string
-	Date        string
-}
 
 func CommentPOST(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	session := auth.ValidateSession(r)
 
-	c := Comment{
-		UserName:    session.User.UserName,
+	c := presentation.Comment{
+		Author:      session.User.UserName,
 		CommentText: r.FormValue("comment_text"),
 	}
 
 	_, err := db.Dbase.Exec(query.InsertComment,
 		postGUID,
-		c.UserName,
+		c.Author,
 		c.CommentText,
 		1,
 	)
@@ -51,7 +45,7 @@ func CommentPUT(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	c := Comment{
+	c := presentation.Comment{
 		Id:          id,
 		CommentText: r.FormValue("comment"),
 	}
@@ -60,7 +54,7 @@ func CommentPUT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Dbase.Exec(query.UpdateComment,
+	_, err = db.Dbase.Exec(query.UpdateCommentText,
 		c.CommentText,
 		c.Id,
 	)

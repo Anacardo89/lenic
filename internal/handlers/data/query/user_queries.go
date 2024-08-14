@@ -24,11 +24,6 @@ const (
 		WHERE user_email = ?
 	;`
 
-	SelectLogin = `
-	SELECT id, user_name, user_password, user_active FROM users
-		WHERE user_name=?
-	;`
-
 	UpdateUserActive = `
 	UPDATE users
 		SET user_active=1
