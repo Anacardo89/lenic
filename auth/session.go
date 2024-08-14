@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Anacardo89/tpsi25_blog/internal/data/query"
-	"github.com/Anacardo89/tpsi25_blog/internal/model"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/sessions"
@@ -18,27 +19,12 @@ type Config struct {
 	Pass string `yaml:"session_pass"`
 }
 
-type User struct {
-	Id         int
-	UserName   string
-	UserEmail  string
-	UserPass   string
-	HashedPass string
-	Active     int
-}
-
-type Session struct {
-	Id            string
-	Authenticated bool
-	User          User
-}
-
 var (
 	SessionStore *sessions.CookieStore
 )
 
-func CreateSession(w http.ResponseWriter, r *http.Request) Session {
-	usrSession := Session{}
+func CreateSession(w http.ResponseWriter, r *http.Request) presentation.Session {
+	usrSession := presentation.Session{}
 	session, err := SessionStore.Get(r, "tpsi25blog")
 	if err != nil {
 		logger.Error.Println(err)
@@ -49,26 +35,26 @@ func CreateSession(w http.ResponseWriter, r *http.Request) Session {
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	usrSession.Id = newSID
+	usrSession.SessionId = newSID
 	usrSession.Authenticated = true
 	return usrSession
 }
 
-func ValidateSession(r *http.Request) Session {
-	usrSession := Session{}
+func ValidateSession(r *http.Request) presentation.Session {
+	usrSession := presentation.Session{}
 	session, err := SessionStore.Get(r, "tpsi25blog")
 	if err != nil {
 		logger.Error.Println(err)
 	}
 	if sid, valid := session.Values["sid"]; valid {
 		user := GetSessionUID(sid.(string))
-		usrSession.User = User{
+		usrSession.User = presentation.User{
 			Id:        user.Id,
 			UserName:  user.UserName,
 			UserEmail: user.UserEmail,
 		}
 		UpdateSession(sid.(string), user.Id)
-		usrSession.Id = sid.(string)
+		usrSession.SessionId = sid.(string)
 		usrSession.Authenticated = true
 	} else {
 		usrSession.Authenticated = false
@@ -94,17 +80,17 @@ func UpdateSession(sid string, uid int) {
 	}
 }
 
-func GetSessionUID(sid string) model.User {
-	user := model.User{}
-	err := db.Dbase.QueryRow(query.SelectUserFromSessions, sid).Scan(&user.Id)
+func GetSessionUID(sid string) database.User {
+	user := database.User{}
+	err := db.Dbase.QueryRow(query.SelectSessionBySessionId, sid).Scan(&user.Id)
 	if err != nil {
 		logger.Error.Println(err)
-		return model.User{}
+		return database.User{}
 	}
 	err = db.Dbase.QueryRow(query.SelectUserById, user.Id).Scan(&user.UserName)
 	if err != nil {
 		logger.Error.Println(err)
-		return model.User{}
+		return database.User{}
 	}
 	return user
 }

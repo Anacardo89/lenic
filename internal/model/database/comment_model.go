@@ -1,4 +1,4 @@
-package model
+package database
 
 import "time"
 
@@ -9,4 +9,5 @@ type Comment struct {
 	CommentText   string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
+	Active        int
 }

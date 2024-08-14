@@ -10,8 +10,9 @@ import (
 	"time"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
-	"github.com/Anacardo89/tpsi25_blog/internal/data/query"
-	"github.com/Anacardo89/tpsi25_blog/internal/model"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
@@ -34,7 +35,7 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err.Error())
 		return
 	}
-	var userReg = &auth.User{
+	var userReg = &presentation.User{
 		UserName:  r.FormValue("user_name"),
 		UserEmail: r.FormValue("user_email"),
 		UserPass:  r.FormValue("user_password"),
@@ -64,7 +65,7 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if UserName or Email in use
-	dbUser := model.User{}
+	dbUser := database.User{}
 	err = db.Dbase.QueryRow(query.SelectUserByName,
 		userReg.UserName).
 		Scan(dbUser.UserName)

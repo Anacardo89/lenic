@@ -5,8 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Anacardo89/tpsi25_blog/internal/data/query"
-	"github.com/Anacardo89/tpsi25_blog/pkg/db"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/mux"
 )
@@ -30,7 +29,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 func ActivateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userName := vars["user_name"]
-	_, err := db.Dbase.Exec(query.UpdateUserActive, userName)
+	err := orm.Da.SetUserAsActive(userName)
 	if err != nil {
 		logger.Error.Println(err)
 	}
