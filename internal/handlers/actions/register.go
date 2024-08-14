@@ -7,14 +7,12 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
-	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
-	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
-	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
@@ -35,68 +33,36 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err.Error())
 		return
 	}
-	var userReg = &presentation.User{
+	var u = &presentation.User{
 		UserName:  r.FormValue("user_name"),
 		UserEmail: r.FormValue("user_email"),
 		UserPass:  r.FormValue("user_password"),
+		Active:    0,
 	}
 	pass2 := r.FormValue("user_password2")
-	if userReg.UserPass != pass2 {
-		cookie := http.Cookie{Name: "errormsg",
-			Value:    "Password strings don't match",
-			Expires:  time.Now().Add(60 * time.Second),
-			HttpOnly: true,
-			Path:     "/",
-		}
-		http.SetCookie(w, &cookie)
-		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+	if u.UserPass != pass2 {
+		RedirectToError(w, r, "Password strings don't match")
 		return
 	}
-	if !isValidInput(userReg.UserName) || !isValidInput(userReg.UserEmail) || !isValidInput(userReg.UserPass) {
-		cookie := http.Cookie{Name: "errormsg",
-			Value:    "Invalid character in form",
-			Expires:  time.Now().Add(60 * time.Second),
-			HttpOnly: true,
-			Path:     "/",
-		}
-		http.SetCookie(w, &cookie)
-		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+	if !isValidInput(u.UserName) || !isValidInput(u.UserEmail) || !isValidInput(u.UserPass) {
+		RedirectToError(w, r, "Invalid character in form")
 		return
 	}
 
 	// Check if UserName or Email in use
-	dbUser := database.User{}
-	err = db.Dbase.QueryRow(query.SelectUserByName,
-		userReg.UserName).
-		Scan(dbUser.UserName)
+	_, err = orm.Da.GetUserByName(u.UserName)
 	if err != sql.ErrNoRows {
-		cookie := http.Cookie{Name: "errormsg",
-			Value:    "User already exists",
-			Expires:  time.Now().Add(60 * time.Second),
-			HttpOnly: true,
-			Path:     "/",
-		}
-		http.SetCookie(w, &cookie)
-		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		RedirectToError(w, r, "User already exists")
 		return
 	}
-	err = db.Dbase.QueryRow(query.SelectUserByEmail,
-		userReg.UserEmail).
-		Scan(dbUser.UserEmail)
+	_, err = orm.Da.GetUserByEmail(u.UserEmail)
 	if err != sql.ErrNoRows {
-		cookie := http.Cookie{Name: "errormsg",
-			Value:    "Email already exists",
-			Expires:  time.Now().Add(60 * time.Second),
-			HttpOnly: true,
-			Path:     "/",
-		}
-		http.SetCookie(w, &cookie)
-		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		RedirectToError(w, r, "Email already exists")
 		return
 	}
 
 	// Password Hashing
-	userReg.HashedPass, err = auth.HashPassword(userReg.UserPass)
+	u.HashedPass, err = auth.HashPassword(u.UserPass)
 	if err != nil {
 		fmt.Fprintln(w, err.Error())
 		return
@@ -104,9 +70,9 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 
 	// Send Regsiter Mail to Queue
 	regData := RegisterData{
-		Email: userReg.UserEmail,
-		User:  userReg.UserName,
-		Link:  generateActiveLink(userReg.UserName),
+		Email: u.UserEmail,
+		User:  u.UserName,
+		Link:  generateActiveLink(u.UserName),
 	}
 
 	var mbuf bytes.Buffer
@@ -128,14 +94,13 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert User in DB
-	_, err = db.Dbase.Exec(query.InsertUser,
-		userReg.UserName, userReg.UserEmail, userReg.HashedPass, 0)
+	dbuser := mapper.UserToDB(u)
+	err = orm.Da.CreateUser(dbuser)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		fmt.Fprintln(w, err.Error())
 		return
 	}
-
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 

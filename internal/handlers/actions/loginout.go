@@ -3,7 +3,6 @@ package actions
 import (
 	"database/sql"
 	"net/http"
-	"time"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
@@ -19,48 +18,20 @@ func LoginPOST(w http.ResponseWriter, r *http.Request) {
 		UserPass: r.FormValue("user_password"),
 	}
 	if !isValidInput(u.UserName) || !isValidInput(u.UserPass) {
-		cookie := http.Cookie{Name: "errormsg",
-			Value:    "Invalid character in form",
-			Expires:  time.Now().Add(60 * time.Second),
-			HttpOnly: true,
-			Path:     "/",
-		}
-		http.SetCookie(w, &cookie)
-		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		RedirectToError(w, r, "Invalid character in form")
 		return
 	}
 	err = db.Dbase.QueryRow(query.SelectUserByName, u.UserName).Scan(&u.Id, &u.UserName, &u.HashedPass, &u.Active)
 	if err == sql.ErrNoRows {
-		cookie := http.Cookie{Name: "errormsg",
-			Value:    "User does not exist",
-			Expires:  time.Now().Add(60 * time.Second),
-			HttpOnly: true,
-			Path:     "/",
-		}
-		http.SetCookie(w, &cookie)
-		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		RedirectToError(w, r, "User does not exist")
 		return
 	}
 	if u.Active == 0 {
-		cookie := http.Cookie{Name: "errormsg",
-			Value:    "User is not active, check your mail",
-			Expires:  time.Now().Add(60 * time.Second),
-			HttpOnly: true,
-			Path:     "/",
-		}
-		http.SetCookie(w, &cookie)
-		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		RedirectToError(w, r, "User is not active, check your mail")
 		return
 	}
 	if !auth.CheckPasswordHash(u.UserPass, u.HashedPass) {
-		cookie := http.Cookie{Name: "errormsg",
-			Value:    "Password does not match",
-			Expires:  time.Now().Add(60 * time.Second),
-			HttpOnly: true,
-			Path:     "/",
-		}
-		http.SetCookie(w, &cookie)
-		http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+		RedirectToError(w, r, "Password does not match")
 		return
 	}
 	usrSession := auth.CreateSession(w, r)

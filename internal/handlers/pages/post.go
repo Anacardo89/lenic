@@ -51,5 +51,4 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err.Error())
 	}
 	t.Execute(w, p)
-
 }
