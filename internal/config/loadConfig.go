@@ -7,7 +7,7 @@ import (
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
 	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
-	"github.com/Anacardo89/tpsi25_blog/internal/routes"
+	"github.com/Anacardo89/tpsi25_blog/internal/server"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 )
 
@@ -32,8 +32,8 @@ func LoadDBConfig() (*db.Config, error) {
 	return &config, nil
 }
 
-func LoadServerConfig() (*routes.Config, error) {
-	var config routes.Config
+func LoadServerConfig() (*server.Config, error) {
+	var config server.Config
 	err := yaml.Unmarshal(serverYaml, &config)
 	if err != nil {
 		return nil, err
