@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
@@ -41,41 +42,37 @@ func PostGET(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func PostPOST(w http.ResponseWriter, r *http.Request) {
+func AddPost(w http.ResponseWriter, r *http.Request) {
 	var fileBytes []byte
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
+	session := auth.ValidateSession(r)
 
-	post := database.Post{
-		Title:   r.FormValue("post_title"),
-		Content: r.FormValue("post_content"),
+	dbpost := database.Post{
+		GUID:           createGUID(r.FormValue("post_title"), session.User.UserName),
+		Title:          r.FormValue("post_title"),
+		Content:        r.FormValue("post_content"),
+		User:           session.User.UserName,
+		Image:          []byte{},
+		ImageExtention: "",
+		Active:         1,
 	}
 
 	file, header, err := r.FormFile("image")
 	if err != nil {
-		if err != http.ErrMissingFile { // Check for other errors
+		if err != http.ErrMissingFile {
 			logger.Error.Println(err)
 			return
 		}
-
-		// No image file uploaded
-		session := auth.ValidateSession(r)
-		post.User = session.User.UserName
-		post.GUID = createGUID(post.Title, post.User)
-
-		// Insert post without image data
-		_, err = db.Dbase.Exec(query.InsertPost,
-			post.GUID, post.Title, post.User, post.Content, []byte{}, "", 1)
+		err = orm.Da.CreatePost(&dbpost)
 		if err != nil {
 			logger.Error.Println(err.Error())
 			fmt.Fprintln(w, err.Error())
 			return
 		}
-
-		// Redirect to /home
 		http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 		return
 	}
@@ -87,22 +84,16 @@ func PostPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
-
-	post.Image = fileBytes
-	session := auth.ValidateSession(r)
-	post.User = session.User.UserName
-	post.GUID = createGUID(post.Title, post.User)
+	dbpost.Image = fileBytes
+	dbpost.ImageExtention = filepath.Ext(header.Filename)
 
 	// Insert post with image data
-	_, err = db.Dbase.Exec(query.InsertPost,
-		post.GUID, post.Title, post.User, post.Content, post.Image, filepath.Ext(header.Filename), 1)
+	err = orm.Da.CreatePost(&dbpost)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		fmt.Fprintln(w, err.Error())
 		return
 	}
-
-	// Redirect to /home
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 

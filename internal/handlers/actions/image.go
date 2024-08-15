@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Anacardo89/tpsi25_blog/pkg/db"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
@@ -15,10 +15,7 @@ func Image(w http.ResponseWriter, r *http.Request) {
 	if guid == "" {
 		return
 	}
-
-	var postImage []byte
-	var imageExtension string
-	err := db.Dbase.QueryRow("SELECT post_image, post_image_ext FROM posts WHERE post_guid = ?", guid).Scan(&postImage, &imageExtension)
+	dbpost, err := orm.Da.GetPostByGUID(guid)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return
@@ -26,11 +23,11 @@ func Image(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err)
 		return
 	}
-	imageExtension = strings.TrimPrefix(imageExtension, ".")
-	mimeType := mime.TypeByExtension(imageExtension)
+	dbpost.ImageExtention = strings.TrimPrefix(dbpost.ImageExtention, ".")
+	mimeType := mime.TypeByExtension(dbpost.ImageExtention)
 	if mimeType == "" {
 		mimeType = "application/octet-stream"
 	}
 	w.Header().Set("Content-Type", mimeType)
-	w.Write(postImage)
+	w.Write(dbpost.Image)
 }

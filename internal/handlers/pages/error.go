@@ -3,6 +3,7 @@ package pages
 import (
 	"html/template"
 	"net/http"
+	"time"
 
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
@@ -16,6 +17,10 @@ func Error(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error.Println(err)
 	}
+	if cookieVal.Expires.After(time.Now()) {
+		http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+		return
+	}
 	errpg := ErrorPage{
 		ErrorMsg: cookieVal.Value,
 	}
@@ -23,9 +28,5 @@ func Error(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	http.SetCookie(w, &http.Cookie{
-		Name:   "errormsg",
-		MaxAge: -1,
-	})
 	t.Execute(w, errpg)
 }

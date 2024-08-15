@@ -6,36 +6,32 @@ import (
 	"strconv"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
-	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
-	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
-	"github.com/Anacardo89/tpsi25_blog/pkg/db"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
-func CommentPOST(w http.ResponseWriter, r *http.Request) {
+func AddComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	session := auth.ValidateSession(r)
 
-	c := presentation.Comment{
-		Author:      session.User.UserName,
-		CommentText: r.FormValue("comment_text"),
+	c := database.Comment{
+		PostGUID:      postGUID,
+		CommentAuthor: session.User.UserName,
+		CommentText:   r.FormValue("comment_text"),
+		Active:        1,
 	}
 
-	_, err := db.Dbase.Exec(query.InsertComment,
-		postGUID,
-		c.Author,
-		c.CommentText,
-		1,
-	)
+	err := orm.Da.CreateComment(&c)
 	if err != nil {
 		logger.Error.Println(err)
 	}
 	http.Redirect(w, r, fmt.Sprintf("/post/%s", postGUID), http.StatusSeeOther)
 }
 
-func CommentPUT(w http.ResponseWriter, r *http.Request) {
+func EditComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["comment_id"])
 	if err != nil {
@@ -45,7 +41,7 @@ func CommentPUT(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	c := presentation.Comment{
+	c := database.Comment{
 		Id:          id,
 		CommentText: r.FormValue("comment"),
 	}
@@ -54,10 +50,7 @@ func CommentPUT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Dbase.Exec(query.UpdateCommentText,
-		c.CommentText,
-		c.Id,
-	)
+	orm.Da.UpdateCommentText(c.Id, c.CommentText)
 	if err != nil {
 		logger.Error.Println(err)
 	}
