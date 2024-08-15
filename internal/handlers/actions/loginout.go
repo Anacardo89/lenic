@@ -11,7 +11,7 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
-func LoginPOST(w http.ResponseWriter, r *http.Request) {
+func Login(w http.ResponseWriter, r *http.Request) {
 	var err error
 	u := presentation.User{
 		UserName: r.FormValue("user_name"),
@@ -39,7 +39,7 @@ func LoginPOST(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
-func LogoutPOST(w http.ResponseWriter, r *http.Request) {
+func Logout(w http.ResponseWriter, r *http.Request) {
 	session, err := auth.SessionStore.Get(r, "tpsi25blog")
 	if err != nil {
 		logger.Error.Println(err)

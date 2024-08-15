@@ -3,6 +3,7 @@ package actions
 import (
 	"bytes"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
+	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
 )
 
 type RegisterData struct {
@@ -26,7 +28,7 @@ func isValidInput(input string) bool {
 	return !strings.Contains(input, ";")
 }
 
-func RegisterPOST(w http.ResponseWriter, r *http.Request) {
+func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// Parse Form
 	err := r.ParseForm()
 	if err != nil {
@@ -87,7 +89,7 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = rabbit.RabbitMQ.MQSendRegisterMail(data)
+	err = rabbit.MQSendRegisterMail(rabbitmq.RMQ, rabbitmq.RCh, data)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
@@ -105,5 +107,6 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func generateActiveLink(user string) string {
-	return "https://192.168.200.205:8082/activate/" + user
+	encoded := base64.URLEncoding.EncodeToString([]byte(user))
+	return "https://192.168.200.205:8082/activate/" + encoded
 }

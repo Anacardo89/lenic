@@ -6,9 +6,9 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
-	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
 	"github.com/Anacardo89/tpsi25_blog/internal/server"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
+	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
 )
 
 //go:embed dbConfig.yaml
@@ -41,8 +41,8 @@ func LoadServerConfig() (*server.Config, error) {
 	return &config, nil
 }
 
-func LoadRabbitConfig() (*rabbit.Config, error) {
-	var config rabbit.Config
+func LoadRabbitConfig() (*rabbitmq.Config, error) {
+	var config rabbitmq.Config
 	err := yaml.Unmarshal(rabbitYaml, &config)
 	if err != nil {
 		return nil, err

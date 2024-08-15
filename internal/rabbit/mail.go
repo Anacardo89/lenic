@@ -1,49 +1,16 @@
 package rabbit
 
 import (
-	"fmt"
-
+	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
 	"github.com/streadway/amqp"
 )
 
-type Config struct {
-	MQHost string `yaml:"mqHost"`
-	MQPort string `yaml:"mqPort"`
-}
-
-var (
-	RabbitMQ *Config
-)
-
-func (r *Config) MQSendRegisterMail(data []byte) error {
-	rabbitUrl := fmt.Sprintf("amqp://%s%s", r.MQHost, r.MQPort)
-	conn, err := amqp.Dial(rabbitUrl)
-	if err != nil {
-		return err
-	}
-
-	channel, err := conn.Channel()
-	if err != nil {
-		return err
-	}
-
-	q, err := channel.QueueDeclare(
-		"register_mail", // name
-		true,            // durable
-		false,           // delete when unused
-		false,           // exclusive
-		false,           // no-wait
-		nil,             // arguments
-	)
-	if err != nil {
-		return err
-	}
-
-	err = channel.Publish(
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
+func MQSendRegisterMail(r *rabbitmq.Config, ch *amqp.Channel, data []byte) error {
+	err := ch.Publish(
+		"",               // exchange
+		"register_email", // routing key
+		false,            // mandatory
+		false,            // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        []byte(data),
@@ -55,35 +22,12 @@ func (r *Config) MQSendRegisterMail(data []byte) error {
 	return nil
 }
 
-func (r *Config) MQSendPasswordRecoveryMail(data []byte) error {
-	rabbitUrl := fmt.Sprintf("amqp://%s%s", r.MQHost, r.MQPort)
-	conn, err := amqp.Dial(rabbitUrl)
-	if err != nil {
-		return err
-	}
-
-	channel, err := conn.Channel()
-	if err != nil {
-		return err
-	}
-
-	q, err := channel.QueueDeclare(
-		"password_recover_mail", // name
-		true,                    // durable
-		false,                   // delete when unused
-		false,                   // exclusive
-		false,                   // no-wait
-		nil,                     // arguments
-	)
-	if err != nil {
-		return err
-	}
-
-	err = channel.Publish(
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
+func MQSendPasswordRecoveryMail(r *rabbitmq.Config, ch *amqp.Channel, data []byte) error {
+	err := ch.Publish(
+		"",                       // exchange
+		"password_recover_email", // routing key
+		false,                    // mandatory
+		false,                    // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        []byte(data),
@@ -91,6 +35,5 @@ func (r *Config) MQSendPasswordRecoveryMail(data []byte) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }

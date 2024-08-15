@@ -12,35 +12,9 @@ import (
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
-	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
-	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
-	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
-	"github.com/gorilla/mux"
 )
-
-func PostGET(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	p := presentation.Post{
-		GUID: vars["post_guid"],
-	}
-	err := db.Dbase.QueryRow(query.SelectPostByGUID,
-		p.GUID).Scan(
-		&p.Title,
-		&p.User,
-		&p.RawContent,
-		&p.Date,
-	)
-	if err != nil {
-		logger.Error.Println(err.Error())
-		http.Error(w, http.StatusText(404), http.StatusNotFound)
-		return
-	}
-	// p.Content = template.HTML(p.RawContent)
-	// TODO or not TODO
-
-}
 
 func AddPost(w http.ResponseWriter, r *http.Request) {
 	var fileBytes []byte
@@ -104,3 +78,28 @@ func createGUID(title string, user string) string {
 	guid = guid + strconv.Itoa(random) + user
 	return base64.URLEncoding.EncodeToString([]byte(guid))
 }
+
+/*
+func PostGET(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	p := presentation.Post{
+		GUID: vars["post_guid"],
+	}
+	err := db.Dbase.QueryRow(query.SelectPostByGUID,
+		p.GUID).Scan(
+		&p.Title,
+		&p.User,
+		&p.RawContent,
+		&p.Date,
+	)
+	if err != nil {
+		logger.Error.Println(err.Error())
+		http.Error(w, http.StatusText(404), http.StatusNotFound)
+		return
+	}
+	// p.Content = template.HTML(p.RawContent)
+	// TODO or not TODO
+
+}
+
+*/
