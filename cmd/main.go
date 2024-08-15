@@ -7,11 +7,11 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/auth"
 	"github.com/Anacardo89/tpsi25_blog/internal/config"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/pages"
-	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
 	"github.com/Anacardo89/tpsi25_blog/internal/routes"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/fsops"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
+	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
@@ -52,10 +52,17 @@ func main() {
 	auth.SessionStore = sessions.NewCookieStore([]byte(sessConfig.Pass))
 
 	// RabbitMQ
-	rabbit.RabbitMQ, err = config.LoadRabbitConfig()
+	rabbitmq.RMQ, err = config.LoadRabbitConfig()
 	if err != nil {
 		logger.Error.Fatal(err)
 	}
+	rconn := rabbitmq.RMQ.Connect()
+	rabbitmq.RCh, err = rconn.Channel()
+	if err != nil {
+		logger.Error.Fatal(err)
+	}
+	defer rabbitmq.RCh.Close()
+	rabbitmq.RMQ.DeclareQueues(rabbitmq.RCh)
 
 	// Router
 	r := mux.NewRouter()

@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"os"
@@ -28,8 +29,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 func ActivateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	userName := vars["user_name"]
-	err := orm.Da.SetUserAsActive(userName)
+	encoded := vars["encoded_user_name"]
+	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	if err != nil {
+		logger.Error.Println(err)
+	}
+	userName := string(bytes)
+	err = orm.Da.SetUserAsActive(userName)
 	if err != nil {
 		logger.Error.Println(err)
 	}
