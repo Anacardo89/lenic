@@ -23,7 +23,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err.Error())
 		return
 	}
-	session := auth.ValidateSession(r)
+	session := auth.ValidateSession(w, r)
 
 	dbpost := database.Post{
 		GUID:           createGUID(r.FormValue("post_title"), session.User.UserName),
