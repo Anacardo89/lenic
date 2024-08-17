@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
@@ -66,7 +65,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// Password Hashing
 	u.HashedPass, err = auth.HashPassword(u.UserPass)
 	if err != nil {
-		fmt.Fprintln(w, err.Error())
+		logger.Error.Println(err)
 		return
 	}
 
@@ -76,13 +75,6 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		User:  u.UserName,
 		Link:  generateActiveLink(u.UserName),
 	}
-
-	var mbuf bytes.Buffer
-	regData.Email = mbuf.String()
-	mbuf.Reset()
-	regData.User = mbuf.String()
-	mbuf.Reset()
-	regData.Link = mbuf.String()
 	data, err := json.Marshal(regData)
 	if err != nil {
 		logger.Error.Println(err.Error())

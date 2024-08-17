@@ -6,7 +6,7 @@ import (
 )
 
 func (da *DataAccess) CreateSession(s *database.Session) error {
-	_, err := da.db.Exec(query.InsertUser,
+	_, err := da.Db.Exec(query.InsertUser,
 		s.SessionId,
 		s.UserId,
 		s.Active)
@@ -15,14 +15,14 @@ func (da *DataAccess) CreateSession(s *database.Session) error {
 
 func (da *DataAccess) GetSessionByID(id int) (*database.Session, error) {
 	s := database.Session{}
-	row := da.db.QueryRow(query.SelectSessionById, id)
+	row := da.Db.QueryRow(query.SelectSessionById, id)
 	err := row.Scan(
-		s.Id,
-		s.SessionId,
-		s.UserId,
-		s.SessionStart,
-		s.SessionUpdate,
-		s.Active)
+		&s.Id,
+		&s.SessionId,
+		&s.UserId,
+		&s.SessionStart,
+		&s.SessionUpdate,
+		&s.Active)
 	if err != nil {
 		return nil, err
 	}
@@ -31,14 +31,14 @@ func (da *DataAccess) GetSessionByID(id int) (*database.Session, error) {
 
 func (da *DataAccess) GetSessionBySessionID(sid string) (*database.Session, error) {
 	s := database.Session{}
-	row := da.db.QueryRow(query.SelectSessionBySessionId, sid)
+	row := da.Db.QueryRow(query.SelectSessionBySessionId, sid)
 	err := row.Scan(
-		s.Id,
-		s.SessionId,
-		s.UserId,
-		s.SessionStart,
-		s.SessionUpdate,
-		s.Active)
+		&s.Id,
+		&s.SessionId,
+		&s.UserId,
+		&s.SessionStart,
+		&s.SessionUpdate,
+		&s.Active)
 	if err != nil {
 		return nil, err
 	}

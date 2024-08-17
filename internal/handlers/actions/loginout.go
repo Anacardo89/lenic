@@ -5,31 +5,32 @@ import (
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
-	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
-	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
-	"github.com/Anacardo89/tpsi25_blog/pkg/db"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	var err error
-	u := presentation.User{
-		UserName: r.FormValue("user_name"),
-		UserPass: r.FormValue("user_password"),
-	}
-	if !isValidInput(u.UserName) || !isValidInput(u.UserPass) {
+	userName := r.FormValue("user_name")
+	userPass := r.FormValue("user_password")
+
+	if !isValidInput(userName) || !isValidInput(userPass) {
 		RedirectToError(w, r, "Invalid character in form")
 		return
 	}
-	err = db.Dbase.QueryRow(query.SelectUserByName, u.UserName).Scan(&u.Id, &u.UserName, &u.HashedPass, &u.Active)
+	dbuser, err := orm.Da.GetUserByName(userName)
 	if err == sql.ErrNoRows {
 		RedirectToError(w, r, "User does not exist")
 		return
 	}
+	logger.Info.Println(dbuser)
+	u := mapper.User(dbuser)
 	if u.Active == 0 {
 		RedirectToError(w, r, "User is not active, check your mail")
 		return
 	}
+	u.UserPass = userPass
 	if !auth.CheckPasswordHash(u.UserPass, u.HashedPass) {
 		RedirectToError(w, r, "Password does not match")
 		return

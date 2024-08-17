@@ -7,5 +7,5 @@ var (
 )
 
 type DataAccess struct {
-	db *sql.DB
+	Db *sql.DB
 }

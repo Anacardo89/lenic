@@ -16,6 +16,7 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/newPost", pages.NewPost).Schemes("https")
 	r.HandleFunc("/post/{post_guid}", pages.Post).Schemes("https")
 	r.HandleFunc("/forgot-password", pages.ForgotPassword).Schemes("https")
+	r.HandleFunc("/recover-password", pages.RecoverPassword).Schemes("https")
 
 	r.HandleFunc("/action/register", actions.RegisterUser).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/login", actions.Login).Methods("POST").Schemes("https")

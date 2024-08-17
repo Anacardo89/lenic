@@ -6,8 +6,10 @@ import (
 
 	"github.com/Anacardo89/tpsi25_blog/auth"
 	"github.com/Anacardo89/tpsi25_blog/internal/config"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/pages"
 	"github.com/Anacardo89/tpsi25_blog/internal/routes"
+	"github.com/Anacardo89/tpsi25_blog/internal/server"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/fsops"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
@@ -33,6 +35,7 @@ func main() {
 	if err != nil {
 		logger.Error.Fatal(err)
 	}
+	orm.Da.Db = db.Dbase
 
 	// Certificate
 	cert, err := fsops.MakePaths()
@@ -72,18 +75,18 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
 
 	// Server
-	serverConfig, err := config.LoadServerConfig()
+	server.Server, err = config.LoadServerConfig()
 	if err != nil {
 		logger.Error.Fatal(err)
 	}
 
 	httpServer = &http.Server{
-		Addr:    serverConfig.HttpPORT,
+		Addr:    server.Server.HttpPORT,
 		Handler: http.HandlerFunc(pages.RedirectNonSecure),
 	}
 
 	httpsServer = &http.Server{
-		Addr:      serverConfig.HttpsPORT,
+		Addr:      server.Server.HttpsPORT,
 		TLSConfig: tlsConf,
 	}
 
