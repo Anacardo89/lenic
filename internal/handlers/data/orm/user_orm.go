@@ -5,6 +5,7 @@ import (
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
+	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
@@ -18,6 +19,10 @@ func (da *DataAccess) CreateUser(u *database.User) error {
 }
 
 func (da *DataAccess) GetUserByID(id int) (*database.User, error) {
+	var (
+		createdAt []byte
+		updatedAt []byte
+	)
 	u := database.User{}
 	row := da.Db.QueryRow(query.SelectUserById, id)
 	err := row.Scan(
@@ -25,9 +30,17 @@ func (da *DataAccess) GetUserByID(id int) (*database.User, error) {
 		&u.UserName,
 		&u.UserEmail,
 		&u.UserPass,
-		&u.CreatedAt,
-		&u.UpdatedAt,
+		&createdAt,
+		&updatedAt,
 		&u.Active)
+	if err != nil {
+		return nil, err
+	}
+	u.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+	if err != nil {
+		return nil, err
+	}
+	u.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +52,6 @@ func (da *DataAccess) GetUserByName(name string) (*database.User, error) {
 		createdAt []byte
 		updatedAt []byte
 	)
-
 	u := database.User{}
 	row := da.Db.QueryRow(query.SelectUserByName, name)
 	err := row.Scan(
@@ -54,20 +66,22 @@ func (da *DataAccess) GetUserByName(name string) (*database.User, error) {
 		logger.Error.Println(err)
 		return nil, err
 	}
-	u.CreatedAt, err = time.Parse("2006-01-02 15:04:05", string(createdAt))
+	u.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
 	if err != nil {
-		logger.Error.Println(err)
 		return nil, err
 	}
-	u.UpdatedAt, err = time.Parse("2006-01-02 15:04:05", string(updatedAt))
+	u.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
 	if err != nil {
-		logger.Error.Println(err)
 		return nil, err
 	}
 	return &u, nil
 }
 
 func (da *DataAccess) GetUserByEmail(email string) (*database.User, error) {
+	var (
+		createdAt []byte
+		updatedAt []byte
+	)
 	u := database.User{}
 	row := da.Db.QueryRow(query.SelectUserByEmail, email)
 	err := row.Scan(
@@ -75,9 +89,17 @@ func (da *DataAccess) GetUserByEmail(email string) (*database.User, error) {
 		&u.UserName,
 		&u.UserEmail,
 		&u.UserPass,
-		&u.CreatedAt,
-		&u.UpdatedAt,
+		&createdAt,
+		&updatedAt,
 		&u.Active)
+	if err != nil {
+		return nil, err
+	}
+	u.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+	if err != nil {
+		return nil, err
+	}
+	u.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
 	if err != nil {
 		return nil, err
 	}
