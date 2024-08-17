@@ -49,3 +49,11 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprint(w, string(body))
 }
+
+func RecoverPassword(w http.ResponseWriter, r *http.Request) {
+	body, err := os.ReadFile("../templates/recover-password.html")
+	if err != nil {
+		logger.Error.Println(err)
+	}
+	fmt.Fprint(w, string(body))
+}

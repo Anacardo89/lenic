@@ -17,7 +17,7 @@ var dbYaml []byte
 //go:embed serverConfig.yaml
 var serverYaml []byte
 
-//go:embed serverConfig.yaml
+//go:embed rabbitConfig.yaml
 var rabbitYaml []byte
 
 //go:embed sessionConfig.yaml
