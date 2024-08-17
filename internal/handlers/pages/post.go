@@ -15,7 +15,7 @@ import (
 
 func NewPost(w http.ResponseWriter, r *http.Request) {
 	post := presentation.Post{
-		Session: auth.ValidateSession(r),
+		Session: auth.ValidateSession(w, r),
 	}
 	t, err := template.ParseFiles("../templates/newPost.html")
 	if err != nil {
@@ -35,7 +35,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p := mapper.Post(dbpost)
-	p.Session = auth.ValidateSession(r)
+	p.Session = auth.ValidateSession(w, r)
 	p.Content = template.HTML(p.RawContent)
 
 	dbcomments, err := orm.Da.GetCommentsByPost(p.GUID)

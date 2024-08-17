@@ -15,7 +15,7 @@ import (
 func AddComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
-	session := auth.ValidateSession(r)
+	session := auth.ValidateSession(w, r)
 
 	c := database.Comment{
 		PostGUID:      postGUID,

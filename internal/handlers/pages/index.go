@@ -18,7 +18,7 @@ type IndexPage struct {
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	index := IndexPage{}
-	index.Session = auth.ValidateSession(r)
+	index.Session = auth.ValidateSession(w, r)
 	dbposts, err := orm.Da.GetPosts()
 	if err != nil {
 		logger.Error.Println(err)

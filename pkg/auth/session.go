@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
@@ -39,21 +40,35 @@ func CreateSession(w http.ResponseWriter, r *http.Request) presentation.Session 
 	return usrSession
 }
 
-func ValidateSession(r *http.Request) presentation.Session {
-	usrSession := presentation.Session{}
+func ValidateSession(w http.ResponseWriter, r *http.Request) presentation.Session {
+	usrSession := presentation.Session{
+		Authenticated: false,
+	}
 	session, err := SessionStore.Get(r, "tpsi25blog")
 	if err != nil {
 		logger.Error.Println(err)
 	}
 	if sid, valid := session.Values["sid"]; valid {
-		dbuser := orm.GetUserBySessionID(sid.(string))
-		u := mapper.User(&dbuser)
-		usrSession.User = *u
-		UpdateSession(sid.(string), usrSession.User.Id)
-		usrSession.SessionId = sid.(string)
-		usrSession.Authenticated = true
-	} else {
-		usrSession.Authenticated = false
+		dbsession, err := orm.Da.GetSessionBySessionID(sid.(string))
+		if err != nil {
+			logger.Error.Println(err)
+			return usrSession
+		}
+		if time.Now().After(dbsession.SessionUpdate.Add(time.Duration(24) * time.Hour)) {
+			session.Options.MaxAge = -1
+			session.Save(r, w)
+		}
+		dbuser, err := orm.GetUserBySessionID(sid.(string))
+		if err == nil {
+			u := mapper.User(dbuser)
+			usrSession.User = *u
+			UpdateSession(sid.(string), usrSession.User.Id)
+			usrSession.SessionId = sid.(string)
+			usrSession.Authenticated = true
+		} else {
+			session.Options.MaxAge = -1
+			session.Save(r, w)
+		}
 	}
 	return usrSession
 }
