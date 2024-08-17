@@ -4,12 +4,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Anacardo89/tpsi25_blog/auth"
 	"github.com/Anacardo89/tpsi25_blog/internal/config"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/pages"
 	"github.com/Anacardo89/tpsi25_blog/internal/routes"
 	"github.com/Anacardo89/tpsi25_blog/internal/server"
+	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/fsops"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"

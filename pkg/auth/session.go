@@ -8,6 +8,7 @@ import (
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/sessions"
@@ -45,19 +46,27 @@ func ValidateSession(r *http.Request) presentation.Session {
 		logger.Error.Println(err)
 	}
 	if sid, valid := session.Values["sid"]; valid {
-		user := GetSessionUID(sid.(string))
-		usrSession.User = presentation.User{
-			Id:        user.Id,
-			UserName:  user.UserName,
-			UserEmail: user.UserEmail,
-		}
-		UpdateSession(sid.(string), user.Id)
+		dbuser := orm.GetUserBySessionID(sid.(string))
+		u := mapper.User(&dbuser)
+		usrSession.User = *u
+		UpdateSession(sid.(string), usrSession.User.Id)
 		usrSession.SessionId = sid.(string)
 		usrSession.Authenticated = true
 	} else {
 		usrSession.Authenticated = false
 	}
 	return usrSession
+}
+
+func UpdateSession(sid string, uid int) {
+	s := &database.Session{
+		SessionId: sid,
+		UserId:    uid,
+		Active:    1,
+	}
+	if err := orm.Da.CreateSession(s); err != nil {
+		logger.Error.Println(err)
+	}
 }
 
 func generateSessionId() string {
@@ -67,28 +76,4 @@ func generateSessionId() string {
 		logger.Error.Println(err)
 	}
 	return base64.URLEncoding.EncodeToString(sid)
-}
-
-func UpdateSession(sid string, uid int) {
-	s := &database.Session{
-		SessionId: sid,
-		UserId:    uid,
-		Active:    1,
-	}
-	err := orm.Da.CreateSession(s)
-	if err != nil {
-		logger.Error.Println(err)
-	}
-}
-
-func GetSessionUID(sid string) *database.User {
-	dbsession, err := orm.Da.GetSessionBySessionID(sid)
-	if err != nil {
-		logger.Error.Println(err)
-	}
-	dbuser, err := orm.Da.GetUserByID(dbsession.UserId)
-	if err != nil {
-		logger.Error.Println(err)
-	}
-	return dbuser
 }
