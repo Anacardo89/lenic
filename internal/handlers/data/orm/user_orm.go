@@ -113,3 +113,11 @@ func (da *DataAccess) SetUserAsActive(name string) error {
 	}
 	return nil
 }
+
+func (da *DataAccess) SetNewPassword(user string, pass string) error {
+	_, err := da.Db.Exec(query.UpdatePassword, pass, user)
+	if err != nil {
+		return err
+	}
+	return nil
+}

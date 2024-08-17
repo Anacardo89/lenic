@@ -5,12 +5,10 @@ import (
 	"encoding/base64"
 	"io"
 	"net/http"
-	"time"
 
-	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
-	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/sessions"
 )
@@ -72,25 +70,25 @@ func generateSessionId() string {
 }
 
 func UpdateSession(sid string, uid int) {
-	const timeFmt = "2006-01-02T15:04:05.999999999"
-	tstamp := time.Now().Format(timeFmt)
-	_, err := db.Dbase.Exec(query.InsertSession, 1, sid, uid, tstamp, uid, tstamp)
+	s := &database.Session{
+		SessionId: sid,
+		UserId:    uid,
+		Active:    1,
+	}
+	err := orm.Da.CreateSession(s)
 	if err != nil {
 		logger.Error.Println(err)
 	}
 }
 
-func GetSessionUID(sid string) database.User {
-	user := database.User{}
-	err := db.Dbase.QueryRow(query.SelectSessionBySessionId, sid).Scan(&user.Id)
+func GetSessionUID(sid string) *database.User {
+	dbsession, err := orm.Da.GetSessionBySessionID(sid)
 	if err != nil {
 		logger.Error.Println(err)
-		return database.User{}
 	}
-	err = db.Dbase.QueryRow(query.SelectUserById, user.Id).Scan(&user.UserName)
+	dbuser, err := orm.Da.GetUserByID(dbsession.UserId)
 	if err != nil {
 		logger.Error.Println(err)
-		return database.User{}
 	}
-	return user
+	return dbuser
 }
