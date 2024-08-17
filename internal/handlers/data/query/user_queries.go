@@ -29,4 +29,10 @@ const (
 		SET user_active=1
 		WHERE user_name=?
 	;`
+
+	UpdatePassword = `
+	UPDATE users
+		SET user_password = ?
+		WHERE user_name = ?
+	;`
 )

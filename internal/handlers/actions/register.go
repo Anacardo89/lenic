@@ -11,17 +11,13 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/auth"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/mqmodel"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
+	"github.com/Anacardo89/tpsi25_blog/internal/server"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
 )
-
-type RegisterData struct {
-	Email string `json:"email"`
-	User  string `json:"user"`
-	Link  string `json:"link"`
-}
 
 func isValidInput(input string) bool {
 	return !strings.Contains(input, ";")
@@ -31,7 +27,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// Parse Form
 	err := r.ParseForm()
 	if err != nil {
-		logger.Error.Println(err.Error())
+		logger.Error.Println(err)
 		return
 	}
 	var u = &presentation.User{
@@ -70,12 +66,12 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send Regsiter Mail to Queue
-	regData := RegisterData{
+	msg := mqmodel.Register{
 		Email: u.UserEmail,
 		User:  u.UserName,
-		Link:  generateActiveLink(u.UserName),
+		Link:  makeActivateUserLink(u.UserName),
 	}
-	data, err := json.Marshal(regData)
+	data, err := json.Marshal(msg)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
@@ -98,7 +94,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
-func generateActiveLink(user string) string {
+func makeActivateUserLink(user string) string {
 	encoded := base64.URLEncoding.EncodeToString([]byte(user))
-	return "https://192.168.200.205:8082/activate/" + encoded
+	return "https://" + server.Server.Host + server.Server.HttpsPORT + "/activate/" + encoded
 }

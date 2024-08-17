@@ -3,6 +3,7 @@ package pages
 import (
 	"encoding/base64"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 
@@ -51,9 +52,21 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 }
 
 func RecoverPassword(w http.ResponseWriter, r *http.Request) {
-	body, err := os.ReadFile("../templates/recover-password.html")
+	vars := mux.Vars(r)
+	encoded := vars["encoded_user_name"]
+	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	fmt.Fprint(w, string(body))
+	userName := string(bytes)
+	dbuser, err := orm.Da.GetUserByName(userName)
+	if err != nil {
+		logger.Error.Println(err)
+	}
+	t, err := template.ParseFiles("../templates/recover-password.html")
+	if err != nil {
+		logger.Error.Println(err)
+		return
+	}
+	t.Execute(w, dbuser)
 }

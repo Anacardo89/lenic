@@ -16,7 +16,7 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/newPost", pages.NewPost).Schemes("https")
 	r.HandleFunc("/post/{post_guid}", pages.Post).Schemes("https")
 	r.HandleFunc("/forgot-password", pages.ForgotPassword).Schemes("https")
-	r.HandleFunc("/recover-password", pages.RecoverPassword).Schemes("https")
+	r.HandleFunc("/recover-password/{encoded_user_name}", pages.RecoverPassword).Schemes("https")
 
 	r.HandleFunc("/action/register", actions.RegisterUser).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/login", actions.Login).Methods("POST").Schemes("https")
@@ -25,5 +25,6 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/action/post/{post_guid}/comment", actions.AddComment).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/post/{post_guid}/comment/{comment_id}", actions.EditComment).Methods("PUT").Schemes("https")
 	r.HandleFunc("/action/forgot-password", actions.ForgotPassword).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/recover-password", actions.RecoverPassword).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/image", actions.Image).Schemes("https")
 }
