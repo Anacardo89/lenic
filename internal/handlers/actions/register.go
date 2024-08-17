@@ -8,13 +8,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Anacardo89/tpsi25_blog/auth"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mqmodel"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
 	"github.com/Anacardo89/tpsi25_blog/internal/server"
+	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
 )

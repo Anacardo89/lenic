@@ -9,10 +9,11 @@ import (
 )
 
 func (da *DataAccess) CreateSession(s *database.Session) error {
-	_, err := da.Db.Exec(query.InsertUser,
+	_, err := da.Db.Exec(query.InsertSession,
 		s.SessionId,
 		s.UserId,
-		s.Active)
+		s.Active,
+		s.UserId)
 	return err
 }
 
@@ -45,15 +46,27 @@ func (da *DataAccess) GetSessionByID(id int) (*database.Session, error) {
 }
 
 func (da *DataAccess) GetSessionBySessionID(sid string) (*database.Session, error) {
+	var (
+		sessionStart  []byte
+		sessionUpdate []byte
+	)
 	s := database.Session{}
 	row := da.Db.QueryRow(query.SelectSessionBySessionId, sid)
 	err := row.Scan(
 		&s.Id,
 		&s.SessionId,
 		&s.UserId,
-		&s.SessionStart,
-		&s.SessionUpdate,
+		&sessionStart,
+		&sessionUpdate,
 		&s.Active)
+	if err != nil {
+		return nil, err
+	}
+	s.SessionStart, err = time.Parse(db.DateLayout, string(sessionStart))
+	if err != nil {
+		return nil, err
+	}
+	s.SessionUpdate, err = time.Parse(db.DateLayout, string(sessionUpdate))
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ const (
 		SET session_id=?,
 			user_id=?,
 			session_active=?
-		ON DUPLICATE KEY UPDATE user_id=?, session_update=?
+		ON DUPLICATE KEY UPDATE user_id=?, session_update=CURRENT_TIMESTAMP
 	;`
 
 	SelectSessionById = `
