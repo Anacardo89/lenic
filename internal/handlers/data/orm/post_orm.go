@@ -2,9 +2,11 @@ package orm
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
+	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 )
 
 func (da *DataAccess) CreatePost(p *database.Post) error {
@@ -30,10 +32,31 @@ func (da *DataAccess) GetPosts() (*[]database.Post, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
+		var (
+			createdAt []byte
+			updatedAt []byte
+		)
 		p := database.Post{}
 		err = rows.Scan(
-			&p.Id, &p.GUID, &p.Title, &p.User, &p.Content, &p.Image,
-			&p.ImageExtention, &p.CreatedAt, &p.UpdatedAt, &p.Active)
+			&p.Id,
+			&p.GUID,
+			&p.Title,
+			&p.User,
+			&p.Content,
+			&p.Image,
+			&p.ImageExtention,
+			&createdAt,
+			&updatedAt,
+			&p.Active,
+		)
+		if err != nil {
+			return nil, err
+		}
+		p.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+		if err != nil {
+			return nil, err
+		}
+		p.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
 		if err != nil {
 			return nil, err
 		}
@@ -43,11 +66,32 @@ func (da *DataAccess) GetPosts() (*[]database.Post, error) {
 }
 
 func (da *DataAccess) GetPostByGUID(guid string) (*database.Post, error) {
+	var (
+		createdAt []byte
+		updatedAt []byte
+	)
 	p := database.Post{}
 	row := da.Db.QueryRow(query.SelectPostByGUID, guid)
 	err := row.Scan(
-		&p.Id, &p.GUID, &p.Title, &p.User, &p.Content, &p.Image,
-		&p.ImageExtention, &p.CreatedAt, &p.UpdatedAt, &p.Active)
+		&p.Id,
+		&p.GUID,
+		&p.Title,
+		&p.User,
+		&p.Content,
+		&p.Image,
+		&p.ImageExtention,
+		&createdAt,
+		&updatedAt,
+		&p.Active,
+	)
+	if err != nil {
+		return nil, err
+	}
+	p.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+	if err != nil {
+		return nil, err
+	}
+	p.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
 	if err != nil {
 		return nil, err
 	}

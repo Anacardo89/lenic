@@ -2,9 +2,11 @@ package orm
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
+	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 )
 
 func (da *DataAccess) CreateComment(c *database.Comment) error {
@@ -27,15 +29,27 @@ func (da *DataAccess) GetCommentsByPost(guid string) (*[]database.Comment, error
 	}
 	defer rows.Close()
 	for rows.Next() {
+		var (
+			createdAt []byte
+			updatedAt []byte
+		)
 		c := database.Comment{}
 		err = rows.Scan(
 			&c.Id,
 			&c.PostGUID,
 			&c.CommentAuthor,
 			&c.CommentText,
-			&c.CreatedAt,
-			&c.UpdatedAt,
+			&createdAt,
+			&updatedAt,
 			&c.Active)
+		if err != nil {
+			return nil, err
+		}
+		c.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+		if err != nil {
+			return nil, err
+		}
+		c.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
 		if err != nil {
 			return nil, err
 		}
