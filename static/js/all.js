@@ -20,10 +20,27 @@ function putComment(el) {
     let guid = $(el).find('.post_guid').val();
     let edited_comment = $(el).find('.edit_comment').val();
     $.ajax({
-        url: '/api/post/' + guid + '/comment/' + id,
+        url: '/action/post/' + guid + '/comment/' + id,
         method: 'PUT',
         data: ({
             comment: edited_comment
+        }),
+        success: function(res) {
+            location.reload()
+        }
+    })
+    return false;
+}
+
+function postPost(el) {
+    let post_title = $(el).find('[name="post-title"]').val();
+    let post_content = $(el).find('[name="post-content"]').val();
+    $.ajax({
+        url: '/api/post/',
+        method: 'POST',
+        data: ({
+            post_title: post_title,
+            post_content: post_content
         }),
         success: function(res) {
             location.reload()

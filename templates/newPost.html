@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/css/base.css">
     <link rel="stylesheet" href="/static/css/header.css">
+    <link rel="stylesheet" href="/static/css/newPost.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
@@ -15,9 +16,9 @@
             <p class="logo-bottom">O Blog da malta</p>
         </div>
         <div class="logout">
-            <p>You are logged in as {{.Session.User.UserName}}</p>
-            <form class="header-button" action="/action/logout" method="POST">
-                <input type="submit" value="Logout">
+            <p>You are logged in as <strong>{{.Session.User.UserName}}</strong></p>
+            <form action="/action/logout" method="POST">
+                <button class="header-button" onsubmit="return logout(this);"><strong>Logout</strong></button>
             </form>
         </div>
     </header>
@@ -26,10 +27,13 @@
             <form action="/action/post" method="POST" enctype="multipart/form-data">
                 <div><input type="text" name="post_title" placeholder="Post Title" /></div>
                 <div><textarea name="post_content" placeholder="The post"></textarea></div>
-                <div><input type="file" name="image" accept="image/*"/></div>
-                <div><input type="submit" value="Post" /></div>
+                <div>
+                    <p>Add an image to your post:</p>    
+                    <div><input type="file" name="image" accept="image/*"/></div>
+                </div>
             </form>
         </div>
+        <button class="post-button" onsubmit="return postPost(this);"><strong>Post</strong></button>
     </div>
     <script src="/static/js/all.js"></script>
 </body>
