@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Anacardo89/tpsi25_blog/internal/config"
+	"github.com/Anacardo89/tpsi25_blog/config"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/pages"
 	"github.com/Anacardo89/tpsi25_blog/internal/routes"
@@ -25,6 +25,7 @@ var (
 
 func main() {
 	logger.CreateLogger()
+	fsops.MakeImgDir()
 
 	// DB
 	dbConfig, err := config.LoadDBConfig()

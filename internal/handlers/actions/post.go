@@ -13,11 +13,11 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
+	"github.com/Anacardo89/tpsi25_blog/pkg/fsops"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
 func AddPost(w http.ResponseWriter, r *http.Request) {
-	var fileBytes []byte
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		logger.Error.Println(err.Error())
@@ -30,7 +30,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		Title:          r.FormValue("post_title"),
 		Content:        r.FormValue("post_content"),
 		User:           session.User.UserName,
-		Image:          []byte{},
+		Image:          "",
 		ImageExtention: "",
 		Active:         1,
 	}
@@ -52,14 +52,15 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Handle uploaded image
-	fileBytes, err = io.ReadAll(file)
+	dbpost.ImageExtention = filepath.Ext(header.Filename)
+	fileName := fsops.NameImg(16)
+	dbpost.Image = fileName
+	imgData, err := io.ReadAll(file)
 	if err != nil {
 		logger.Error.Println(err)
 		return
 	}
-	defer file.Close()
-	dbpost.Image = fileBytes
-	dbpost.ImageExtention = filepath.Ext(header.Filename)
+	fsops.SaveImg(imgData, fileName, dbpost.ImageExtention)
 
 	// Insert post with image data
 	err = orm.Da.CreatePost(&dbpost)
