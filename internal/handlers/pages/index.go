@@ -29,7 +29,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		post.Content = template.HTML(post.RawContent)
 		index.Posts = append(index.Posts, *post)
 	}
-	t, err := template.ParseFiles("../templates/index.html")
+	t, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		logger.Error.Println(err)
 		return

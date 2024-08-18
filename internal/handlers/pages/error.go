@@ -24,7 +24,7 @@ func Error(w http.ResponseWriter, r *http.Request) {
 	errpg := ErrorPage{
 		ErrorMsg: cookieVal.Value,
 	}
-	t, err := template.ParseFiles("../templates/error.html")
+	t, err := template.ParseFiles("templates/error.html")
 	if err != nil {
 		logger.Error.Println(err)
 	}

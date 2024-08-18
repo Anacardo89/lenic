@@ -73,7 +73,7 @@ func main() {
 	routes.DeclareRoutes(r)
 
 	http.Handle("/", r)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	// Server
 	server.Server, err = config.LoadServerConfig()

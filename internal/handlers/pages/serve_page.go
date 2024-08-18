@@ -13,7 +13,7 @@ import (
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	body, err := os.ReadFile("../templates/login.html")
+	body, err := os.ReadFile("templates/login.html")
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -21,7 +21,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
-	body, err := os.ReadFile("../templates/register.html")
+	body, err := os.ReadFile("templates/register.html")
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -44,7 +44,7 @@ func ActivateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func ForgotPassword(w http.ResponseWriter, r *http.Request) {
-	body, err := os.ReadFile("../templates/forgot-password.html")
+	body, err := os.ReadFile("templates/forgot-password.html")
 	if err != nil {
 		logger.Error.Println(err)
 	}
