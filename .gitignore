@@ -22,5 +22,6 @@ go.work
 go.work.sum
 
 *.yaml
-*.log
-/img
+/cmd/logs
+/cmd/img
+/cmd/ssl

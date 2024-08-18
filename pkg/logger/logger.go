@@ -13,15 +13,15 @@ var (
 
 func CreateLogger() error {
 	makeLogsDir()
-	infoFile, err := os.OpenFile("../logs/info.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
+	infoFile, err := os.OpenFile("./logs/info.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
 	if err != nil {
 		log.Fatal("Cannot access INFO log file:", err)
 	}
-	warnFile, err := os.OpenFile("../logs/warn.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
+	warnFile, err := os.OpenFile("./logs/warn.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
 	if err != nil {
 		log.Fatal("Cannot access WARN log file:", err)
 	}
-	errorFile, err := os.OpenFile("../logs/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
+	errorFile, err := os.OpenFile("./logs/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
 	if err != nil {
 		log.Fatal("Cannot access ERROR log file:", err)
 	}
@@ -32,9 +32,9 @@ func CreateLogger() error {
 }
 
 func makeLogsDir() {
-	if _, err := os.Stat("../logs"); err != nil {
+	if _, err := os.Stat("./logs"); err != nil {
 		if os.IsNotExist(err) {
-			os.Mkdir("../logs", 0777)
+			os.Mkdir("./logs", 0777)
 		}
 	}
 }

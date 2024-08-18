@@ -19,13 +19,9 @@ type Certificate struct {
 }
 
 func MakePaths() (*Certificate, error) {
-	HomeDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
 	cert := &Certificate{
-		CertPath: HomeDir + "/.ssl/tpsi25_blog/certificate.pem",
-		KeyPath:  HomeDir + "/.ssl/tpsi25_blog/key.pem",
+		CertPath: "ssl/certificate.pem",
+		KeyPath:  "ssl/key.pem",
 	}
 	return cert, nil
 
@@ -43,9 +39,9 @@ func LoadCertificates(cert *Certificate) (*tls.Config, error) {
 }
 
 func MakeImgDir() {
-	if _, err := os.Stat("../img"); err != nil {
+	if _, err := os.Stat("img"); err != nil {
 		if os.IsNotExist(err) {
-			os.Mkdir("../img", 0777)
+			os.Mkdir("img", 0777)
 		}
 	}
 }

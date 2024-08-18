@@ -14,7 +14,7 @@ func RedirectNonSecure(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err)
 		host = r.Host
 	}
-	redirectURL := "https://" + host + server.Server.HttpsPORT + r.RequestURI
+	redirectURL := "https://" + host + ":" + server.Server.HttpsPORT + r.RequestURI
 	logger.Info.Println(redirectURL)
 	http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)
 }
