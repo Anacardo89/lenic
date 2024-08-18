@@ -46,7 +46,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		c := mapper.Comment(&dbcomment)
 		p.Comments = append(p.Comments, *c)
 	}
-	t, err := template.ParseFiles("../templates/post.html")
+	t, err := template.ParseFiles("templates/post.html")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
