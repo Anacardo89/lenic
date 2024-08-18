@@ -21,7 +21,7 @@ var (
 )
 
 func (r *Config) Connect() *amqp.Connection {
-	url := fmt.Sprintf("amqp://%s:%s@%s%s/",
+	url := fmt.Sprintf("amqp://%s:%s@%s:%s/",
 		r.RabbitUser, r.RabbitPass, r.RabbitHost, r.RabbitPort)
 	conn, err := amqp.Dial(url)
 	if err != nil {

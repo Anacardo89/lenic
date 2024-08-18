@@ -15,10 +15,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	userName := r.FormValue("user_name")
 	userPass := r.FormValue("user_password")
 
-	if !isValidInput(userName) || !isValidInput(userPass) {
-		RedirectToError(w, r, "Invalid character in form")
-		return
-	}
 	dbuser, err := orm.Da.GetUserByName(userName)
 	if err == sql.ErrNoRows {
 		RedirectToError(w, r, "User does not exist")

@@ -81,12 +81,12 @@ func main() {
 	}
 
 	httpServer = &http.Server{
-		Addr:    server.Server.HttpPORT,
+		Addr:    ":" + server.Server.HttpPORT,
 		Handler: http.HandlerFunc(pages.RedirectNonSecure),
 	}
 
 	httpsServer = &http.Server{
-		Addr:      server.Server.HttpsPORT,
+		Addr:      ":" + server.Server.HttpsPORT,
 		TLSConfig: tlsConf,
 	}
 

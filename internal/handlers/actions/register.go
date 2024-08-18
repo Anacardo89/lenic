@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
@@ -18,10 +17,6 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
 )
-
-func isValidInput(input string) bool {
-	return !strings.Contains(input, ";")
-}
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// Parse Form
@@ -39,10 +34,6 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	pass2 := r.FormValue("user_password2")
 	if u.UserPass != pass2 {
 		RedirectToError(w, r, "Password strings don't match")
-		return
-	}
-	if !isValidInput(u.UserName) || !isValidInput(u.UserEmail) || !isValidInput(u.UserPass) {
-		RedirectToError(w, r, "Invalid character in form")
 		return
 	}
 

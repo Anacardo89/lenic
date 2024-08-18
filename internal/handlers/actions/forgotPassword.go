@@ -22,10 +22,6 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mail := r.FormValue("user_email")
-	if !isValidInput(mail) {
-		RedirectToError(w, r, "Invalid character in form")
-		return
-	}
 
 	// Get user from DB
 	dbuser, err := orm.Da.GetUserByEmail(mail)
