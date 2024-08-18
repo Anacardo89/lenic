@@ -3,17 +3,9 @@ input {
     background-color: white;
 }
 
-.log-reg {
-    max-width: fit-content;
-    margin-inline: auto;
-}
 
 .content {
     margin: 20px;
-}
-
-.index-title {
-    text-align: center;
 }
 
 .add-post {
