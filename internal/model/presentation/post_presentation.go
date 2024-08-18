@@ -11,6 +11,7 @@ type Post struct {
 	Title      string
 	RawContent string
 	Content    template.HTML
+	Image      string
 	Date       string
 	Comments   []Comment
 	Session    Session

@@ -8,7 +8,7 @@ type Post struct {
 	Title          string
 	User           string
 	Content        string
-	Image          []byte
+	Image          string
 	ImageExtention string
 	CreatedAt      time.Time
 	UpdatedAt      time.Time

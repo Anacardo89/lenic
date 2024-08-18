@@ -41,6 +41,7 @@ func Post(p *database.Post) *presentation.Post {
 		User:       p.User,
 		Title:      p.Title,
 		RawContent: p.Content,
+		Image:      p.Image,
 		Date:       fmt.Sprint(p.CreatedAt),
 	}
 }

@@ -20,7 +20,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		RedirectToError(w, r, "User does not exist")
 		return
 	}
-	logger.Info.Println(dbuser)
 	u := mapper.User(dbuser)
 	if u.Active != 1 {
 		if u.Active == 2 {

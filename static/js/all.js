@@ -32,18 +32,20 @@ function putComment(el) {
     return false;
 }
 
-function postPost(el) {
-    let post_title = $(el).find('[name="post-title"]').val();
-    let post_content = $(el).find('[name="post-content"]').val();
+function postPost() {
+    let form = $('.post-form form')[0];
+    let formData = new FormData(form)
     $.ajax({
-        url: '/api/post/',
+        url: '/action/post',
         method: 'POST',
-        data: ({
-            post_title: post_title,
-            post_content: post_content
-        }),
+        data: formData,
+        processData: false,
+        contentType: false, 
         success: function(res) {
             location.reload()
+        },
+        error: function(err) {
+            console.error("Error:", err);  // Log any error for debugging
         }
     })
     return false;
@@ -51,7 +53,7 @@ function postPost(el) {
 
 function logout(el) {
     $.ajax({
-        url: '/api/logout/',
+        url: '/action/logout',
         method: 'POST',
         success: function(res) {
             window.location.href = '/home';
