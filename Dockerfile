@@ -10,8 +10,8 @@ FROM debian:12-slim
 WORKDIR /root/
 COPY --from=builder /app/tpsi25_blog .
 COPY cmd/ssl/ /root/ssl/
-COPY ./templates/ /root/templates
-COPY ./static/ /root/static
+COPY cmd/templates/ /root/templates
+COPY cmd/static/ /root/static
 
 EXPOSE 8081
 EXPOSE 8082

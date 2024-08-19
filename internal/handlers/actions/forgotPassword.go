@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
@@ -51,5 +52,5 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 
 func makePasswordRecoverMail(user string) string {
 	encoded := base64.URLEncoding.EncodeToString([]byte(user))
-	return "https://" + server.Server.Host + server.Server.HttpsPORT + "/recover-password/" + encoded
+	return fmt.Sprintf("https://%s:%s/recover-password/%s", server.Server.Host, server.Server.HttpsPORT, encoded)
 }
