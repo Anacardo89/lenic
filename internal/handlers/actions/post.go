@@ -34,6 +34,10 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		ImageExtention: "",
 		Active:         1,
 	}
+	if dbpost.Title == "" || dbpost.Content == "" {
+		http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+		return
+	}
 
 	file, header, err := r.FormFile("image")
 	if err != nil {
