@@ -42,10 +42,10 @@ function postPost() {
         processData: false,
         contentType: false, 
         success: function(res) {
-            location.reload()
+            window.location.href = '/'
         },
         error: function(err) {
-            console.error("Error:", err);  // Log any error for debugging
+            console.error("Error:", err);
         }
     })
     return false;

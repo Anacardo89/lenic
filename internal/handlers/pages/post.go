@@ -17,7 +17,7 @@ func NewPost(w http.ResponseWriter, r *http.Request) {
 	post := presentation.Post{
 		Session: auth.ValidateSession(w, r),
 	}
-	t, err := template.ParseFiles("../templates/newPost.html")
+	t, err := template.ParseFiles("templates/newPost.html")
 	if err != nil {
 		logger.Error.Println(err)
 		return

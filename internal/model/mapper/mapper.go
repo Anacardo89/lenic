@@ -5,6 +5,7 @@ import (
 
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
+	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 )
 
 func User(u *database.User) *presentation.User {
@@ -42,7 +43,7 @@ func Post(p *database.Post) *presentation.Post {
 		Title:      p.Title,
 		RawContent: p.Content,
 		Image:      p.Image,
-		Date:       fmt.Sprint(p.CreatedAt),
+		Date:       fmt.Sprint(p.CreatedAt.Format(db.DateLayout)),
 	}
 }
 
@@ -51,6 +52,6 @@ func Comment(c *database.Comment) *presentation.Comment {
 		Id:          c.Id,
 		Author:      c.CommentAuthor,
 		CommentText: c.CommentText,
-		Date:        fmt.Sprint(c.CreatedAt),
+		Date:        fmt.Sprint(c.CreatedAt.Format(db.DateLayout)),
 	}
 }

@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ImgPath = "../img/"
+	ImgPath = "./img/"
 )
 
 type Certificate struct {

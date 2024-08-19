@@ -87,5 +87,5 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 func makeActivateUserLink(user string) string {
 	encoded := base64.URLEncoding.EncodeToString([]byte(user))
-	return "https://" + server.Server.Host + server.Server.HttpsPORT + "/activate/" + encoded
+	return fmt.Sprintf("https://%s:%s/activate/%s", server.Server.Host, server.Server.HttpsPORT, encoded)
 }
