@@ -49,7 +49,7 @@
         <div class="comment-section">
             {{if .Session.Authenticated}}
                 <div class="add-comment-form">
-                    <div><p>Add a comment: </p></div>
+                    <div><p><strong>Add a comment:</strong></p></div>
                     <div id="comment-form">
                         <form action="/action/post/{{.GUID}}/comment" method="POST">
                             <input type="hidden" name="post_guid" value="{{.GUID}}" />
@@ -62,7 +62,7 @@
             <div class="comments">
                 {{range .Comments}}
                     <div class="comment">
-                        <div>Comment by {{.Author}}</div>
+                        <div><strong>Comment by {{.Author}} {{.Date}}</strong></div>
                         <div>{{.CommentText}}</div>
                     </div>
                     {{if eq .Author $.Session.User.UserName}}
