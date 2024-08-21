@@ -37,6 +37,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 	p := mapper.Post(dbpost)
 	p.Session = auth.ValidateSession(w, r)
 	p.Content = template.HTML(p.RawContent)
+	p.Comments = []presentation.Comment{}
 
 	dbcomments, err := orm.Da.GetCommentsByPost(p.GUID)
 	if err != nil {
