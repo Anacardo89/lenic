@@ -59,7 +59,7 @@ func (da *DataAccess) GetCommentsByPost(guid string) (*[]database.Comment, error
 }
 
 func (da *DataAccess) UpdateCommentText(id int, text string) error {
-	_, err := da.Db.Exec(query.UpdateCommentText, id, text)
+	_, err := da.Db.Exec(query.UpdateCommentText, text, id)
 	if err != nil {
 		return err
 	}
