@@ -42,7 +42,6 @@
                         <br>
                         <div><p><strong>Author: {{.User}}</strong></p></div>
                         <div><p><strong>Posted in: {{.Date}}</strong></p></div>
-                        <br>
                     </div>
                 </div>
             </div>
@@ -51,7 +50,7 @@
             {{if .Session.Authenticated}}
                 <div class="add-comment-form">
                     <div><p>Add a comment: </p></div>
-                    <div id="comments">
+                    <div id="comment-form">
                         <form action="/action/post/{{.GUID}}/comment" method="POST">
                             <input type="hidden" name="post_guid" value="{{.GUID}}" />
                             <div><textarea name="comment_text" placeholder="Your Comments"></textarea></div>
@@ -60,28 +59,25 @@
                     </div>
                 </div>
             {{end}}
-            {{range .Comments}}
-                {{if eq .UserName $.Session.User.UserName}}
+            <div class="comments">
+                {{range .Comments}}
                     <div class="comment">
-                        <div>Comment by {{.UserName}}</div>
+                        <div>Comment by {{.Author}}</div>
                         <div>{{.CommentText}}</div>
                     </div>
-                    <button class="comment-editor-button" data-id="{{.Id}}">Edit</button>
-                    <div class="comment-edit" id="comment-editor-{{.Id}}">
-                        <h2>Edit</h2>
-                        <form onsubmit="return putComment(this);">
-                            <input type="hidden" class="comment_id" value="{{.Id}}" />
-                            <textarea type="text" class="edit_comment" name="comment">{{.CommentText}}</textarea>
-                            <input type="submit" value="Confirm" />
-                        </form>
-                    </div>
-                {{else}}
-                    <div class="comment">
-                        <div>Comment by {{.UserName}}</div>
-                        <div>{{.CommentText}}</div>
-                    </div>
+                    {{if eq .Author $.Session.User.UserName}}
+                        <button class="comment-editor-button" data-id="{{.Id}}">Edit</button>
+                        <div class="comment-edit" id="comment-editor-{{.Id}}">
+                            <h2>Edit</h2>
+                            <form onsubmit="return putComment(this);">
+                                <input type="hidden" class="comment_id" value="{{.Id}}" />
+                                <textarea type="text" class="edit_comment" name="comment">{{.CommentText}}</textarea>
+                                <input type="submit" value="Confirm" />
+                            </form>
+                        </div>
+                    {{end}}
                 {{end}}
-            {{end}}
+            </div>
         </div>
     </main>
     <script src="/static/js/all.js"></script>
