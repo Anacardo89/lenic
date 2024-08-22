@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mqmodel"
 	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
 	"github.com/Anacardo89/tpsi25_blog/internal/server"
@@ -16,18 +17,20 @@ import (
 )
 
 func ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	logger.Info.Println("/action/forgot-password ", r.RemoteAddr)
 	// Parse Form
 	err := r.ParseForm()
 	if err != nil {
-		logger.Error.Println(err)
+		logger.Error.Println("/action/forgot-password - Could not parse Form: ", err)
+		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	mail := r.FormValue("user_email")
-
+	logger.Info.Printf("/action/forgot-password %s %s\n", r.RemoteAddr, mail)
 	// Get user from DB
 	dbuser, err := orm.Da.GetUserByEmail(mail)
 	if err == sql.ErrNoRows {
-		RedirectToError(w, r, "No user with that email")
+		redirect.RedirectToError(w, r, "No user with that email")
 		return
 	}
 
@@ -38,13 +41,15 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	data, err := json.Marshal(msg)
 	if err != nil {
-		logger.Error.Println(err.Error())
+		logger.Error.Println("/action/forgot-password - Could not marshal JSON: ", err)
+		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 
 	err = rabbit.MQSendPasswordRecoveryMail(rabbitmq.RMQ, rabbitmq.RCh, data)
 	if err != nil {
-		logger.Error.Println(err.Error())
+		logger.Error.Println("/action/forgot-password - Could not send MQ msg: ", err)
+		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)

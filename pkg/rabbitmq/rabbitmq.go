@@ -3,7 +3,6 @@ package rabbitmq
 import (
 	"fmt"
 
-	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/streadway/amqp"
 )
 
@@ -20,17 +19,17 @@ var (
 	RCh *amqp.Channel
 )
 
-func (r *Config) Connect() *amqp.Connection {
+func (r *Config) Connect() (*amqp.Connection, error) {
 	url := fmt.Sprintf("amqp://%s:%s@%s:%s/",
 		r.RabbitUser, r.RabbitPass, r.RabbitHost, r.RabbitPort)
 	conn, err := amqp.Dial(url)
 	if err != nil {
-		logger.Error.Fatal(err)
+		return nil, err
 	}
-	return conn
+	return conn, nil
 }
 
-func (r *Config) DeclareQueues(ch *amqp.Channel) {
+func (r *Config) DeclareQueues(ch *amqp.Channel) error {
 	for _, queue := range r.Queues {
 		_, err := ch.QueueDeclare(
 			queue, // name
@@ -41,7 +40,8 @@ func (r *Config) DeclareQueues(ch *amqp.Channel) {
 			nil,   // arguments
 		)
 		if err != nil {
-			logger.Error.Fatal(err)
+			return err
 		}
 	}
+	return nil
 }

@@ -1,11 +1,11 @@
 package pages
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
@@ -14,12 +14,14 @@ import (
 )
 
 func NewPost(w http.ResponseWriter, r *http.Request) {
+	logger.Info.Println("/newPost ", r.RemoteAddr)
 	post := presentation.Post{
 		Session: auth.ValidateSession(w, r),
 	}
 	t, err := template.ParseFiles("templates/newPost.html")
 	if err != nil {
-		logger.Error.Println(err)
+		logger.Error.Println("/newPost - Could not parse template: ", err)
+		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	t.Execute(w, post)
@@ -28,10 +30,11 @@ func NewPost(w http.ResponseWriter, r *http.Request) {
 func Post(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
+	logger.Info.Printf("/post/%s %s\n", postGUID, r.RemoteAddr)
 	dbpost, err := orm.Da.GetPostByGUID(postGUID)
 	if err != nil {
-		logger.Error.Println(err)
-		http.Error(w, http.StatusText(404), http.StatusNotFound)
+		logger.Error.Printf("/post/%s - Could not get Post: %s\n", postGUID, err)
+		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	p := mapper.Post(dbpost)
@@ -49,7 +52,9 @@ func Post(w http.ResponseWriter, r *http.Request) {
 	}
 	t, err := template.ParseFiles("templates/post.html")
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Error.Printf("/post/%s - Could not parse template: %s\n", postGUID, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
 	}
 	t.Execute(w, p)
 }
