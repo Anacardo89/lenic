@@ -2,7 +2,6 @@ package actions
 
 import (
 	"encoding/base64"
-	"fmt"
 	"io"
 	"math/rand/v2"
 	"net/http"
@@ -11,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/fsops"
@@ -18,9 +18,11 @@ import (
 )
 
 func AddPost(w http.ResponseWriter, r *http.Request) {
+	logger.Info.Println("/action/post ", r.RemoteAddr)
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		logger.Error.Println(err.Error())
+		logger.Error.Println("/action/post - Could not parse Form: ", err)
+		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	session := auth.ValidateSession(w, r)
@@ -35,20 +37,21 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		Active:         1,
 	}
 	if dbpost.Title == "" || dbpost.Content == "" {
-		http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+		redirect.RedirectToError(w, r, "Post must contain a title and a body")
 		return
 	}
 
 	file, header, err := r.FormFile("image")
 	if err != nil {
 		if err != http.ErrMissingFile {
-			logger.Error.Println(err)
+			logger.Error.Println("/action/post - Could not get image: ", err)
+			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
 		err = orm.Da.CreatePost(&dbpost)
 		if err != nil {
-			logger.Error.Println(err.Error())
-			fmt.Fprintln(w, err.Error())
+			logger.Error.Println("/action/post - Could not create post: ", err)
+			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
 		http.Redirect(w, r, "/home", http.StatusMovedPermanently)
@@ -61,7 +64,8 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 	dbpost.Image = fileName
 	imgData, err := io.ReadAll(file)
 	if err != nil {
-		logger.Error.Println(err)
+		logger.Error.Println("/action/post - Could not read image data: ", err)
+		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	fsops.SaveImg(imgData, fileName, dbpost.ImageExtention)
@@ -69,8 +73,8 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 	// Insert post with image data
 	err = orm.Da.CreatePost(&dbpost)
 	if err != nil {
-		logger.Error.Println(err.Error())
-		fmt.Fprintln(w, err.Error())
+		logger.Error.Println("/action/post - Could not not create post: ", err)
+		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)

@@ -18,12 +18,12 @@ type Certificate struct {
 	KeyPath  string
 }
 
-func MakePaths() (*Certificate, error) {
+func MakePaths() *Certificate {
 	cert := &Certificate{
 		CertPath: "ssl/certificate.pem",
 		KeyPath:  "ssl/key.pem",
 	}
-	return cert, nil
+	return cert
 
 }
 

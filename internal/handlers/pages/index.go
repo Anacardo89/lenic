@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
@@ -17,11 +18,13 @@ type IndexPage struct {
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
+	logger.Info.Println("/index ", r.RemoteAddr)
 	index := IndexPage{}
 	index.Session = auth.ValidateSession(w, r)
 	dbposts, err := orm.Da.GetPosts()
 	if err != nil {
-		logger.Error.Println(err)
+		logger.Error.Println("/index - Error getting Posts: ", err)
+		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	for _, dbpost := range *dbposts {
@@ -31,7 +34,8 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 	t, err := template.ParseFiles("templates/index.html")
 	if err != nil {
-		logger.Error.Println(err)
+		logger.Error.Println("/index - Could not parse template: ", err)
+		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	t.Execute(w, index)

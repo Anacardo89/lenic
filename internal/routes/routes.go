@@ -3,15 +3,15 @@ package routes
 import (
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/actions"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/pages"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
 	"github.com/gorilla/mux"
 )
 
 func DeclareRoutes(r *mux.Router) {
-	r.HandleFunc("/", pages.RedirIndex).Schemes("https")
+	r.HandleFunc("/", redirect.RedirIndex).Schemes("https")
 	r.HandleFunc("/home", pages.Index).Schemes("https")
 	r.HandleFunc("/login", pages.Login).Schemes("https")
 	r.HandleFunc("/register", pages.Register).Schemes("https")
-	r.HandleFunc("/activate/{encoded_user_name}", pages.ActivateUser).Schemes("https")
 	r.HandleFunc("/error", pages.Error).Schemes("https")
 	r.HandleFunc("/newPost", pages.NewPost).Schemes("https")
 	r.HandleFunc("/post/{post_guid}", pages.Post).Schemes("https")
@@ -19,6 +19,7 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/recover-password/{encoded_user_name}", pages.RecoverPassword).Schemes("https")
 
 	r.HandleFunc("/action/register", actions.RegisterUser).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/activate/{encoded_user_name}", actions.ActivateUser).Schemes("https")
 	r.HandleFunc("/action/login", actions.Login).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/logout", actions.Logout).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/post", actions.AddPost).Methods("POST").Schemes("https")
