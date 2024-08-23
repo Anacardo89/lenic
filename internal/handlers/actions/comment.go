@@ -16,7 +16,7 @@ import (
 func AddComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
-	logger.Info.Printf("/action/post/%s/comment %s\n", postGUID, r.RemoteAddr)
+	logger.Info.Printf("POST /action/post/%s/comment %s\n", postGUID, r.RemoteAddr)
 	session := auth.ValidateSession(w, r)
 
 	c := database.Comment{
@@ -28,7 +28,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 
 	err := orm.Da.CreateComment(&c)
 	if err != nil {
-		logger.Error.Printf("/action/post/%s/comment - Could not create comment: %s\n", postGUID, err)
+		logger.Error.Printf("POST /action/post/%s/comment - Could not create comment: %s\n", postGUID, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
@@ -39,17 +39,17 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	id := vars["comment_id"]
-	logger.Info.Printf("/action/post/%s/comment/%s %s\n", postGUID, id, r.RemoteAddr)
+	logger.Info.Printf("PUT /action/post/%s/comment/%s %s\n", postGUID, id, r.RemoteAddr)
 
 	idint, err := strconv.Atoi(id)
 	if err != nil {
-		logger.Error.Printf("/action/post/%s/comment/%s - Could not convert id to string: %s\n", postGUID, id, err)
+		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not convert id to string: %s\n", postGUID, id, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	err = r.ParseForm()
 	if err != nil {
-		logger.Error.Printf("/action/post/%s/comment/%s - Could not parse form: %s\n", postGUID, id, err)
+		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not parse form: %s\n", postGUID, id, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
@@ -62,9 +62,31 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orm.Da.UpdateCommentText(c.Id, c.CommentText)
+	err = orm.Da.UpdateCommentText(c.Id, c.CommentText)
 	if err != nil {
-		logger.Error.Printf("/action/post/%s/comment/%s - Could not update comment: %s\n", postGUID, id, err)
+		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not update comment: %s\n", postGUID, id, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func DeleteComment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	postGUID := vars["post_guid"]
+	id := vars["comment_id"]
+	logger.Info.Printf("DELETE /action/post/%s/comment/%s %s\n", postGUID, id, r.RemoteAddr)
+
+	idint, err := strconv.Atoi(id)
+	if err != nil {
+		logger.Error.Printf("DELETE /action/post/%s/comment/%s - Could not convert id to string: %s\n", postGUID, id, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
+	err = orm.Da.DisableComment(idint)
+	if err != nil {
+		logger.Error.Printf("DELETE /action/post/%s/comment/%s - Could not update comment: %s\n", postGUID, id, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}

@@ -20,7 +20,7 @@ func (da *DataAccess) CreateComment(c *database.Comment) error {
 
 func (da *DataAccess) GetCommentsByPost(guid string) (*[]database.Comment, error) {
 	comments := []database.Comment{}
-	rows, err := da.Db.Query(query.SelectCommentsByPost, guid)
+	rows, err := da.Db.Query(query.SelectActiveCommentsByPost, guid)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return &comments, nil
@@ -60,6 +60,14 @@ func (da *DataAccess) GetCommentsByPost(guid string) (*[]database.Comment, error
 
 func (da *DataAccess) UpdateCommentText(id int, text string) error {
 	_, err := da.Db.Exec(query.UpdateCommentText, text, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (da *DataAccess) DisableComment(id int) error {
+	_, err := da.Db.Exec(query.SetCommentAsInactive, id)
 	if err != nil {
 		return err
 	}
