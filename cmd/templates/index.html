@@ -40,9 +40,11 @@
             {{range .Posts}}
                 <a href="/post/{{.GUID}}">
                     <div class="post-preview">
-                        <div><h2>{{.Title}}</h2></div>
-                        <div>By <strong>{{.User}}</strong> on <strong>{{.Date}}</strong></div>
-                        <div>{{.TruncatedText}}</div>
+                        <div class="post-preview-content">
+                            <div><h2>{{.Title}}</h2></div>
+                            <div>By <strong>{{.User}}</strong> on <strong>{{.Date}}</strong></div>
+                            <div>{{.TruncatedText}}</div>
+                        </div>
                     </div>
                 </a>
             {{end}}
