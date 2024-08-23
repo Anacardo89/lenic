@@ -12,13 +12,26 @@ const (
 			post_active=?
 	;`
 
-	SelectPosts = `
+	SelectActivePosts = `
 	SELECT * FROM posts
+		WHERE post_active=1
 		ORDER BY created_at DESC
 	;`
 
 	SelectPostByGUID = `
 	SELECT * FROM posts
+		WHERE post_guid=?
+	;`
+
+	UpdatePostText = `
+	UPDATE posts
+		SET post_content=?
+		WHERE post_guid=?
+	;`
+
+	SetPostAsInactive = `
+	UPDATE posts
+		SET post_active=0
 		WHERE post_guid=?
 	;`
 )

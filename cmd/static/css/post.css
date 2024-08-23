@@ -29,8 +29,13 @@
     text-align: center;
 }
 
-.post-text {
+#post-text {
     font-size: 1.1rem;
+    display: block;
+}
+
+#post-edit {
+    display: none;
 }
 
 img {
@@ -106,7 +111,22 @@ button:active {
 }
 
 /* Modal */
-#modal-container {
+.post-buttons {
+    display: flex;
+    justify-content: flex-end;
+}
+
+#modal-container-post {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, .4);
+}
+#modal-container-comment {
     display: none;
     position: fixed;
     top: 0;
