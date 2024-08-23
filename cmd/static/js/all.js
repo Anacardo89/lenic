@@ -51,7 +51,7 @@ for (let i = 0; i < comment_buttons.length; i++) {
     })
  }
 
-function putComment(el) {
+function editComment(el) {
     let id = $(el).find('.comment_id').val();
     let guid = $(el).find('.post_guid').val();
     let edited_comment = $(el).find('.edit_comment').val();
@@ -63,6 +63,9 @@ function putComment(el) {
         }),
         success: function(res) {
             location.reload()
+        },
+        error: function(err) {
+            console.error("Error:", err);
         }
     })
     return false;
@@ -78,40 +81,116 @@ function deleteComment(el) {
         method: 'DELETE',
         success: function(res) {
             location.reload()
+        },
+        error: function(err) {
+            console.error("Error:", err);
         }
     })
     return false;
 }
 
-const modal = document.getElementById("modal-container");
-var modalCancelBtn = document.getElementById("delete-sure-no");
+const commentModal = document.getElementById("modal-container-comment");
 let commentIdToDelete = null;
 document.querySelectorAll('.comment-deleter-button').forEach(function(button) {
     button.onclick = function() {
         commentIdToDelete = this.getAttribute('data-id');
-        modal.style.display = "block";
+        commentModal.style.display = "block";
     }
 });
 
+const modalCancelBtn = document.getElementById("delete-comment-sure-no");
 modalCancelBtn.onclick = function() {
-    modal.style.display = "none";
+    commentModal.style.display = "none";
     commentIdToDelete = null;
 }
 
-document.getElementById('delete-sure-yes').onclick = function() {
+document.getElementById('delete-comment-sure-yes').onclick = function() {
     if (commentIdToDelete !== null) {
         var commentElement = $('.comment[data-id="' + commentIdToDelete + '"]');
         if (commentElement) {
             deleteComment(commentElement);
         }
-        modal.style.display = "none"; // Hide the modal
-        commentIdToDelete = null; // Reset the comment ID
+        commentModal.style.display = "none"; 
+        commentIdToDelete = null;
     }
 }
 
 window.onclick = function(event) {
-    if (event.target == modal) {
-        modal.style.display = "none";
-        commentIdToDelete = null; // Reset the comment ID
+    if (event.target == commentModal) {
+        commentModal.style.display = "none";
+        commentIdToDelete = null;
     }
+}
+
+// Delete post button behaviour
+function deletePost(el) {
+    let guid = $(el).find('.post_id').val();
+    $.ajax({
+        url: '/action/post/' + guid,
+        method: 'DELETE',
+        success: function(res) {
+            window.location.href = '/'
+        },
+        error: function(err) {
+            console.error("Error:", err);
+        }
+    })
+    return false;
+}
+
+const postModal = document.getElementById('modal-container-post');
+const modalPostCancelBtn = document.getElementById('delete-post-sure-no');
+
+deletePostBtn = document.querySelector('#post-deleter-button')
+deletePostBtn.addEventListener('click', function() {
+    postModal.style.display = "block";
+});
+
+modalPostCancelBtn.addEventListener('click', function() {
+    postModal.style.display = 'none';
+});
+
+document.getElementById('delete-post-sure-yes').addEventListener('click', function() {
+    deletePost(document);
+    postModal.style.display = 'none'; 
+});
+
+window.addEventListener('click', function(event) {
+    if (event.target === postModal) {
+        postModal.style.display = 'none';
+    }
+});
+
+// Edit post button behaviour
+post_edit_button = $('#post-editor-button');
+post_edit_button.on('click', function() {
+    const edit_form = $('#post-edit');
+    const post_text = $('#post-text');
+    if (edit_form.css('display') === 'none' || edit_form.css('display') === '') {
+        edit_form.css('display', 'block');
+        post_text.css('display', 'none');
+    } else {
+        edit_form.css('display', 'none');
+        post_text.css('display', 'block');
+    }
+})
+ 
+
+function editPost(el) {
+    let guid = $(el).find('.post_id').val();
+    let edited_post = $(el).find('.edit_post').val();
+    $.ajax({
+        url: '/action/post/' + guid,
+        method: 'PUT',
+        data: ({
+            post: edited_post
+        }),
+        success: function(res) {
+            location.reload()
+        },
+        error: function(err) {
+            console.error("Error:", err);
+        }
+    })
+    return false;
 }

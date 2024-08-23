@@ -23,7 +23,7 @@ func (da *DataAccess) CreatePost(p *database.Post) error {
 
 func (da *DataAccess) GetPosts() (*[]database.Post, error) {
 	posts := []database.Post{}
-	rows, err := da.Db.Query(query.SelectPosts)
+	rows, err := da.Db.Query(query.SelectActivePosts)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return &posts, nil
@@ -96,4 +96,20 @@ func (da *DataAccess) GetPostByGUID(guid string) (*database.Post, error) {
 		return nil, err
 	}
 	return &p, nil
+}
+
+func (da *DataAccess) UpdatePostText(guid string, text string) error {
+	_, err := da.Db.Exec(query.UpdatePostText, text, guid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (da *DataAccess) DisablePost(guid string) error {
+	_, err := da.Db.Exec(query.SetPostAsInactive, guid)
+	if err != nil {
+		return err
+	}
+	return nil
 }

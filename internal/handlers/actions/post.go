@@ -15,6 +15,7 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/fsops"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
+	"github.com/gorilla/mux"
 )
 
 func AddPost(w http.ResponseWriter, r *http.Request) {
@@ -86,6 +87,49 @@ func createGUID(title string, user string) string {
 	guid = strings.ReplaceAll(title, " ", "-")
 	guid = guid + strconv.Itoa(random) + user
 	return base64.URLEncoding.EncodeToString([]byte(guid))
+}
+
+func EditPost(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	postGUID := vars["post_guid"]
+	logger.Info.Printf("PUT /action/post/%s %s\n", postGUID, r.RemoteAddr)
+
+	err := r.ParseForm()
+	if err != nil {
+		logger.Error.Printf("PUT /action/post/%s - Could not parse form: %s\n", postGUID, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	p := database.Post{
+		GUID:    postGUID,
+		Content: r.FormValue("post"),
+	}
+	if p.Content == "" {
+		redirect.RedirectToError(w, r, "All form fields must be filled out")
+		return
+	}
+
+	err = orm.Da.UpdatePostText(p.GUID, p.Content)
+	if err != nil {
+		logger.Error.Printf("PUT /action/post/%s - Could not update post: %s\n", postGUID, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func DeletePost(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	postGUID := vars["post_guid"]
+	logger.Info.Printf("DELETE /action/post/%s %s\n", postGUID, r.RemoteAddr)
+
+	err := orm.Da.DisablePost(postGUID)
+	if err != nil {
+		logger.Error.Printf("DELETE /action/post/%s - Could not update comment: %s\n", postGUID, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 /*

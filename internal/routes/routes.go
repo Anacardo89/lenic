@@ -23,6 +23,8 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/action/login", actions.Login).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/logout", actions.Logout).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/post", actions.AddPost).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/post/{post_guid}", actions.EditPost).Methods("PUT").Schemes("https")
+	r.HandleFunc("/action/post/{post_guid}", actions.DeletePost).Methods("DELETE").Schemes("https")
 	r.HandleFunc("/action/post/{post_guid}/comment", actions.AddComment).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/post/{post_guid}/comment/{comment_id}", actions.EditComment).Methods("PUT").Schemes("https")
 	r.HandleFunc("/action/post/{post_guid}/comment/{comment_id}", actions.DeleteComment).Methods("DELETE").Schemes("https")
