@@ -61,21 +61,25 @@
             {{end}}
             <div class="comments">
                 {{range .Comments}}
-                    <div class="comment">
-                        <div><strong>Comment by {{.Author}} {{.Date}}</strong></div>
-                        <div>{{.CommentText}}</div>
-                    </div>
-                    {{if eq .Author $.Session.User.UserName}}
-                        <button class="comment-editor-button" data-id="{{.Id}}">Edit</button>
-                        <div class="comment-edit" id="comment-editor-{{.Id}}">
-                            <h2>Edit</h2>
-                            <form onsubmit="return putComment(this);">
-                                <input type="hidden" class="comment_id" value="{{.Id}}" />
-                                <textarea type="text" class="edit_comment" name="comment">{{.CommentText}}</textarea>
-                                <input type="submit" value="Confirm" />
-                            </form>
+                    <div class="comment" id="{{.Id}}">
+                        <div class="comment-content">
+                            <div><strong>Comment by {{.Author}} {{.Date}}</strong></div>
+                            <div class="comment-text" id="comment-text-{{.Id}}"><p>{{.CommentText}}</p></div>
+                            <div class="comment-edit" id="comment-editor-{{.Id}}">
+                                <form onsubmit="return putComment(this);">
+                                    <input type="hidden" class="comment_id" value="{{.Id}}" />
+                                    <textarea type="textarea" class="edit_comment" name="comment">{{.CommentText}}</textarea>
+                                    <input type="submit" value="Confirm" />
+                                </form>
+                            </div>
                         </div>
-                    {{end}}
+                        {{if eq .Author $.Session.User.UserName}}
+                            <div class="comment-buttons">
+                                <button class="comment-editor-button" data-id="{{.Id}}">Edit</button>
+                                <button class="comment-deleter-button" data-id="{{.Id}}" onclick="deleteComment(this)">Delete</button>
+                            </div>
+                        {{end}}
+                    </div>
                 {{end}}
             </div>
         </div>

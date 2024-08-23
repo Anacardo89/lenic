@@ -4,12 +4,16 @@ for (let i = 0; i < comment_buttons.length; i++) {
     const button = comment_buttons[i];
     button.addEventListener('click', function() {
     const id = comment_buttons[i].getAttribute('data-id');
-    editor_id = 'comment-editor-'+id
-    const edit_form = document.getElementById(editor_id);
+        const comment_text_id = 'comment-text-'+id;
+        const comment_editor_id = 'comment-editor-'+id;
+        const edit_form = document.getElementById(comment_editor_id);
+        const comment_text = document.getElementById(comment_text_id);
         if (edit_form.style.display === 'none' || edit_form.style.display === '') {
             edit_form.style.display = 'block';
+            comment_text.style.display = 'none';
         } else {
             edit_form.style.display = 'none';
+            comment_text.style.display = 'block';
         }
     })
  }
@@ -25,6 +29,20 @@ function putComment(el) {
         data: ({
             comment: edited_comment
         }),
+        success: function(res) {
+            location.reload()
+        }
+    })
+    return false;
+}
+
+function deleteComment(el) {
+    let commentDiv = $(el).closest('.comment');
+    let id = commentDiv.find('.comment_id').val();
+    let guid = $(el).closest('.post_guid').val();
+    $.ajax({
+        url: '/action/post/' + guid + '/comment/' + id,
+        method: 'DELETE',
         success: function(res) {
             location.reload()
         }
