@@ -20,11 +20,11 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 	session := auth.ValidateSession(w, r)
 
 	c := database.Comment{
-		PostGUID:  postGUID,
-		AuthorId:  session.User.Id,
-		Content:   r.FormValue("comment_text"),
-		VoteCount: 0,
-		Active:    1,
+		PostGUID: postGUID,
+		AuthorId: session.User.Id,
+		Content:  r.FormValue("comment_text"),
+		Rating:   0,
+		Active:   1,
 	}
 
 	err := orm.Da.CreateComment(&c)
@@ -88,6 +88,50 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	err = orm.Da.DisableComment(idint)
 	if err != nil {
 		logger.Error.Printf("DELETE /action/post/%s/comment/%s - Could not update comment: %s\n", postGUID, id, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func RateCommentUp(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	postGUID := vars["post_guid"]
+	id := vars["comment_id"]
+	logger.Info.Printf("POST /action/post/%s/comment/%s/up %s\n", postGUID, id, r.RemoteAddr)
+	comment_id, err := strconv.Atoi(id)
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/comment/%s/up - Could not convert id to string: %s\n", postGUID, id, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
+	session := auth.ValidateSession(w, r)
+	err = orm.Da.RateCommentUp(comment_id, session.User.Id)
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/comment/%s/up - Could not update comment rating: %s\n", postGUID, id, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func RateCommentDown(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	postGUID := vars["post_guid"]
+	id := vars["comment_id"]
+	logger.Info.Printf("POST /action/post/%s/comment/%s/down %s\n", postGUID, id, r.RemoteAddr)
+	comment_id, err := strconv.Atoi(id)
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/comment/%s/down - Could not convert id to string: %s\n", postGUID, id, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
+	session := auth.ValidateSession(w, r)
+	err = orm.Da.RateCommentDown(comment_id, session.User.Id)
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/comment/%s/down - Could not update comment rating: %s\n", postGUID, id, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}

@@ -9,12 +9,12 @@ type Comment struct {
 	Content   string
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	VoteCount int
+	Rating    int
 	Active    int
 }
 
 type CommentVotes struct {
-	CommentId int
-	UserId    int
-	VoteValue int
+	CommentId   int
+	UserId      int
+	RatingValue int
 }

@@ -13,12 +13,12 @@ type Post struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	IsPublic  int
-	VoteCount int
+	Rating    int
 	Active    int
 }
 
 type PostVotes struct {
-	PostId    int
-	UserId    int
-	VoteValue int
+	PostId      int
+	UserId      int
+	RatingValue int
 }

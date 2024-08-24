@@ -29,15 +29,15 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 	session := auth.ValidateSession(w, r)
 
 	dbpost := database.Post{
-		GUID:      createGUID(r.FormValue("post_title"), session.User.UserName),
-		Title:     r.FormValue("post_title"),
-		Content:   r.FormValue("post_content"),
-		AuthorId:  session.User.Id,
-		Image:     "",
-		ImageExt:  "",
-		IsPublic:  1,
-		VoteCount: 0,
-		Active:    1,
+		GUID:     createGUID(r.FormValue("post_title"), session.User.UserName),
+		Title:    r.FormValue("post_title"),
+		Content:  r.FormValue("post_content"),
+		AuthorId: session.User.Id,
+		Image:    "",
+		ImageExt: "",
+		IsPublic: 1,
+		Rating:   0,
+		Active:   1,
 	}
 	if dbpost.Title == "" || dbpost.Content == "" {
 		redirect.RedirectToError(w, r, "Post must contain a title and a body")

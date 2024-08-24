@@ -48,17 +48,17 @@ CREATE TABLE posts (
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	is_public TINYINT NOT NULL DEFAULT 0,
-	vote_count INT NOT NULL DEFAULT 0,
+	rating INT NOT NULL DEFAULT 0,
 	active TINYINT NOT NULL DEFAULT 0,
 	PRIMARY KEY (id),
 	UNIQUE KEY post_guid (post_guid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE post_votes (
+CREATE TABLE post_ratings (
 	post_id INT NOT NULL REFERENCES posts(id),
 	user_id INT NOT NULL REFERENCES users(id),
-	vote_value INT NOT NULL DEFAULT 0,
-	UNIQUE KEY post_voted (post_id, user_id)
+	rating_value INT NOT NULL DEFAULT 0,
+	UNIQUE KEY post_rating (post_id, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE comments (
@@ -68,14 +68,42 @@ CREATE TABLE comments (
 	content MEDIUMTEXT,
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	vote_count INT NOT NULL DEFAULT 0,
+	rating INT NOT NULL DEFAULT 0,
 	active TINYINT NOT NULL DEFAULT 0,
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE comment_votes (
+CREATE TABLE comment_ratings (
 	comment_id INT NOT NULL REFERENCES comments(id),
 	user_id INT NOT NULL REFERENCES users(id),
-	vote_value INT NOT NULL DEFAULT 0,
-	UNIQUE KEY post_voted (comment_id, user_id)
+	rating_value INT NOT NULL DEFAULT 0,
+	UNIQUE KEY comment_rating (comment_id, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_after_insert_comment_ratings
+AFTER INSERT ON comment_ratings
+FOR EACH ROW
+BEGIN
+    UPDATE comments
+    SET rating = rating + NEW.rating_value
+    WHERE id = NEW.comment_id;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_after_update_comment_ratings
+AFTER UPDATE ON comment_ratings
+FOR EACH ROW
+BEGIN
+    UPDATE comments
+    SET rating = rating - OLD.rating_value + NEW.rating_value
+    WHERE id = NEW.comment_id;
+END$$
+
+DELIMITER ;
