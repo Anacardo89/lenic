@@ -14,7 +14,7 @@ type Post struct {
 	Image      string
 	Date       string
 	IsPublic   int
-	VoteCount  int
+	Rating     int
 	Comments   []Comment
 	Session    Session
 }

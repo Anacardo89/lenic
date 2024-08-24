@@ -1,9 +1,9 @@
 package presentation
 
 type Comment struct {
-	Id        int
-	Author    string
-	Content   string
-	Date      string
-	VoteCount int
+	Id      int
+	Author  string
+	Content string
+	Date    string
+	Rating  int
 }

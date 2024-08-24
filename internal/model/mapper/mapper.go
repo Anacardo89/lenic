@@ -47,16 +47,16 @@ func Post(p *database.Post, author string) *presentation.Post {
 		Image:      p.Image,
 		Date:       fmt.Sprint(p.CreatedAt.Format(db.DateLayout)),
 		IsPublic:   p.IsPublic,
-		VoteCount:  p.VoteCount,
+		Rating:     p.Rating,
 	}
 }
 
 func Comment(c *database.Comment, author string) *presentation.Comment {
 	return &presentation.Comment{
-		Id:        c.Id,
-		Author:    author,
-		Content:   c.Content,
-		Date:      fmt.Sprint(c.CreatedAt.Format(db.DateLayout)),
-		VoteCount: c.VoteCount,
+		Id:      c.Id,
+		Author:  author,
+		Content: c.Content,
+		Date:    fmt.Sprint(c.CreatedAt.Format(db.DateLayout)),
+		Rating:  c.Rating,
 	}
 }

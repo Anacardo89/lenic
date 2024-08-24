@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="/static/css/header.css">
     <link rel="stylesheet" href="/static/css/post.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- FontAwesome Link -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <header>
@@ -82,9 +84,19 @@
                             <div class="comment-edit" id="comment-editor-{{.Id}}">
                                 <form onsubmit="return editComment(this);">
                                     <input type="hidden" class="comment_id" value="{{.Id}}" />
-                                    <textarea type="textarea" class="edit_comment" name="comment">{{.Content}}</textarea>
+                                    <textarea type="textarea" class="edit_comment" name="comment"> {{.Content}}</textarea>
                                     <input type="submit" value="Confirm" />
                                 </form>
+                            </div>
+                            <br>
+                            <div class="comment-rating-container">
+                                <div class="comment-rating">Rating <strong>{{.Rating}}</strong></div>
+                                {{if $.Session.Authenticated}}
+                                <div class="comment-rate-buttons">
+                                    <button id="comment_rate_up_button-{{.Id}}"><i class="comment-rate-up-button fa-solid fa-chevron-up" data-id="{{.Id}}"></i></button>
+                                    <button id="comment_rate_down_button-{{.Id}}"><i class="comment-rate-douwn-button fa-solid fa-chevron-down" data-id="{{.Id}}"></i></button>
+                                </div>
+                                {{end}}
                             </div>
                         </div>
                         {{if eq .Author $.Session.User.UserName}}
@@ -122,6 +134,8 @@
             </div>
         </div>
     </main>
-    <script src="/static/js/all.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/post.js"></script>
+    <script src="/static/js/comment.js"></script>
 </body>
 </html>

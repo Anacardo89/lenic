@@ -18,7 +18,7 @@ func (da *DataAccess) CreatePost(p *database.Post) error {
 		p.Image,
 		p.ImageExt,
 		p.IsPublic,
-		p.VoteCount,
+		p.Rating,
 		p.Active)
 	return err
 }
@@ -50,7 +50,7 @@ func (da *DataAccess) GetPosts() (*[]database.Post, error) {
 			&createdAt,
 			&updatedAt,
 			&p.IsPublic,
-			&p.VoteCount,
+			&p.Rating,
 			&p.Active,
 		)
 		if err != nil {
@@ -87,7 +87,7 @@ func (da *DataAccess) GetPostByGUID(guid string) (*database.Post, error) {
 		&createdAt,
 		&updatedAt,
 		&p.IsPublic,
-		&p.VoteCount,
+		&p.Rating,
 		&p.Active,
 	)
 	if err != nil {

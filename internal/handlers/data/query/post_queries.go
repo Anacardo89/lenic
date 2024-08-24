@@ -10,7 +10,7 @@ const (
 			post_image=?,
 			image_ext=?,
 			is_public=?,
-			vote_count=?,
+			rating=?,
 			active=?
 	;`
 

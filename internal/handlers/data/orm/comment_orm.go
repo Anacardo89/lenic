@@ -14,7 +14,7 @@ func (da *DataAccess) CreateComment(c *database.Comment) error {
 		c.PostGUID,
 		c.AuthorId,
 		c.Content,
-		c.VoteCount,
+		c.Rating,
 		c.Active)
 	return err
 }
@@ -42,7 +42,7 @@ func (da *DataAccess) GetCommentsByPost(guid string) (*[]database.Comment, error
 			&c.Content,
 			&createdAt,
 			&updatedAt,
-			&c.VoteCount,
+			&c.Rating,
 			&c.Active)
 		if err != nil {
 			return nil, err
@@ -70,6 +70,22 @@ func (da *DataAccess) UpdateCommentText(id int, text string) error {
 
 func (da *DataAccess) DisableComment(id int) error {
 	_, err := da.Db.Exec(query.SetCommentAsInactive, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (da *DataAccess) RateCommentUp(comment_id int, user_id int) error {
+	_, err := da.Db.Exec(query.RateCommentUp, comment_id, user_id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (da *DataAccess) RateCommentDown(comment_id int, user_id int) error {
+	_, err := da.Db.Exec(query.RateCommentDown, comment_id, user_id)
 	if err != nil {
 		return err
 	}

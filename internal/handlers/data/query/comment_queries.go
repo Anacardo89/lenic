@@ -6,7 +6,7 @@ const (
 		SET post_guid=?,
 			author_id=?,
 			content=?,
-			vote_count=?,
+			rating=?,
 			active=?
 	;`
 
@@ -25,5 +25,29 @@ const (
 	UPDATE comments
 		SET active=0
 		WHERE id=?
+	;`
+
+	RateCommentUp = `
+	INSERT INTO comment_ratings
+		SET comment_id=?,
+		user_id=?,
+		rating_value=1
+		ON DUPLICATE KEY UPDATE rating_value = CASE
+        	WHEN rating_value = 1
+				THEN 0
+        	ELSE 1
+    	END
+	;`
+
+	RateCommentDown = `
+	INSERT INTO comment_ratings
+		SET comment_id=?,
+		user_id=?,
+		rating_value=-1
+		ON DUPLICATE KEY UPDATE rating_value = CASE
+        	WHEN rating_value = -1
+				THEN 0
+        	ELSE -1
+    	END
 	;`
 )
