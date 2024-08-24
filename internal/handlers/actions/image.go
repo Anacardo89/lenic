@@ -30,7 +30,7 @@ func Image(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imgPath := fsops.ImgPath + dbpost.Image + dbpost.ImageExtention
+	imgPath := fsops.ImgPath + dbpost.Image + dbpost.ImageExt
 	imgFile, err := os.Open(imgPath)
 	if err != nil {
 		logger.Error.Println("/action/image - Could not open image: ", err)
@@ -46,8 +46,8 @@ func Image(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbpost.ImageExtention = strings.TrimPrefix(dbpost.ImageExtention, ".")
-	mimeType := mime.TypeByExtension(dbpost.ImageExtention)
+	dbpost.ImageExt = strings.TrimPrefix(dbpost.ImageExt, ".")
+	mimeType := mime.TypeByExtension(dbpost.ImageExt)
 	if mimeType == "" {
 		mimeType = "application/octet-stream"
 	}

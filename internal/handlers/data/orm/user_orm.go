@@ -6,14 +6,13 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
-	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
 func (da *DataAccess) CreateUser(u *database.User) error {
 	_, err := da.Db.Exec(query.InsertUser,
 		u.UserName,
-		u.UserEmail,
-		u.UserPass,
+		u.Email,
+		u.HashPass,
 		u.Active)
 	return err
 }
@@ -28,8 +27,10 @@ func (da *DataAccess) GetUserByID(id int) (*database.User, error) {
 	err := row.Scan(
 		&u.Id,
 		&u.UserName,
-		&u.UserEmail,
-		&u.UserPass,
+		&u.Email,
+		&u.HashPass,
+		&u.ProfilePic,
+		&u.ProfilePicExt,
 		&createdAt,
 		&updatedAt,
 		&u.Active)
@@ -57,13 +58,14 @@ func (da *DataAccess) GetUserByName(name string) (*database.User, error) {
 	err := row.Scan(
 		&u.Id,
 		&u.UserName,
-		&u.UserEmail,
-		&u.UserPass,
+		&u.Email,
+		&u.HashPass,
+		&u.ProfilePic,
+		&u.ProfilePicExt,
 		&createdAt,
 		&updatedAt,
 		&u.Active)
 	if err != nil {
-		logger.Error.Println(err)
 		return nil, err
 	}
 	u.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
@@ -87,8 +89,10 @@ func (da *DataAccess) GetUserByEmail(email string) (*database.User, error) {
 	err := row.Scan(
 		&u.Id,
 		&u.UserName,
-		&u.UserEmail,
-		&u.UserPass,
+		&u.Email,
+		&u.HashPass,
+		&u.ProfilePic,
+		&u.ProfilePicExt,
 		&createdAt,
 		&updatedAt,
 		&u.Active)

@@ -12,11 +12,13 @@ import (
 func (da *DataAccess) CreatePost(p *database.Post) error {
 	_, err := da.Db.Exec(query.InsertPost,
 		p.GUID,
+		p.AuthorId,
 		p.Title,
-		p.User,
 		p.Content,
 		p.Image,
-		p.ImageExtention,
+		p.ImageExt,
+		p.IsPublic,
+		p.VoteCount,
 		p.Active)
 	return err
 }
@@ -40,13 +42,15 @@ func (da *DataAccess) GetPosts() (*[]database.Post, error) {
 		err = rows.Scan(
 			&p.Id,
 			&p.GUID,
+			&p.AuthorId,
 			&p.Title,
-			&p.User,
 			&p.Content,
 			&p.Image,
-			&p.ImageExtention,
+			&p.ImageExt,
 			&createdAt,
 			&updatedAt,
+			&p.IsPublic,
+			&p.VoteCount,
 			&p.Active,
 		)
 		if err != nil {
@@ -75,13 +79,15 @@ func (da *DataAccess) GetPostByGUID(guid string) (*database.Post, error) {
 	err := row.Scan(
 		&p.Id,
 		&p.GUID,
+		&p.AuthorId,
 		&p.Title,
-		&p.User,
 		&p.Content,
 		&p.Image,
-		&p.ImageExtention,
+		&p.ImageExt,
 		&createdAt,
 		&updatedAt,
+		&p.IsPublic,
+		&p.VoteCount,
 		&p.Active,
 	)
 	if err != nil {

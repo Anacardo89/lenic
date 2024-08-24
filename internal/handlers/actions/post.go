@@ -29,13 +29,15 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 	session := auth.ValidateSession(w, r)
 
 	dbpost := database.Post{
-		GUID:           createGUID(r.FormValue("post_title"), session.User.UserName),
-		Title:          r.FormValue("post_title"),
-		Content:        r.FormValue("post_content"),
-		User:           session.User.UserName,
-		Image:          "",
-		ImageExtention: "",
-		Active:         1,
+		GUID:      createGUID(r.FormValue("post_title"), session.User.UserName),
+		Title:     r.FormValue("post_title"),
+		Content:   r.FormValue("post_content"),
+		AuthorId:  session.User.Id,
+		Image:     "",
+		ImageExt:  "",
+		IsPublic:  1,
+		VoteCount: 0,
+		Active:    1,
 	}
 	if dbpost.Title == "" || dbpost.Content == "" {
 		redirect.RedirectToError(w, r, "Post must contain a title and a body")
@@ -60,7 +62,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Handle uploaded image
-	dbpost.ImageExtention = filepath.Ext(header.Filename)
+	dbpost.ImageExt = filepath.Ext(header.Filename)
 	fileName := fsops.NameImg(16)
 	dbpost.Image = fileName
 	imgData, err := io.ReadAll(file)
@@ -69,7 +71,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	fsops.SaveImg(imgData, fileName, dbpost.ImageExtention)
+	fsops.SaveImg(imgData, fileName, dbpost.ImageExt)
 
 	// Insert post with image data
 	err = orm.Da.CreatePost(&dbpost)
@@ -131,28 +133,3 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 }
-
-/*
-func PostGET(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	p := presentation.Post{
-		GUID: vars["post_guid"],
-	}
-	err := db.Dbase.QueryRow(query.SelectPostByGUID,
-		p.GUID).Scan(
-		&p.Title,
-		&p.User,
-		&p.RawContent,
-		&p.Date,
-	)
-	if err != nil {
-		logger.Error.Println(err.Error())
-		http.Error(w, http.StatusText(404), http.StatusNotFound)
-		return
-	}
-	// p.Content = template.HTML(p.RawContent)
-	// TODO or not TODO
-
-}
-
-*/

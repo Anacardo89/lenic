@@ -54,7 +54,7 @@ func ValidateSession(w http.ResponseWriter, r *http.Request) presentation.Sessio
 			logger.Error.Println(err)
 			return usrSession
 		}
-		if time.Now().After(dbsession.SessionUpdate.Add(time.Duration(24) * time.Hour)) {
+		if time.Now().After(dbsession.UpdatedAt.Add(time.Duration(24) * time.Hour)) {
 			session.Options.MaxAge = -1
 			session.Save(r, w)
 		}

@@ -31,8 +31,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, "User is not active, check your mail")
 		return
 	}
-	u.UserPass = userPass
-	if !auth.CheckPasswordHash(u.UserPass, u.HashedPass) {
+	u.Pass = userPass
+	if !auth.CheckPasswordHash(u.Pass, u.HashPass) {
 		redirect.RedirectToError(w, r, "Password does not match")
 		return
 	}

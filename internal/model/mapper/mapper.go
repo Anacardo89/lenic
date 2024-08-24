@@ -12,18 +12,20 @@ func User(u *database.User) *presentation.User {
 	return &presentation.User{
 		Id:         u.Id,
 		UserName:   u.UserName,
-		UserEmail:  u.UserEmail,
-		HashedPass: u.UserPass,
+		Email:      u.Email,
+		HashPass:   u.HashPass,
+		ProfilePic: u.ProfilePic,
 		Active:     u.Active,
 	}
 }
 
 func UserToDB(u *presentation.User) *database.User {
 	return &database.User{
-		UserName:  u.UserName,
-		UserEmail: u.UserEmail,
-		UserPass:  u.HashedPass,
-		Active:    u.Active,
+		UserName:   u.UserName,
+		Email:      u.Email,
+		HashPass:   u.HashPass,
+		ProfilePic: u.ProfilePic,
+		Active:     u.Active,
 	}
 }
 
@@ -35,23 +37,26 @@ func Session(s *database.Session) *presentation.Session {
 	}
 }
 
-func Post(p *database.Post) *presentation.Post {
+func Post(p *database.Post, author string) *presentation.Post {
 	return &presentation.Post{
 		Id:         p.Id,
 		GUID:       p.GUID,
-		User:       p.User,
+		Author:     author,
 		Title:      p.Title,
 		RawContent: p.Content,
 		Image:      p.Image,
 		Date:       fmt.Sprint(p.CreatedAt.Format(db.DateLayout)),
+		IsPublic:   p.IsPublic,
+		VoteCount:  p.VoteCount,
 	}
 }
 
-func Comment(c *database.Comment) *presentation.Comment {
+func Comment(c *database.Comment, author string) *presentation.Comment {
 	return &presentation.Comment{
-		Id:          c.Id,
-		Author:      c.CommentAuthor,
-		CommentText: c.CommentText,
-		Date:        fmt.Sprint(c.CreatedAt.Format(db.DateLayout)),
+		Id:        c.Id,
+		Author:    author,
+		Content:   c.Content,
+		Date:      fmt.Sprint(c.CreatedAt.Format(db.DateLayout)),
+		VoteCount: c.VoteCount,
 	}
 }

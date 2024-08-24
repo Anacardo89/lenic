@@ -28,7 +28,13 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, dbpost := range *dbposts {
-		post := mapper.Post(&dbpost)
+		dbuser, err := orm.Da.GetUserByID(dbpost.AuthorId)
+		if err != nil {
+			logger.Error.Printf("/post/%s - Could not get Comment Author: %s\n", dbpost.GUID, err)
+			redirect.RedirectToError(w, r, err.Error())
+			return
+		}
+		post := mapper.Post(&dbpost, dbuser.UserName)
 		post.Content = template.HTML(post.RawContent)
 		index.Posts = append(index.Posts, *post)
 	}

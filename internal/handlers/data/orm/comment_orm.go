@@ -12,8 +12,9 @@ import (
 func (da *DataAccess) CreateComment(c *database.Comment) error {
 	_, err := da.Db.Exec(query.InsertComment,
 		c.PostGUID,
-		c.CommentAuthor,
-		c.CommentText,
+		c.AuthorId,
+		c.Content,
+		c.VoteCount,
 		c.Active)
 	return err
 }
@@ -37,10 +38,11 @@ func (da *DataAccess) GetCommentsByPost(guid string) (*[]database.Comment, error
 		err = rows.Scan(
 			&c.Id,
 			&c.PostGUID,
-			&c.CommentAuthor,
-			&c.CommentText,
+			&c.AuthorId,
+			&c.Content,
 			&createdAt,
 			&updatedAt,
+			&c.VoteCount,
 			&c.Active)
 		if err != nil {
 			return nil, err

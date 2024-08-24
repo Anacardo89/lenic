@@ -3,10 +3,10 @@ package database
 import "time"
 
 type Session struct {
-	Id            int
-	SessionId     string
-	UserId        int
-	SessionStart  time.Time
-	SessionUpdate time.Time
-	Active        int
+	Id        int
+	SessionId string
+	UserId    int
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Active    int
 }

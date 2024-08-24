@@ -19,8 +19,8 @@ func (da *DataAccess) CreateSession(s *database.Session) error {
 
 func (da *DataAccess) GetSessionByID(id int) (*database.Session, error) {
 	var (
-		sessionStart  []byte
-		sessionUpdate []byte
+		createdAt []byte
+		updatedAt []byte
 	)
 	s := database.Session{}
 	row := da.Db.QueryRow(query.SelectSessionById, id)
@@ -28,17 +28,17 @@ func (da *DataAccess) GetSessionByID(id int) (*database.Session, error) {
 		&s.Id,
 		&s.SessionId,
 		&s.UserId,
-		&sessionStart,
-		&sessionUpdate,
+		&createdAt,
+		&updatedAt,
 		&s.Active)
 	if err != nil {
 		return nil, err
 	}
-	s.SessionStart, err = time.Parse(db.DateLayout, string(sessionStart))
+	s.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
 	if err != nil {
 		return nil, err
 	}
-	s.SessionUpdate, err = time.Parse(db.DateLayout, string(sessionUpdate))
+	s.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
 	if err != nil {
 		return nil, err
 	}
@@ -47,8 +47,8 @@ func (da *DataAccess) GetSessionByID(id int) (*database.Session, error) {
 
 func (da *DataAccess) GetSessionBySessionID(sid string) (*database.Session, error) {
 	var (
-		sessionStart  []byte
-		sessionUpdate []byte
+		createdAt []byte
+		updatedAt []byte
 	)
 	s := database.Session{}
 	row := da.Db.QueryRow(query.SelectSessionBySessionId, sid)
@@ -56,17 +56,17 @@ func (da *DataAccess) GetSessionBySessionID(sid string) (*database.Session, erro
 		&s.Id,
 		&s.SessionId,
 		&s.UserId,
-		&sessionStart,
-		&sessionUpdate,
+		&createdAt,
+		&updatedAt,
 		&s.Active)
 	if err != nil {
 		return nil, err
 	}
-	s.SessionStart, err = time.Parse(db.DateLayout, string(sessionStart))
+	s.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
 	if err != nil {
 		return nil, err
 	}
-	s.SessionUpdate, err = time.Parse(db.DateLayout, string(sessionUpdate))
+	s.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
 	if err != nil {
 		return nil, err
 	}

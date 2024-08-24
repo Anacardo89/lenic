@@ -7,12 +7,14 @@ import (
 type Post struct {
 	Id         int
 	GUID       string
-	User       string
+	Author     string
 	Title      string
 	RawContent string
 	Content    template.HTML
 	Image      string
 	Date       string
+	IsPublic   int
+	VoteCount  int
 	Comments   []Comment
 	Session    Session
 }

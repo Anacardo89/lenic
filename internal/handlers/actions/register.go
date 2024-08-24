@@ -30,13 +30,14 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var u = &presentation.User{
-		UserName:  r.FormValue("user_name"),
-		UserEmail: r.FormValue("user_email"),
-		UserPass:  r.FormValue("user_password"),
-		Active:    0,
+		UserName:   r.FormValue("user_name"),
+		Email:      r.FormValue("user_email"),
+		Pass:       r.FormValue("user_password"),
+		ProfilePic: "",
+		Active:     0,
 	}
 	pass2 := r.FormValue("user_password2")
-	if u.UserPass != pass2 {
+	if u.Pass != pass2 {
 		redirect.RedirectToError(w, r, "Password strings don't match")
 		return
 	}
@@ -47,14 +48,14 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, "User already exists")
 		return
 	}
-	_, err = orm.Da.GetUserByEmail(u.UserEmail)
+	_, err = orm.Da.GetUserByEmail(u.Email)
 	if err != sql.ErrNoRows {
 		redirect.RedirectToError(w, r, "Email already exists")
 		return
 	}
 
 	// Password Hashing
-	u.HashedPass, err = auth.HashPassword(u.UserPass)
+	u.HashPass, err = auth.HashPassword(u.Pass)
 	if err != nil {
 		logger.Error.Println("/action/register - Could not hash password: ", err)
 		redirect.RedirectToError(w, r, err.Error())
@@ -63,7 +64,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	// Send Regsiter Mail to Queue
 	msg := mqmodel.Register{
-		Email: u.UserEmail,
+		Email: u.Email,
 		User:  u.UserName,
 		Link:  makeActivateUserLink(u.UserName),
 	}
@@ -83,6 +84,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	// Insert User in DB
 	dbuser := mapper.UserToDB(u)
+	dbuser.ProfilePicExt = ""
 	err = orm.Da.CreateUser(dbuser)
 	if err != nil {
 		logger.Error.Println("/action/register - Could not create user: ", err)
