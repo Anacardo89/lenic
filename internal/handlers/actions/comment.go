@@ -20,10 +20,11 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 	session := auth.ValidateSession(w, r)
 
 	c := database.Comment{
-		PostGUID:      postGUID,
-		CommentAuthor: session.User.UserName,
-		CommentText:   r.FormValue("comment_text"),
-		Active:        1,
+		PostGUID:  postGUID,
+		AuthorId:  session.User.Id,
+		Content:   r.FormValue("comment_text"),
+		VoteCount: 0,
+		Active:    1,
 	}
 
 	err := orm.Da.CreateComment(&c)
@@ -54,15 +55,15 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c := database.Comment{
-		Id:          idint,
-		CommentText: r.FormValue("comment"),
+		Id:      idint,
+		Content: r.FormValue("comment"),
 	}
-	if c.CommentText == "" {
+	if c.Content == "" {
 		redirect.RedirectToError(w, r, "All form fields must be filled out")
 		return
 	}
 
-	err = orm.Da.UpdateCommentText(c.Id, c.CommentText)
+	err = orm.Da.UpdateCommentText(c.Id, c.Content)
 	if err != nil {
 		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not update comment: %s\n", postGUID, id, err)
 		redirect.RedirectToError(w, r, err.Error())

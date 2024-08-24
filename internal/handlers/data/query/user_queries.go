@@ -3,10 +3,10 @@ package query
 const (
 	InsertUser = `
 	INSERT INTO users
-		SET user_name=?,
-			user_email=?,
-			user_password=?,
-			user_active=?
+		SET username=?,
+			email=?,
+			hashpass=?,
+			active=?
 	;`
 
 	SelectUserById = `
@@ -16,23 +16,23 @@ const (
 
 	SelectUserByName = `
 	SELECT * FROM users
-		WHERE user_name = ?
+		WHERE username = ?
 	;`
 
 	SelectUserByEmail = `
 	SELECT * FROM users
-		WHERE user_email = ?
+		WHERE email = ?
 	;`
 
 	UpdateUserActive = `
 	UPDATE users
-		SET user_active=1
-		WHERE user_name=?
+		SET active=1
+		WHERE username=?
 	;`
 
 	UpdatePassword = `
 	UPDATE users
-		SET user_password = ?
-		WHERE user_name = ?
+		SET hashpass = ?
+		WHERE username = ?
 	;`
 )

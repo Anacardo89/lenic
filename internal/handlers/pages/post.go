@@ -37,7 +37,13 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	p := mapper.Post(dbpost)
+	dbuser, err := orm.Da.GetUserByID(dbpost.AuthorId)
+	if err != nil {
+		logger.Error.Printf("/post/%s - Could not get Author: %s\n", postGUID, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	p := mapper.Post(dbpost, dbuser.UserName)
 	p.Session = auth.ValidateSession(w, r)
 	p.Content = template.HTML(p.RawContent)
 	p.Comments = []presentation.Comment{}
@@ -47,9 +53,16 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println(err)
 	}
 	for _, dbcomment := range *dbcomments {
-		c := mapper.Comment(&dbcomment)
+		dbuser, err := orm.Da.GetUserByID(dbcomment.AuthorId)
+		if err != nil {
+			logger.Error.Printf("/post/%s - Could not get Comment Author: %s\n", postGUID, err)
+			redirect.RedirectToError(w, r, err.Error())
+			return
+		}
+		c := mapper.Comment(&dbcomment, dbuser.UserName)
 		p.Comments = append(p.Comments, *c)
 	}
+	logger.Debug.Println(p.Comments)
 	t, err := template.ParseFiles("templates/post.html")
 	if err != nil {
 		logger.Error.Printf("/post/%s - Could not parse template: %s\n", postGUID, err)

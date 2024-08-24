@@ -4,17 +4,19 @@ const (
 	InsertPost = `
 	INSERT INTO posts
 		SET post_guid=?,
-			post_title=?,
-			post_user=?,
-			post_content=?,
+			author_id=?,
+			title=?,
+			content=?,
 			post_image=?,
-			post_image_ext=?,
-			post_active=?
+			image_ext=?,
+			is_public=?,
+			vote_count=?,
+			active=?
 	;`
 
 	SelectActivePosts = `
 	SELECT * FROM posts
-		WHERE post_active=1
+		WHERE active=1
 		ORDER BY created_at DESC
 	;`
 
@@ -25,13 +27,13 @@ const (
 
 	UpdatePostText = `
 	UPDATE posts
-		SET post_content=?
+		SET content=?
 		WHERE post_guid=?
 	;`
 
 	SetPostAsInactive = `
 	UPDATE posts
-		SET post_active=0
+		SET active=0
 		WHERE post_guid=?
 	;`
 )

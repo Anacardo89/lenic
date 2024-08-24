@@ -38,7 +38,7 @@
                 <div class="title">
                     <h1>{{.Title}}</h1>
                     <div class="post-content">
-                        <div><p><strong>Author: {{.User}}</strong></p></div>
+                        <div><p><strong>Author: {{.Author}}</strong></p></div>
                         <div><p><strong>Posted in: {{.Date}}</strong></p></div>
                         <br>
                         <div id="post-text"><p>{{.Content}}</p></div>
@@ -50,7 +50,7 @@
                             </form>
                         </div>
                         <br>
-                        {{if eq .User $.Session.User.UserName}}
+                        {{if eq .Author .Session.User.UserName}}
                             <div class="post-buttons">
                                 <button id="post-editor-button">Edit</button>
                                 <button id="post-deleter-button">Delete</button>
@@ -78,11 +78,11 @@
                     <div class="comment" data-id="{{.Id}}">
                         <div class="comment-content">
                             <div><strong>Comment by {{.Author}} {{.Date}}</strong></div>
-                            <div class="comment-text" id="comment-text-{{.Id}}"><p>{{.CommentText}}</p></div>
+                            <div class="comment-text" id="comment-text-{{.Id}}"><p>{{.Content}}</p></div>
                             <div class="comment-edit" id="comment-editor-{{.Id}}">
                                 <form onsubmit="return editComment(this);">
                                     <input type="hidden" class="comment_id" value="{{.Id}}" />
-                                    <textarea type="textarea" class="edit_comment" name="comment">{{.CommentText}}</textarea>
+                                    <textarea type="textarea" class="edit_comment" name="comment">{{.Content}}</textarea>
                                     <input type="submit" value="Confirm" />
                                 </form>
                             </div>
@@ -125,4 +125,3 @@
     <script src="/static/js/all.js"></script>
 </body>
 </html>
-

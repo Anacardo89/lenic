@@ -5,13 +5,13 @@ const (
 	INSERT INTO sessions
 		SET session_id=?,
 			user_id=?,
-			session_active=?
-		ON DUPLICATE KEY UPDATE user_id=?, session_update=CURRENT_TIMESTAMP
+			active=?
+		ON DUPLICATE KEY UPDATE user_id=?, updated_at=CURRENT_TIMESTAMP
 	;`
 
 	SelectSessionById = `
 	SELECT * FROM sessions
-		WHERE session_id=?
+		WHERE id=?
 	;`
 
 	SelectSessionBySessionId = `

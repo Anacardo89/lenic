@@ -35,7 +35,7 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	msg := mqmodel.PasswordRecover{
-		Email: dbuser.UserEmail,
+		Email: dbuser.Email,
 		User:  dbuser.UserName,
 		Link:  makePasswordRecoverMail(dbuser.UserName),
 	}
