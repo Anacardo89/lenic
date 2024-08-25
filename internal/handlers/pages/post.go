@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"database/sql"
 	"html/template"
 	"net/http"
 
@@ -43,8 +44,23 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+
 	p := mapper.Post(dbpost, dbuser.UserName)
+
 	p.Session = auth.ValidateSession(w, r)
+	pr, err := orm.Da.GetPostUserRating(dbpost.Id, p.Session.User.Id)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			logger.Error.Printf("/post/%s - Could not get rating: %s\n", postGUID, err)
+			redirect.RedirectToError(w, r, err.Error())
+			return
+		}
+	}
+	if pr != nil {
+		p.UserRating = pr.RatingValue
+	} else {
+		p.UserRating = 0
+	}
 	p.Content = template.HTML(p.RawContent)
 	p.Comments = []presentation.Comment{}
 
@@ -59,10 +75,22 @@ func Post(w http.ResponseWriter, r *http.Request) {
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
+		cr, err := orm.Da.GetCommentUserRating(dbcomment.Id, p.Session.User.Id)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				logger.Error.Printf("/post/%s - Could not get comment rating: %s\n", postGUID, err)
+				redirect.RedirectToError(w, r, err.Error())
+				return
+			}
+		}
 		c := mapper.Comment(&dbcomment, dbuser.UserName)
+		if cr != nil {
+			c.UserRating = cr.RatingValue
+		} else {
+			c.UserRating = 0
+		}
 		p.Comments = append(p.Comments, *c)
 	}
-	logger.Debug.Println(p.Comments)
 	t, err := template.ParseFiles("templates/post.html")
 	if err != nil {
 		logger.Error.Printf("/post/%s - Could not parse template: %s\n", postGUID, err)

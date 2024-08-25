@@ -133,3 +133,49 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 }
+
+func RatePostUp(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	postGUID := vars["post_guid"]
+	logger.Info.Printf("POST /action/post/%s/up %s\n", postGUID, r.RemoteAddr)
+
+	session := auth.ValidateSession(w, r)
+
+	dbpost, err := orm.Da.GetPostByGUID(postGUID)
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/up - Could not get post: %s\n", postGUID, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
+	err = orm.Da.RatePostUp(dbpost.Id, session.User.Id)
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/up - Could not update post rating: %s\n", postGUID, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func RatePostDown(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	postGUID := vars["post_guid"]
+	logger.Info.Printf("POST /action/post/%s/down %s\n", postGUID, r.RemoteAddr)
+
+	session := auth.ValidateSession(w, r)
+
+	dbpost, err := orm.Da.GetPostByGUID(postGUID)
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/down - Could not get post: %s\n", postGUID, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
+	err = orm.Da.RatePostDown(dbpost.Id, session.User.Id)
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/down - Could not update post rating: %s\n", postGUID, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

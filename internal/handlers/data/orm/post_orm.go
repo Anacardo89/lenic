@@ -119,3 +119,19 @@ func (da *DataAccess) DisablePost(guid string) error {
 	}
 	return nil
 }
+
+func (da *DataAccess) RatePostUp(post_id int, user_id int) error {
+	_, err := da.Db.Exec(query.RatePostUp, post_id, user_id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (da *DataAccess) RatePostDown(post_id int, user_id int) error {
+	_, err := da.Db.Exec(query.RatePostDown, post_id, user_id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

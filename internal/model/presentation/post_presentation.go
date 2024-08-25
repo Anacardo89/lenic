@@ -15,6 +15,7 @@ type Post struct {
 	Date       string
 	IsPublic   int
 	Rating     int
+	UserRating int
 	Comments   []Comment
 	Session    Session
 }

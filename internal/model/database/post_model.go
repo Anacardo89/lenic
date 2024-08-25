@@ -17,7 +17,7 @@ type Post struct {
 	Active    int
 }
 
-type PostVotes struct {
+type PostRatings struct {
 	PostId      int
 	UserId      int
 	RatingValue int

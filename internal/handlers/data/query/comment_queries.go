@@ -12,7 +12,7 @@ const (
 
 	SelectActiveCommentsByPost = `
 	SELECT * FROM comments
-		WHERE post_guid=? AND active=1
+		WHERE post_guid=? AND active=1 ORDER BY rating DESC
 	;`
 
 	UpdateCommentText = `
@@ -49,5 +49,10 @@ const (
 				THEN 0
         	ELSE -1
     	END
+	;`
+
+	SelectCommentUserRating = `
+	SELECT * FROM comment_ratings
+		WHERE comment_id=? AND user_id=?
 	;`
 )

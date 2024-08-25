@@ -1,4 +1,10 @@
 
+let guidElem;
+let guidElems = document.getElementsByClassName('post_id');
+if (guidElems.length > 0) {
+    guidElem = guidElems[0];
+}
+guid = guidElem.getAttribute('value');
 
 // Edit post textarea hide/show
 post_edit_button = $('#post-editor-button');
@@ -17,10 +23,13 @@ post_edit_button.on('click', function() {
 // Delete post modal behaviour
 const postModal = document.getElementById('modal-container-post');
 const modalPostCancelBtn = document.getElementById('delete-post-sure-no');
-deletePostBtn = document.querySelector('#post-deleter-button')
-deletePostBtn.addEventListener('click', function() {
-    postModal.style.display = "block";
-});
+let  deletePostBtn = document.querySelector('#post-deleter-button')
+if (deletePostBtn !== null) {
+    deletePostBtn.addEventListener('click', function() {
+        postModal.style.display = "block";
+    });
+}
+
 modalPostCancelBtn.addEventListener('click', function() {
     postModal.style.display = 'none';
 });
@@ -33,6 +42,27 @@ window.addEventListener('click', function(event) {
         postModal.style.display = 'none';
     }
 });
+
+// Rate comment buttons behaviour
+let rate_post_up_button = document.getElementById('post_rate_up_button');
+rate_post_up_button.addEventListener('click', function() {
+    ratePostUp();
+})
+
+let rate_post_down_button = document.getElementById('post_rate_down_button');
+rate_post_down_button.addEventListener('click', function() {
+    ratePostDown();
+})
+
+let rate_post_hidden = document.getElementById('post_rating_hidden');
+let postUserRating = rate_post_hidden.getAttribute('value');
+if (postUserRating > 0) {
+    let rate_up_button = rate_post_hidden.previousElementSibling;
+    rate_up_button.style.color = 'orange';
+} else if (postUserRating < 0) {
+    let rate_down_button = rate_post_hidden.nextElementSibling;
+    rate_down_button.style.color = 'orange';
+}
 
 
 // AJAX calls
@@ -85,6 +115,42 @@ function deletePost(el) {
         method: 'DELETE',
         success: function(res) {
             window.location.href = '/'
+        },
+        error: function(err) {
+            console.error("Error:", err);
+        }
+    })
+    return false;
+}
+
+// Rate post Up
+function ratePostUp() {
+    $.ajax({
+        url: '/action/post/' + guid + '/up',
+        method: 'POST',
+        data: ({
+            rating: 1
+        }),
+        success: function(res) {
+            location.reload()
+        },
+        error: function(err) {
+            console.error("Error:", err);
+        }
+    })
+    return false;
+}
+
+// Rate post Down
+function ratePostDown() {
+    $.ajax({
+        url: '/action/post/' + guid + '/down',
+        method: 'POST',
+        data: ({
+            rating: -1
+        }),
+        success: function(res) {
+            location.reload()
         },
         error: function(err) {
             console.error("Error:", err);

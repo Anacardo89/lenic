@@ -43,19 +43,23 @@ a .post-preview {
     color: #333;
 }
 
+
 .post-preview {
     margin: 0;
     background-color: rgb(254, 186, 109);
     box-shadow: 5px 5px #857456;
     padding: 4px 20px;
     flex: 1;
-    transition: transform 0.2s;
 }
 
 .post-preview-content {
     background-color: azure;
     box-shadow: -3px -3px rgb(57, 97, 97);
     padding: 10px 20px;
+}
+
+.post-preview-content:hover {
+    background-color: white;
 }
 
 .post-preview-container a:first-child .post-preview {
