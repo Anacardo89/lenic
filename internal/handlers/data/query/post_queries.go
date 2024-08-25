@@ -36,4 +36,33 @@ const (
 		SET active=0
 		WHERE post_guid=?
 	;`
+
+	RatePostUp = `
+	INSERT INTO post_ratings
+		SET post_id=?,
+		user_id=?,
+		rating_value=1
+		ON DUPLICATE KEY UPDATE rating_value = CASE
+        	WHEN rating_value = 1
+				THEN 0
+        	ELSE 1
+    	END
+	;`
+
+	RatePostDown = `
+	INSERT INTO post_ratings
+		SET post_id=?,
+		user_id=?,
+		rating_value=-1
+		ON DUPLICATE KEY UPDATE rating_value = CASE
+        	WHEN rating_value = -1
+				THEN 0
+        	ELSE -1
+    	END
+	;`
+
+	SelectPostUserRating = `
+	SELECT * FROM post_ratings
+		WHERE post_id=? AND user_id=?
+	;`
 )

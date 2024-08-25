@@ -1,5 +1,6 @@
 
 
+
 // Edit comment textarea hide/show
 let edit_comment_buttons = document.getElementsByClassName('comment-editor-button');
 for (let i = 0; i < edit_comment_buttons.length; i++) {
@@ -33,7 +34,7 @@ for (let i = 0; i < rate_comment_up_buttons.length; i++) {
     })
 }
 
-let rate_comment_down_buttons = document.getElementsByClassName('comment-rate-up-button');
+let rate_comment_down_buttons = document.getElementsByClassName('comment-rate-down-button');
 for (let i = 0; i < rate_comment_down_buttons.length; i++) {
     const button = rate_comment_down_buttons[i];
     button.addEventListener('click', function() {
@@ -44,6 +45,19 @@ for (let i = 0; i < rate_comment_down_buttons.length; i++) {
             rateCommentDown(commentElement);
         }
     })
+}
+
+let rate_comment_hiddens = document.getElementsByClassName('comment_rating_hidden');
+for (let i = 0; i < rate_comment_hiddens.length; i++) {
+    let rate_comment_hidden = rate_comment_hiddens[i];
+    let userRating = rate_comment_hidden.getAttribute('value');
+    if (userRating > 0) {
+        let rate_up_button = rate_comment_hidden.previousElementSibling;
+        rate_up_button.style.color = 'orange';
+    } else if (userRating < 0) {
+        let rate_down_button = rate_comment_hidden.nextElementSibling;
+        rate_down_button.style.color = 'orange';
+    }
 }
 
 
@@ -85,7 +99,6 @@ window.onclick = function(event) {
 // Edit Comment
 function editComment(el) {
     let id = $(el).find('.comment_id').val();
-    let guid = $(el).find('.post_guid').val();
     let edited_comment = $(el).find('.edit_comment').val();
     $.ajax({
         url: '/action/post/' + guid + '/comment/' + id,
@@ -106,7 +119,6 @@ function editComment(el) {
 // Delete comment
 function deleteComment(el) {
     let id = el.find('.comment_id').val();
-    let guid = $(el).closest('.post_guid').val();
     $.ajax({
         url: '/action/post/' + guid + '/comment/' + id,
         method: 'DELETE',
@@ -123,7 +135,6 @@ function deleteComment(el) {
 // Rate comment Up
 function rateCommentUp(el) {
     let id = $(el).find('.comment_id').val();
-    let guid = $(el).find('.post_guid').val();
     $.ajax({
         url: '/action/post/' + guid + '/comment/' + id + '/up',
         method: 'POST',
@@ -143,7 +154,6 @@ function rateCommentUp(el) {
 // Rate comment Down
 function rateCommentDown(el) {
     let id = $(el).find('.comment_id').val();
-    let guid = $(el).find('.post_guid').val();
     $.ajax({
         url: '/action/post/' + guid + '/comment/' + id + '/down',
         method: 'POST',

@@ -61,6 +61,28 @@ button:active {
     display: none;
 }
 
+.post-rating-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.post-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.post-rating-container button {
+    background-color: transparent;
+    color: #333;
+    padding: 0;
+    margin: 0;
+}
+
+.post-rate-up-button {
+    margin-left: 10px;
+}
+
 /* Comments */
 .comment-section {
     background-color: rgb(254 186 109 / 75%);

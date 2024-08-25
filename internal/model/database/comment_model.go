@@ -13,7 +13,7 @@ type Comment struct {
 	Active    int
 }
 
-type CommentVotes struct {
+type CommentRatings struct {
 	CommentId   int
 	UserId      int
 	RatingValue int

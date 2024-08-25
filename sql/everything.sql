@@ -107,3 +107,31 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_after_insert_post_ratings
+AFTER INSERT ON post_ratings
+FOR EACH ROW
+BEGIN
+    UPDATE posts
+    SET rating = rating + NEW.rating_value
+    WHERE id = NEW.post_id;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_after_update_post_ratings
+AFTER UPDATE ON post_ratings
+FOR EACH ROW
+BEGIN
+    UPDATE posts
+    SET rating = rating - OLD.rating_value + NEW.rating_value
+    WHERE id = NEW.post_id;
+END$$
+
+DELIMITER ;
