@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"encoding/base64"
 	"fmt"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
@@ -10,12 +11,13 @@ import (
 
 func User(u *database.User) *presentation.User {
 	return &presentation.User{
-		Id:         u.Id,
-		UserName:   u.UserName,
-		Email:      u.Email,
-		HashPass:   u.HashPass,
-		ProfilePic: u.ProfilePic,
-		Active:     u.Active,
+		Id:          u.Id,
+		UserName:    u.UserName,
+		EncodedName: base64.URLEncoding.EncodeToString([]byte(u.UserName)),
+		Email:       u.Email,
+		HashPass:    u.HashPass,
+		ProfilePic:  u.ProfilePic,
+		Active:      u.Active,
 	}
 }
 
