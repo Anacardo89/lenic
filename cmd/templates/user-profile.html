@@ -39,6 +39,7 @@
                     {{end}}
                 */}}
                 <div class="profile-info">
+                    <input type="hidden" id="encoded-user" value="{{.User.EncodedName}}" />
                     <div><p><strong>User: {{.User.UserName}}</strong></p></div>
                     {{if eq .User.UserName .Session.User.UserName}}
                         <p>{{.User.Email}}</p>
@@ -48,11 +49,17 @@
                 <br>
                 <div class="follow-container">
                     <div class="follower-info">
-                        <div><a href="/user/{{.User.EncodedName}}/followers"><strong>Followers:</strong></a> 0</div>
-                        <div><a href="/user/{{.User.EncodedName}}/following"><strong>Following:</strong></a> 0</div>
+                        <div><a href="/user/{{.User.EncodedName}}/followers"><strong>Followers:</strong></a> {{.User.Followers}}</div>
+                        <div><a href="/user/{{.User.EncodedName}}/following"><strong>Following:</strong></a> {{.User.Following}}</div>
                     </div>
                     {{if .Session.Authenticated}}
-                        <button>Follow</button>
+                        {{if ne .Session.User.UserName .User.UserName}}
+                            {{if .Follows}}
+                                <button id="unfollow-button">Unfollow</button>
+                            {{else}}
+                                <button id="follow-button">Follow</button>
+                            {{end}}
+                        {{end}}
                     {{end}}
                 </div>
             </div>
@@ -74,5 +81,6 @@
         </div>
     </main>
     <script src="/static/js/auth.js"></script>
+    <script src="/static/js/user.js"></script>
 </body>
 </html>

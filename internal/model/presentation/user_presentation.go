@@ -7,6 +7,8 @@ type User struct {
 	Email       string
 	Pass        string
 	ProfilePic  string
+	Followers   int
+	Following   int
 	HashPass    string
 	Active      int
 }

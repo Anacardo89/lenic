@@ -11,6 +11,8 @@ type User struct {
 	HashPass      string
 	ProfilePic    string
 	ProfilePicExt string
+	Followers     int
+	Following     int
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	Active        int

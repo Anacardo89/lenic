@@ -52,6 +52,10 @@ button:active {
     text-align: center;
 }
 
+.post-content a {
+    color: #333;
+}
+
 #post-text {
     font-size: 1.1rem;
     display: block;
@@ -109,6 +113,10 @@ button:active {
     flex-direction: row;
     justify-content: space-between;
     margin: 4px 0;
+}
+
+.comment-content a {
+    color: #333;
 }
 
 textarea {

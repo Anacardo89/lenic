@@ -17,7 +17,16 @@ func User(u *database.User) *presentation.User {
 		Email:       u.Email,
 		HashPass:    u.HashPass,
 		ProfilePic:  u.ProfilePic,
+		Followers:   u.Followers,
+		Following:   u.Following,
 		Active:      u.Active,
+	}
+}
+
+func Follows(f *database.Follows) *presentation.Follows {
+	return &presentation.Follows{
+		FollowerId: f.FollowerId,
+		FollowedId: f.FollowedId,
 	}
 }
 
@@ -41,24 +50,26 @@ func Session(s *database.Session) *presentation.Session {
 
 func Post(p *database.Post, author string) *presentation.Post {
 	return &presentation.Post{
-		Id:         p.Id,
-		GUID:       p.GUID,
-		Author:     author,
-		Title:      p.Title,
-		RawContent: p.Content,
-		Image:      p.Image,
-		Date:       fmt.Sprint(p.CreatedAt.Format(db.DateLayout)),
-		IsPublic:   p.IsPublic,
-		Rating:     p.Rating,
+		Id:            p.Id,
+		GUID:          p.GUID,
+		Author:        author,
+		AuthorEncoded: base64.URLEncoding.EncodeToString([]byte(author)),
+		Title:         p.Title,
+		RawContent:    p.Content,
+		Image:         p.Image,
+		Date:          fmt.Sprint(p.CreatedAt.Format(db.DateLayout)),
+		IsPublic:      p.IsPublic,
+		Rating:        p.Rating,
 	}
 }
 
 func Comment(c *database.Comment, author string) *presentation.Comment {
 	return &presentation.Comment{
-		Id:      c.Id,
-		Author:  author,
-		Content: c.Content,
-		Date:    fmt.Sprint(c.CreatedAt.Format(db.DateLayout)),
-		Rating:  c.Rating,
+		Id:            c.Id,
+		Author:        author,
+		AuthorEncoded: base64.URLEncoding.EncodeToString([]byte(author)),
+		Content:       c.Content,
+		Date:          fmt.Sprint(c.CreatedAt.Format(db.DateLayout)),
+		Rating:        c.Rating,
 	}
 }
