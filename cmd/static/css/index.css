@@ -69,10 +69,10 @@ a .post-preview {
     background-color: white;
 }
 
-.post-preview-container a:first-child .post-preview {
+.post-preview-container .post-preview:first-child {
     padding-top: 20px;
 }
 
-.post-preview-container a:last-child .post-preview {
+.post-preview-container .post-preview:last-child {
     padding-bottom: 20px;
 }

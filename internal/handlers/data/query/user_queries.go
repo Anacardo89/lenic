@@ -36,6 +36,13 @@ const (
 		WHERE username = ?
 	;`
 
+	UpdateProfilePic = `
+	UPDATE users
+		SET profile_pic=?,
+			profile_pic_ext=?
+		WHERE username=?
+	;`
+
 	SelectUserFollows = `
 	SELECT * FROM follows
 		WHERE follower_id=? AND followed_id=?

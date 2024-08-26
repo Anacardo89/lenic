@@ -1,6 +1,4 @@
 
-
-
 button {
     background-color: orange;
     color: white;
@@ -18,10 +16,15 @@ button:active {
     background-color: rgb(209, 136, 0);
 }
 
+img {
+    max-height: 200px;
+    margin-bottom: 20px;
+}
+
 /* Profile */
 .profile-container {
     background-color: rgb(254 186 109 / 75%);
-    width: 65%;
+    width: 80%;
     margin: 75px auto 20px auto;
     display: flex;
     flex-direction: column;
@@ -48,8 +51,33 @@ button:active {
     text-align: center;
 }
 
+.profile-personal {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.profile-pic {
+    flex: 1;
+}
+
+.profile-pic-add-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.profile-pic button {
+    display: none;
+    margin-left: 20px;
+}
+
+.profile-info {
+    flex: 2;
+}
+
 .follow-container {
     width: 100%;
+    margin-top: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -82,6 +110,13 @@ a .post-preview {
     color: #333;
 }
 
+.post-preview-content h2 {
+    color: #333;
+}
+
+.post-preview-content a {
+    color: #333;
+}
 
 .post-preview {
     margin: 0;
@@ -101,10 +136,10 @@ a .post-preview {
     background-color: white;
 }
 
-.post-preview-container a:first-child .post-preview {
+.post-preview-container .post-preview:first-child {
     padding-top: 20px;
 }
 
-.post-preview-container a:last-child .post-preview {
+.post-preview-container .post-preview:last-child {
     padding-bottom: 20px;
 }

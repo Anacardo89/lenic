@@ -71,7 +71,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	fsops.SaveImg(imgData, fileName, dbpost.ImageExt)
+	fsops.SaveImg(imgData, fsops.PostImgPath, fileName, dbpost.ImageExt)
 
 	// Insert post with image data
 	err = orm.Da.CreatePost(&dbpost)

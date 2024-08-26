@@ -36,18 +36,18 @@
             <button class="add-post-button"><a href="/newPost">Create a new Post</a></button>
         </div>
         {{end}}
-        <div class="post-preview-container">
-            {{range .Posts}}
-                <a href="/post/{{.GUID}}">
-                    <div class="post-preview">
+        <div class="post-feed">
+            <div class="post-preview-container">
+                {{range .Posts}}
+                    <div class="post-preview" onclick="location.href='/post/{{.GUID}}';">
                         <div class="post-preview-content">
                             <div><h2>{{.Title}}</h2></div>
-                            <div>By <a href="/user/{{.AuthorEncoded}}"><strong>{{.Author}}</strong></a> on <strong>{{.Date}}</strong></div>
+                            <div>By <a href="/user/{{.AuthorEncoded}}" onclick="event.stopPropagation();"><strong>{{.Author}}</strong></a> on <strong>{{.Date}}</strong></div>
                             <div>{{.TruncatedText}}</div>
                         </div>
                     </div>
-                </a>
-            {{end}}
+                {{end}}
+            </div>
         </div>
     </main>
     <script src="/static/js/auth.js"></script>
