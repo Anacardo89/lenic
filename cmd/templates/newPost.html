@@ -15,12 +15,19 @@
             <h1 class="home-link"><a href="/home">TPSI.25 Blog</a></h1>
             <p class="logo-bottom">O Blog da malta</p>
         </div>
-        <div class="logout">
-            <p>You are logged in as <strong>{{.Session.User.UserName}}</strong></p>
-            <form action="/action/logout" method="POST">
-                <button class="header-button" onsubmit="return logout(this);"><strong>Logout</strong></button>
-            </form>
-        </div>
+        {{if not .Session.Authenticated}}
+            <div class="header-buttons">
+                <a href="/login"><button class="header-button"><strong>Login</strong></button></a>
+                <a href="/register"><button class="header-button"><strong>Register</strong></button></a>
+            </div>
+        {{else}}
+            <div class="logout">
+                <p>You are logged in as <a href="/user/{{.Session.User.EncodedName}}"><strong>{{.Session.User.UserName}}</strong></a></p>
+                <form action="/action/logout" method="POST">
+                    <button class="header-button" onsubmit="return logout(this);"><strong>Logout</strong></button>
+                </form>
+            </div>
+        {{end}}
     </header>
     <div class="content">
         <div class="post-form">
