@@ -43,6 +43,13 @@ a .post-preview {
     color: #333;
 }
 
+.post-preview-content h2 {
+    color: #333;
+}
+
+.post-preview-content a {
+    color: #333;
+}
 
 .post-preview {
     margin: 0;

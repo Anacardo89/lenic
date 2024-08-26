@@ -35,4 +35,20 @@ const (
 		SET hashpass = ?
 		WHERE username = ?
 	;`
+
+	SelectUserFollows = `
+	SELECT * FROM follows
+		WHERE follower_id=? AND followed_id=?
+	;`
+
+	FollowUser = `
+	INSERT INTO follows
+		SET follower_id=?,
+			followed_id=?
+	;`
+
+	UnfollowUser = `
+	DELETE FROM follows
+		WHERE follower_id=? AND followed_id=?
+	;`
 )

@@ -40,7 +40,7 @@
                 <div class="title">
                     <h1>{{.Title}}</h1>
                     <div class="post-content">
-                        <div><p><strong>Author: {{.Author}}</strong></p></div>
+                        <div><p><strong>Author: <a href="/user/{{.AuthorEncoded}}">{{.Author}}</a></strong></p></div>
                         <div><p><strong>Posted in: {{.Date}}</strong></p></div>
                         <br>
                         <div id="post-text"><p>{{.Content}}</p></div>
@@ -89,7 +89,7 @@
                 {{range .Comments}}
                     <div class="comment" data-id="{{.Id}}">
                         <div class="comment-content">
-                            <div><strong>Comment by {{.Author}} {{.Date}}</strong></div>
+                            <div><strong>Comment by <a href="/user/{{.AuthorEncoded}}">{{.Author}}</a> {{.Date}}</strong></div>
                             <div class="comment-text" id="comment-text-{{.Id}}"><p>{{.Content}}</p></div>
                             <div class="comment-edit" id="comment-editor-{{.Id}}">
                                 <form onsubmit="return editComment(this);">

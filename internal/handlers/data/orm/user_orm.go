@@ -31,6 +31,8 @@ func (da *DataAccess) GetUserByID(id int) (*database.User, error) {
 		&u.HashPass,
 		&u.ProfilePic,
 		&u.ProfilePicExt,
+		&u.Followers,
+		&u.Following,
 		&createdAt,
 		&updatedAt,
 		&u.Active)
@@ -62,6 +64,8 @@ func (da *DataAccess) GetUserByName(name string) (*database.User, error) {
 		&u.HashPass,
 		&u.ProfilePic,
 		&u.ProfilePicExt,
+		&u.Followers,
+		&u.Following,
 		&createdAt,
 		&updatedAt,
 		&u.Active)
@@ -93,6 +97,8 @@ func (da *DataAccess) GetUserByEmail(email string) (*database.User, error) {
 		&u.HashPass,
 		&u.ProfilePic,
 		&u.ProfilePicExt,
+		&u.Followers,
+		&u.Following,
 		&createdAt,
 		&updatedAt,
 		&u.Active)
@@ -120,6 +126,34 @@ func (da *DataAccess) SetUserAsActive(name string) error {
 
 func (da *DataAccess) SetNewPassword(user string, pass string) error {
 	_, err := da.Db.Exec(query.UpdatePassword, pass, user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (da *DataAccess) GetUserFollows(follower_id int, followed_id int) (*database.Follows, error) {
+	f := database.Follows{}
+	row := da.Db.QueryRow(query.SelectUserFollows, follower_id, followed_id)
+	err := row.Scan(
+		&f.FollowerId,
+		&f.FollowedId)
+	if err != nil {
+		return nil, err
+	}
+	return &f, nil
+}
+
+func (da *DataAccess) FollowUser(follower_id int, followed_id int) error {
+	_, err := da.Db.Exec(query.FollowUser, follower_id, followed_id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (da *DataAccess) UnfollowUser(follower_id int, followed_id int) error {
+	_, err := da.Db.Exec(query.UnfollowUser, follower_id, followed_id)
 	if err != nil {
 		return err
 	}

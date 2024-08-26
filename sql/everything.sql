@@ -12,6 +12,8 @@ CREATE TABLE users (
 	hashpass VARCHAR(128) NOT NULL DEFAULT '',
 	profile_pic VARCHAR(64) NOT NULL DEFAULT '',
 	profile_pic_ext VARCHAR(10) NOT NULL DEFAULT '',
+	user_followers INT NOT NULL DEFAULT 0,
+	user_following INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	active TINYINT NOT NULL DEFAULT 0,
@@ -80,6 +82,44 @@ CREATE TABLE comment_ratings (
 	UNIQUE KEY comment_rating (comment_id, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
+DELIMITER $$
+
+CREATE TRIGGER after_follow_insert
+AFTER INSERT ON follows
+FOR EACH ROW
+BEGIN
+    -- Increment the user_followers count for the followed user
+    UPDATE users
+    SET user_followers = user_followers + 1
+    WHERE id = NEW.followed_id;
+
+    -- Increment the user_following count for the follower
+    UPDATE users
+    SET user_following = user_following + 1
+    WHERE id = NEW.follower_id;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER after_follow_delete
+AFTER DELETE ON follows
+FOR EACH ROW
+BEGIN
+    -- Decrement the user_followers count for the followed user
+    UPDATE users
+    SET user_followers = user_followers - 1
+    WHERE id = OLD.followed_id;
+
+    -- Decrement the user_following count for the follower
+    UPDATE users
+    SET user_following = user_following - 1
+    WHERE id = OLD.follower_id;
+END $$
+
+DELIMITER ;
 
 DELIMITER $$
 

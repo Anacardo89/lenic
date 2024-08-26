@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"database/sql"
 	"encoding/base64"
 	"html/template"
 	"net/http"
@@ -18,6 +19,7 @@ type ProfilePage struct {
 	User    presentation.User
 	Posts   []presentation.Post
 	Session presentation.Session
+	Follows bool
 }
 
 func UserProfile(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +50,19 @@ func UserProfile(w http.ResponseWriter, r *http.Request) {
 		User:    *u,
 		Session: session,
 	}
-	logger.Debug.Println(pp)
+
+	_, err = orm.Da.GetUserFollows(session.User.Id, u.Id)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			logger.Error.Printf("/user/%s - Could not get follows: %s\n", encoded, err)
+			redirect.RedirectToError(w, r, err.Error())
+			return
+		} else {
+			pp.Follows = false
+		}
+	} else {
+		pp.Follows = true
+	}
 
 	dbposts, err := orm.Da.GetUserPosts(u.Id)
 	if err != nil {
