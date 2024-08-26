@@ -20,6 +20,12 @@ const (
 		ORDER BY created_at DESC
 	;`
 
+	SelectUserActivePosts = `
+	SELECT * FROM posts
+		WHERE author_id=? AND active=1
+		ORDER BY created_at DESC
+	;`
+
 	SelectPostByGUID = `
 	SELECT * FROM posts
 		WHERE post_guid=?

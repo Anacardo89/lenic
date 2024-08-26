@@ -23,7 +23,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	index.Session = auth.ValidateSession(w, r)
 	dbposts, err := orm.Da.GetPosts()
 	if err != nil {
-		logger.Error.Println("/index - Error getting Posts: ", err)
+		logger.Error.Println("/index - Could not get Posts: ", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
