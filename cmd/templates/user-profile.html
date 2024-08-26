@@ -31,20 +31,32 @@
     </header>
     <main>
         <div class="profile-container">
+            <h1>{{.User.UserName}}</h1>
             <div class="profile">
-                <h1>{{.User.UserName}}</h1>
-                {{/*
-                    {{if .Image}}
-                    <div><img src="/action/image?guid={{.GUID}}" alt="Profile Pic"></div>
-                    {{end}}
-                */}}
-                <div class="profile-info">
-                    <input type="hidden" id="encoded-user" value="{{.User.EncodedName}}" />
-                    <div><p><strong>User: {{.User.UserName}}</strong></p></div>
-                    {{if eq .User.UserName .Session.User.UserName}}
-                        <p>{{.User.Email}}</p>
-                        <a href="/recover-password/{{.User.EncodedName}}"><button>Change password</button></a>
-                    {{end}}
+                <div class="profile-personal">
+                    <div class="profile-pic">
+                        {{if .User.ProfilePic}}
+                            <img src="/action/profile-pic?user-encoded={{.User.EncodedName}}" alt="Profile Pic">
+                            {{else}}
+                            <img src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
+                        {{end}}
+                        {{if eq .Session.User.UserName .User.UserName}}
+                            <div class="profile-pic-add-container">
+                                <form id="profile-pic-form" method="POST" enctype="multipart/form-data">
+                                    <input type="file" name="image" accept="image/*" id="profile-pic-input" onchange="checkFileSelected();" />
+                                </form>
+                                <button class="profile-pic-add-button" id="confirm-button" onclick="return addProfilePic();"><strong>Confirm</strong></button>
+                            </div>
+                        {{end}}
+                    </div>
+                    <div class="profile-info">
+                        <input type="hidden" id="encoded-user" value="{{.User.EncodedName}}" />
+                        <div><p><strong>User: {{.User.UserName}}</strong></p></div>
+                        {{if eq .User.UserName .Session.User.UserName}}
+                            <p>{{.User.Email}}</p>
+                            <a href="/recover-password/{{.User.EncodedName}}"><button>Change password</button></a>
+                        {{end}}
+                    </div>
                 </div>
                 <br>
                 <div class="follow-container">
@@ -67,15 +79,13 @@
         <div class="user-posts">
             <div class="post-preview-container">
                 {{range .Posts}}
-                    <a href="/post/{{.GUID}}">
-                        <div class="post-preview">
-                            <div class="post-preview-content">
-                                <div><h2>{{.Title}}</h2></div>
-                                <div>By <strong>{{.Author}}</strong> on <strong>{{.Date}}</strong></div>
-                                <div>{{.TruncatedText}}</div>
-                            </div>
+                    <div class="post-preview" onclick="location.href='/post/{{.GUID}}';">
+                        <div class="post-preview-content">
+                            <div><h2>{{.Title}}</h2></div>
+                            <div>By <a href="/user/{{.AuthorEncoded}}" onclick="event.stopPropagation();"><strong>{{.Author}}</strong></a> on <strong>{{.Date}}</strong></div>
+                            <div>{{.TruncatedText}}</div>
                         </div>
-                    </a>
+                    </div>
                 {{end}}
             </div>
         </div>

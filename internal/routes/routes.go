@@ -27,6 +27,7 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/action/logout", actions.Logout).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/follow", actions.FollowUser).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/unfollow", actions.UnfollowUser).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/user/{encoded_user_name}/profile-pic", actions.PostProfilePic).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/post", actions.AddPost).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/post/{post_guid}", actions.EditPost).Methods("PUT").Schemes("https")
 	r.HandleFunc("/action/post/{post_guid}", actions.DeletePost).Methods("DELETE").Schemes("https")
@@ -39,5 +40,7 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/action/post/{post_guid}/comment/{comment_id}/down", actions.RateCommentDown).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/forgot-password", actions.ForgotPassword).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/recover-password", actions.RecoverPassword).Methods("POST").Schemes("https")
-	r.HandleFunc("/action/image", actions.Image).Schemes("https")
+
+	r.HandleFunc("/action/image", actions.PostImage).Schemes("https")
+	r.HandleFunc("/action/profile-pic", actions.ProfilePic).Schemes("https")
 }

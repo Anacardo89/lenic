@@ -159,3 +159,11 @@ func (da *DataAccess) UnfollowUser(follower_id int, followed_id int) error {
 	}
 	return nil
 }
+
+func (da *DataAccess) UpdateProfilePic(profile_pic string, profile_pic_ext string, username string) error {
+	_, err := da.Db.Exec(query.UpdateProfilePic, profile_pic, profile_pic_ext, username)
+	if err != nil {
+		return err
+	}
+	return nil
+}

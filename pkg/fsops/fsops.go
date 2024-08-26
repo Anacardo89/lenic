@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	ImgPath = "./img/"
+	PostImgPath    = "./img/posts/"
+	ProfilePicPath = "./img/profiles/"
 )
 
 type Certificate struct {
@@ -44,10 +45,20 @@ func MakeImgDir() {
 			os.Mkdir("img", 0777)
 		}
 	}
+	if _, err := os.Stat(PostImgPath); err != nil {
+		if os.IsNotExist(err) {
+			os.Mkdir(PostImgPath, 0777)
+		}
+	}
+	if _, err := os.Stat(ProfilePicPath); err != nil {
+		if os.IsNotExist(err) {
+			os.Mkdir(ProfilePicPath, 0777)
+		}
+	}
 }
 
-func SaveImg(data []byte, name string, extension string) {
-	filePath := ImgPath + name + extension
+func SaveImg(data []byte, path string, name string, extension string) {
+	filePath := path + name + extension
 	img, err := os.Create(filePath)
 	if err != nil {
 		logger.Error.Println(err)
