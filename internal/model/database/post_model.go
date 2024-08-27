@@ -12,7 +12,7 @@ type Post struct {
 	ImageExt  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	IsPublic  int
+	IsPublic  bool
 	Rating    int
 	Active    int
 }

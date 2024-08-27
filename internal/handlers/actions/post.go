@@ -44,7 +44,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		AuthorId: session.User.Id,
 		Image:    "",
 		ImageExt: "",
-		IsPublic: 1,
+		IsPublic: true,
 		Rating:   0,
 		Active:   1,
 	}
