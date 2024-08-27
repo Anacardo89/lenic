@@ -42,7 +42,9 @@ func UserProfile(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	logger.Debug.Println("dbuser: ", dbuser)
 	u := mapper.User(dbuser)
+	logger.Debug.Println("User: ", u)
 
 	session := auth.ValidateSession(w, r)
 
@@ -77,7 +79,8 @@ func UserProfile(w http.ResponseWriter, r *http.Request) {
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
-		post := mapper.Post(&dbpost, dbuser.UserName)
+		u := mapper.User(dbuser)
+		post := mapper.Post(&dbpost, u)
 		post.Content = template.HTML(post.RawContent)
 		pp.Posts = append(pp.Posts, *post)
 	}

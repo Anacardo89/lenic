@@ -5,20 +5,19 @@ import (
 )
 
 type Post struct {
-	Id            int
-	GUID          string
-	Author        string
-	AuthorEncoded string
-	Title         string
-	RawContent    string
-	Content       template.HTML
-	Image         string
-	Date          string
-	IsPublic      int
-	Rating        int
-	UserRating    int
-	Comments      []Comment
-	Session       Session
+	Id         int
+	GUID       string
+	Author     User
+	Title      string
+	RawContent string
+	Content    template.HTML
+	Image      string
+	Date       string
+	IsPublic   int
+	Rating     int
+	UserRating int
+	Comments   []Comment
+	Session    Session
 }
 
 func (p Post) TruncatedText() string {

@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="/static/css/header.css">
     <link rel="stylesheet" href="/static/css/user-profile.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- FontAwesome Link -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 </head>
 <body>
     <header>
@@ -23,6 +26,13 @@
         {{else}}
             <div class="logout">
                 <p>You are logged in as <a href="/user/{{.Session.User.EncodedName}}"><strong>{{.Session.User.UserName}}</strong></a></p>
+                <a href="/user/{{.Session.User.EncodedName}}">
+                    {{if .Session.User.ProfilePic}}
+                        <img class="session-profile-pic" src="/action/profile-pic?user-encoded={{.Session.User.EncodedName}}" alt="Profile Pic" />
+                    {{else}}
+                        <img class="session-profile-pic" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
+                    {{end}}
+                </a>
                 <form action="/action/logout" method="POST">
                     <button class="header-button" onsubmit="return logout(this);"><strong>Logout</strong></button>
                 </form>
@@ -37,7 +47,7 @@
                     <div class="profile-pic">
                         {{if .User.ProfilePic}}
                             <img src="/action/profile-pic?user-encoded={{.User.EncodedName}}" alt="Profile Pic">
-                            {{else}}
+                        {{else}}
                             <img src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
                         {{end}}
                         {{if eq .Session.User.UserName .User.UserName}}
@@ -52,8 +62,10 @@
                     <div class="profile-info">
                         <input type="hidden" id="encoded-user" value="{{.User.EncodedName}}" />
                         <div><p><strong>User: {{.User.UserName}}</strong></p></div>
+                        <br>
                         {{if eq .User.UserName .Session.User.UserName}}
                             <p>{{.User.Email}}</p>
+                            <br>
                             <a href="/recover-password/{{.User.EncodedName}}"><button>Change password</button></a>
                         {{end}}
                     </div>
@@ -81,9 +93,32 @@
                 {{range .Posts}}
                     <div class="post-preview" onclick="location.href='/post/{{.GUID}}';">
                         <div class="post-preview-content">
+                            <div class="author-info-inline">
+                                <a href="/user/{{.Author.EncodedName}}">
+                                    {{if .Author.ProfilePic}}
+                                        <img class="profile-pic-mini" src="/action/profile-pic?user-encoded={{.Author.EncodedName}}" alt="Profile Pic">
+                                    {{else}}
+                                        <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
+                                    {{end}}
+                                </a>
+                                <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.UserName}}</strong></a>   -   <strong>{{.Date}}</strong></div>
+                            </div>
+                            {{if .Image}}
+                                <img class="post-pic-mini" src="/action/image?guid={{.GUID}}" alt="Post Image">
+                                <br>
+                            {{end}}
                             <div><h2>{{.Title}}</h2></div>
-                            <div>By <a href="/user/{{.AuthorEncoded}}" onclick="event.stopPropagation();"><strong>{{.Author}}</strong></a> on <strong>{{.Date}}</strong></div>
                             <div>{{.TruncatedText}}</div>
+                            <div class="post-rating-container">
+                                <div class="post-rating">Rating <strong>{{.Rating}}</strong></div>
+                                {{if $.Session.Authenticated}}
+                                    <div class="post-rate-buttons">
+                                        <button id="post_rate_up_button"><i class="post-rate-up-button fa-solid fa-chevron-up" data-id="{{.GUID}}"></i></button>
+                                        <input type="hidden" id="post_rating_hidden" data-id="{{.GUID}}" value="{{.UserRating}}" />
+                                        <button id="post_rate_down_button"><i class="post-rate-down-button fa-solid fa-chevron-down" data-id="{{.GUID}}"></i></button>
+                                    </div>
+                                {{end}}
+                            </div>
                         </div>
                     </div>
                 {{end}}

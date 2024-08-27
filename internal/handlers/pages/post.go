@@ -44,8 +44,9 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	u := mapper.User(dbuser)
 
-	p := mapper.Post(dbpost, dbuser.UserName)
+	p := mapper.Post(dbpost, u)
 
 	p.Session = auth.ValidateSession(w, r)
 	pr, err := orm.Da.GetPostUserRating(dbpost.Id, p.Session.User.Id)
@@ -75,6 +76,10 @@ func Post(w http.ResponseWriter, r *http.Request) {
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
+		u := mapper.User(dbuser)
+
+		c := mapper.Comment(&dbcomment, u)
+
 		cr, err := orm.Da.GetCommentUserRating(dbcomment.Id, p.Session.User.Id)
 		if err != nil {
 			if err != sql.ErrNoRows {
@@ -83,7 +88,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		c := mapper.Comment(&dbcomment, dbuser.UserName)
+
 		if cr != nil {
 			c.UserRating = cr.RatingValue
 		} else {
