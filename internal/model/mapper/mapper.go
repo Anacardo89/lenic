@@ -48,28 +48,27 @@ func Session(s *database.Session) *presentation.Session {
 	}
 }
 
-func Post(p *database.Post, author string) *presentation.Post {
+func Post(p *database.Post, u *presentation.User) *presentation.Post {
+
 	return &presentation.Post{
-		Id:            p.Id,
-		GUID:          p.GUID,
-		Author:        author,
-		AuthorEncoded: base64.URLEncoding.EncodeToString([]byte(author)),
-		Title:         p.Title,
-		RawContent:    p.Content,
-		Image:         p.Image,
-		Date:          fmt.Sprint(p.CreatedAt.Format(db.DateLayout)),
-		IsPublic:      p.IsPublic,
-		Rating:        p.Rating,
+		Id:         p.Id,
+		GUID:       p.GUID,
+		Author:     *u,
+		Title:      p.Title,
+		RawContent: p.Content,
+		Image:      p.Image,
+		Date:       fmt.Sprint(p.CreatedAt.Format(db.DateLayout)),
+		IsPublic:   p.IsPublic,
+		Rating:     p.Rating,
 	}
 }
 
-func Comment(c *database.Comment, author string) *presentation.Comment {
+func Comment(c *database.Comment, u *presentation.User) *presentation.Comment {
 	return &presentation.Comment{
-		Id:            c.Id,
-		Author:        author,
-		AuthorEncoded: base64.URLEncoding.EncodeToString([]byte(author)),
-		Content:       c.Content,
-		Date:          fmt.Sprint(c.CreatedAt.Format(db.DateLayout)),
-		Rating:        c.Rating,
+		Id:      c.Id,
+		Author:  *u,
+		Content: c.Content,
+		Date:    fmt.Sprint(c.CreatedAt.Format(db.DateLayout)),
+		Rating:  c.Rating,
 	}
 }

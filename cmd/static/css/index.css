@@ -35,8 +35,8 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: 80%;
     max-width: 800px;
+    width: fit-content;
 }
 
 a .post-preview {
@@ -44,6 +44,7 @@ a .post-preview {
 }
 
 .post-preview-content h2 {
+    text-align: center;
     color: #333;
 }
 
@@ -68,6 +69,23 @@ a .post-preview {
 .post-preview-content:hover {
     background-color: white;
 }
+
+.post-rating-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.post-rating-container button {
+    background-color: transparent;
+    color: #333;
+    padding: 0;
+    margin: 0;
+}
+
+.post-rate-up-button {
+    margin-left: 10px;
+}
+
 
 .post-preview-container .post-preview:first-child {
     padding-top: 20px;

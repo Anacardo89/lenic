@@ -23,6 +23,13 @@
         {{else}}
             <div class="logout">
                 <p>You are logged in as <a href="/user/{{.Session.User.EncodedName}}"><strong>{{.Session.User.UserName}}</strong></a></p>
+                <a href="/user/{{.Session.User.EncodedName}}">
+                    {{if .Session.User.ProfilePic}}
+                        <img class="session-profile-pic" src="/action/profile-pic?user-encoded={{.Session.User.EncodedName}}" alt="Profile Pic" />
+                    {{else}}
+                        <img class="session-profile-pic" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
+                    {{end}}
+                </a>
                 <form action="/action/logout" method="POST">
                     <button class="header-button" onsubmit="return logout(this);"><strong>Logout</strong></button>
                 </form>

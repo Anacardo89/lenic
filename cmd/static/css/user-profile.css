@@ -24,8 +24,9 @@ img {
 /* Profile */
 .profile-container {
     background-color: rgb(254 186 109 / 75%);
-    width: 80%;
-    margin: 75px auto 20px auto;
+    max-width: 65%;
+    width: fit-content;
+    margin: 150px auto 20px auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -36,12 +37,12 @@ img {
 .profile {
     margin-top: 30px;
     background-color: azure;
-    width: 90%;
+    width: fit-content;
     height: 80%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
+    margin: 0 20px 20px 20px;
     padding: 20px;
     box-shadow: -3px -3px rgb(57, 97, 97);
 }
@@ -58,7 +59,7 @@ img {
 }
 
 .profile-pic {
-    flex: 1;
+    padding-right: 20px;
 }
 
 .profile-pic-add-container {
@@ -69,10 +70,6 @@ img {
 .profile-pic button {
     display: none;
     margin-left: 20px;
-}
-
-.profile-info {
-    flex: 2;
 }
 
 .follow-container {
@@ -102,8 +99,8 @@ img {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: 80%;
     max-width: 800px;
+    width: fit-content;
 }
 
 a .post-preview {
@@ -111,6 +108,7 @@ a .post-preview {
 }
 
 .post-preview-content h2 {
+    text-align: center;
     color: #333;
 }
 
@@ -135,6 +133,23 @@ a .post-preview {
 .post-preview-content:hover {
     background-color: white;
 }
+
+.post-rating-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.post-rating-container button {
+    background-color: transparent;
+    color: #333;
+    padding: 0;
+    margin: 0;
+}
+
+.post-rate-up-button {
+    margin-left: 10px;
+}
+
 
 .post-preview-container .post-preview:first-child {
     padding-top: 20px;

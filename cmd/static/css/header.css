@@ -44,6 +44,12 @@ header {
     align-items: stretch;
 }
 
+.session-profile-pic {
+    height: 50px;
+    margin: 5px 5px 0 0;
+    align-self: center;
+}
+
 .logout p {
     margin: 0 10px;
     align-self: center;

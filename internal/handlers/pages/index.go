@@ -34,7 +34,8 @@ func Index(w http.ResponseWriter, r *http.Request) {
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
-		post := mapper.Post(&dbpost, dbuser.UserName)
+		u := mapper.User(dbuser)
+		post := mapper.Post(&dbpost, u)
 		post.Content = template.HTML(post.RawContent)
 		index.Posts = append(index.Posts, *post)
 	}
