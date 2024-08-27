@@ -93,6 +93,19 @@ img {
     color: #333;
 }
 
+.user-profile-buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    margin-bottom:30px;
+}
+
+.user-profile-buttons a:first-child {
+    margin-right: 15px;
+}
+
+
 /* Posts */
 .post-preview-container {
     margin: 0 auto;

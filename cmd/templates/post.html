@@ -41,43 +41,43 @@
     <main>
         <div class="content-container">
             <div class="content">
-                {{if .Image}}
-                    <img src="/action/image?guid={{.GUID}}" alt="Post Image">
+                {{if .Post.Image}}
+                    <img src="/action/image?guid={{.Post.GUID}}" alt="Post Image">
                 {{end}}
                 <div class="title">
-                    <h1>{{.Title}}</h1>
+                    <h1>{{.Post.Title}}</h1>
                     <div class="post-content">
                         <div class="author-info-inline">
-                            <a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();">
-                                {{if .Author.ProfilePic}}
-                                    <img class="profile-pic-mini" src="/action/profile-pic?user-encoded={{.Author.EncodedName}}" alt="Profile Pic">
+                            <a href="/user/{{.Post.Author.EncodedName}}" onclick="event.stopPropagation();">
+                                {{if .Post.Author.ProfilePic}}
+                                    <img class="profile-pic-mini" src="/action/profile-pic?user-encoded={{.Post.Author.EncodedName}}" alt="Profile Pic">
                                 {{else}}
                                     <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
                                 {{end}}
                             </a>
-                            <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.UserName}}</strong></a>   -   <strong>{{.Date}}</strong></div>
+                            <div class="author-name-date"><a href="/user/{{.Post.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Post.Author.UserName}}</strong></a>   -   <strong>{{.Post.Date}}</strong></div>
                         </div>
                         <br>
-                        <div id="post-text"><p>{{.Content}}</p></div>
+                        <div id="post-text"><p>{{.Post.Content}}</p></div>
                         <div id="post-edit">
                             <form onsubmit="return editPost(this);">
-                                <input type="hidden" class="post_id" value="{{.GUID}}" />
-                                <textarea type="textarea" class="edit_post" name="post">{{.Content}}</textarea>
+                                <input type="hidden" class="post_id" value="{{.Post.GUID}}" />
+                                <textarea type="textarea" class="edit_post" name="post">{{.Post.Content}}</textarea>
                                 <input type="submit" value="Confirm" />
                             </form>
                         </div>
                         <br>
                         <div class="post-rating-container">
-                            <div class="post-rating">Rating <strong>{{.Rating}}</strong></div>
+                            <div class="post-rating">Rating <strong>{{.Post.Rating}}</strong></div>
                             {{if $.Session.Authenticated}}
                                 <div class="post-rate-buttons">
-                                    <button id="post_rate_up_button"><i class="post-rate-up-button fa-solid fa-chevron-up" data-id="{{.GUID}}"></i></button>
-                                    <input type="hidden" id="post_rating_hidden" data-id="{{.GUID}}" value="{{.UserRating}}" />
-                                    <button id="post_rate_down_button"><i class="post-rate-down-button fa-solid fa-chevron-down" data-id="{{.GUID}}"></i></button>
+                                    <button id="post_rate_up_button"><i class="post-rate-up-button fa-solid fa-chevron-up" data-id="{{.Post.GUID}}"></i></button>
+                                    <input type="hidden" id="post_rating_hidden" data-id="{{.Post.GUID}}" value="{{.Post.UserRating}}" />
+                                    <button id="post_rate_down_button"><i class="post-rate-down-button fa-solid fa-chevron-down" data-id="{{.Post.GUID}}"></i></button>
                                 </div>
                             {{end}}
                         </div>
-                        {{if eq .Author.UserName .Session.User.UserName}}
+                        {{if eq .Post.Author.UserName .Session.User.UserName}}
                             <div class="post-buttons">
                                 <button id="post-editor-button">Edit</button>
                                 <button id="post-deleter-button">Delete</button>
@@ -92,8 +92,8 @@
                 <div class="add-comment-form">
                     <div><p><strong>Add a comment:</strong></p></div>
                     <div id="comment-form">
-                        <form action="/action/post/{{.GUID}}/comment" method="POST">
-                            <input type="hidden" name="post_guid" value="{{.GUID}}" />
+                        <form action="/action/post/{{.Post.GUID}}/comment" method="POST">
+                            <input type="hidden" name="post_guid" value="{{.Post.GUID}}" />
                             <div><textarea name="comment_text" placeholder="Your Comments"></textarea></div>
                             <div><input type="submit" value="Add Comment" /></div>
                         </form>
@@ -101,7 +101,7 @@
                 </div>
             {{end}}
             <div class="comments">
-                {{range .Comments}}
+                {{range .Post.Comments}}
                     <div class="comment" data-id="{{.Id}}">
                         <div class="comment-content">
                             <div class="author-info-inline">

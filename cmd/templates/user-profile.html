@@ -67,6 +67,12 @@
                             <p>{{.User.Email}}</p>
                             <br>
                             <a href="/recover-password/{{.User.EncodedName}}"><button>Change password</button></a>
+                            <br>
+                            <br>
+                            <div class="user-profile-buttons">
+                                <a href="/user/{{.User.EncodedName}}/feed"><button>Feed</button></a>
+                                <a href="/newPost"><button>Create a new Post</button></a>
+                            </div>
                         {{end}}
                     </div>
                 </div>
@@ -109,15 +115,9 @@
                             {{end}}
                             <div><h2>{{.Title}}</h2></div>
                             <div>{{.TruncatedText}}</div>
+                            <br>
                             <div class="post-rating-container">
                                 <div class="post-rating">Rating <strong>{{.Rating}}</strong></div>
-                                {{if $.Session.Authenticated}}
-                                    <div class="post-rate-buttons">
-                                        <button id="post_rate_up_button"><i class="post-rate-up-button fa-solid fa-chevron-up" data-id="{{.GUID}}"></i></button>
-                                        <input type="hidden" id="post_rating_hidden" data-id="{{.GUID}}" value="{{.UserRating}}" />
-                                        <button id="post_rate_down_button"><i class="post-rate-down-button fa-solid fa-chevron-down" data-id="{{.GUID}}"></i></button>
-                                    </div>
-                                {{end}}
                             </div>
                         </div>
                     </div>

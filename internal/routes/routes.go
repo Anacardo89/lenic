@@ -9,13 +9,14 @@ import (
 
 func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/", redirect.RedirIndex).Schemes("https")
-	r.HandleFunc("/home", pages.Index).Schemes("https")
+	r.HandleFunc("/home", pages.Home).Schemes("https")
 	r.HandleFunc("/login", pages.Login).Schemes("https")
 	r.HandleFunc("/register", pages.Register).Schemes("https")
 	r.HandleFunc("/error", pages.Error).Schemes("https")
 	r.HandleFunc("/newPost", pages.NewPost).Schemes("https")
 	r.HandleFunc("/post/{post_guid}", pages.Post).Schemes("https")
 	r.HandleFunc("/user/{encoded_user_name}", pages.UserProfile).Schemes("https")
+	r.HandleFunc("/user/{encoded_user_name}/feed", pages.Feed).Schemes("https")
 	r.HandleFunc("/user/{encoded_user_name}/followers", pages.UserProfile).Schemes("https")
 	r.HandleFunc("/user/{encoded_user_name}/following", pages.UserProfile).Schemes("https")
 	r.HandleFunc("/forgot-password", pages.ForgotPassword).Schemes("https")

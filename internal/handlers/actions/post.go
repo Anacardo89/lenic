@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"database/sql"
 	"encoding/base64"
 	"io"
 	"math/rand/v2"
@@ -12,6 +13,7 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/fsops"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
@@ -27,6 +29,13 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	session := auth.ValidateSession(w, r)
+
+	dbuser, err := orm.Da.GetUserByID(session.User.Id)
+	if err == sql.ErrNoRows {
+		redirect.RedirectToError(w, r, "User does not exist")
+		return
+	}
+	u := mapper.User(dbuser)
 
 	dbpost := database.Post{
 		GUID:     createGUID(r.FormValue("post_title"), session.User.UserName),
@@ -57,8 +66,8 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
-		http.Redirect(w, r, "/home", http.StatusMovedPermanently)
-		return
+		userFeedPath := "/user/" + u.EncodedName + "/feed"
+		http.Redirect(w, r, userFeedPath, http.StatusMovedPermanently)
 	}
 
 	// Handle uploaded image
@@ -80,7 +89,8 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+	userFeedPath := "/user/" + u.EncodedName + "/feed"
+	http.Redirect(w, r, userFeedPath, http.StatusMovedPermanently)
 }
 
 func createGUID(title string, user string) string {

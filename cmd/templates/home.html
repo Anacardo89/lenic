@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TPSI.25 Blog</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/header.css">
+    <link rel="stylesheet" href="/static/css/home.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- FontAwesome Link -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1 class="home-link"><a href="/home">TPSI.25 Blog</a></h1>
+            <p class="logo-bottom">O Blog da malta</p>
+        </div>
+        {{if not .Session.Authenticated}}
+            <div class="header-buttons">
+                <a href="/login"><button class="header-button"><strong>Login</strong></button></a>
+                <a href="/register"><button class="header-button"><strong>Register</strong></button></a>
+            </div>
+        {{else}}
+            <div class="logout">
+                <p>You are logged in as <a href="/user/{{.Session.User.EncodedName}}"><strong>{{.Session.User.UserName}}</strong></a></p>
+                <a href="/user/{{.Session.User.EncodedName}}">
+                    {{if .Session.User.ProfilePic}}
+                        <img class="session-profile-pic" src="/action/profile-pic?user-encoded={{.Session.User.EncodedName}}" alt="Profile Pic" />
+                    {{else}}
+                        <img class="session-profile-pic" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
+                    {{end}}
+                </a>
+                <form action="/action/logout" method="POST">
+                    <button class="header-button" onsubmit="return logout(this);"><strong>Logout</strong></button>
+                </form>
+            </div>
+        {{end}}
+    </header>
+    <main>
+        <div class="home-container">
+            <h1>It started out with a blog</h1>
+            <br>
+            <h2>It was only a blog</h2>
+            <h2>It was only a blog</h2>
+        </div>
+    </main>
+    <script src="/static/js/auth.js"></script>
+</body>
+</html>

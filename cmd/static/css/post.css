@@ -46,6 +46,7 @@ button:active {
     margin-bottom: 20px;
     padding: 20px;
     box-shadow: -3px -3px rgb(57, 97, 97);
+    overflow: visible;
 }
 
 .content-container h1 {

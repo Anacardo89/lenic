@@ -14,10 +14,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type PostPage struct {
+	Post    presentation.Post
+	Session presentation.Session
+}
+
 func NewPost(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/newPost ", r.RemoteAddr)
-	post := presentation.Post{
+	postp := PostPage{
 		Session: auth.ValidateSession(w, r),
+		Post:    presentation.Post{},
 	}
 	t, err := template.ParseFiles("templates/newPost.html")
 	if err != nil {
@@ -25,13 +31,14 @@ func NewPost(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	t.Execute(w, post)
+	t.Execute(w, postp)
 }
 
 func Post(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	logger.Info.Printf("/post/%s %s\n", postGUID, r.RemoteAddr)
+	postp := PostPage{}
 	dbpost, err := orm.Da.GetPostByGUID(postGUID)
 	if err != nil {
 		logger.Error.Printf("/post/%s - Could not get Post: %s\n", postGUID, err)
@@ -48,8 +55,8 @@ func Post(w http.ResponseWriter, r *http.Request) {
 
 	p := mapper.Post(dbpost, u)
 
-	p.Session = auth.ValidateSession(w, r)
-	pr, err := orm.Da.GetPostUserRating(dbpost.Id, p.Session.User.Id)
+	postp.Session = auth.ValidateSession(w, r)
+	pr, err := orm.Da.GetPostUserRating(dbpost.Id, postp.Session.User.Id)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			logger.Error.Printf("/post/%s - Could not get rating: %s\n", postGUID, err)
@@ -80,7 +87,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 
 		c := mapper.Comment(&dbcomment, u)
 
-		cr, err := orm.Da.GetCommentUserRating(dbcomment.Id, p.Session.User.Id)
+		cr, err := orm.Da.GetCommentUserRating(dbcomment.Id, postp.Session.User.Id)
 		if err != nil {
 			if err != sql.ErrNoRows {
 				logger.Error.Printf("/post/%s - Could not get comment rating: %s\n", postGUID, err)
@@ -96,11 +103,12 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		}
 		p.Comments = append(p.Comments, *c)
 	}
+	postp.Post = *p
 	t, err := template.ParseFiles("templates/post.html")
 	if err != nil {
 		logger.Error.Printf("/post/%s - Could not parse template: %s\n", postGUID, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	t.Execute(w, p)
+	t.Execute(w, postp)
 }
