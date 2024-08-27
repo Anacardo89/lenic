@@ -6,11 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/css/base.css">
     <link rel="stylesheet" href="/static/css/header.css">
-    <link rel="stylesheet" href="/static/css/index.css">
+    <link rel="stylesheet" href="/static/css/feed.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <!-- FontAwesome Link -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
 </head>
 <body>
     <header>
@@ -40,7 +39,7 @@
         {{end}}
     </header>
     <main>
-        <h1 class="index-title">Index</h1>
+        <h1 class="index-title">Feed</h1>
         {{if .Session.Authenticated}}
         <div class="add-post-container">
             <button class="add-post-button"><a href="/newPost">Create a new Post</a></button>
@@ -67,15 +66,9 @@
                             {{end}}
                             <div><h2>{{.Title}}</h2></div>
                             <div>{{.TruncatedText}}</div>
+                            <br>
                             <div class="post-rating-container">
                                 <div class="post-rating">Rating <strong>{{.Rating}}</strong></div>
-                                {{if $.Session.Authenticated}}
-                                    <div class="post-rate-buttons">
-                                        <button id="post_rate_up_button"><i class="post-rate-up-button fa-solid fa-chevron-up" data-id="{{.GUID}}"></i></button>
-                                        <input type="hidden" id="post_rating_hidden" data-id="{{.GUID}}" value="{{.UserRating}}" />
-                                        <button id="post_rate_down_button"><i class="post-rate-down-button fa-solid fa-chevron-down" data-id="{{.GUID}}"></i></button>
-                                    </div>
-                                {{end}}
                             </div>
                         </div>
                     </div>

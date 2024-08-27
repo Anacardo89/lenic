@@ -22,7 +22,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, "User does not exist")
 		return
 	}
-	logger.Debug.Println(dbuser)
 	u := mapper.User(dbuser)
 	if u.Active != 1 {
 		if u.Active == 2 {
@@ -39,7 +38,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	usrSession := auth.CreateSession(w, r)
 	auth.UpdateSession(usrSession.SessionId, u.Id)
-	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+	userFeedPath := "/user/" + u.EncodedName + "/feed"
+	http.Redirect(w, r, userFeedPath, http.StatusMovedPermanently)
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {

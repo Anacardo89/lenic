@@ -10,20 +10,23 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
+	"github.com/gorilla/mux"
 )
 
-type IndexPage struct {
+type FeedPage struct {
 	Posts   []presentation.Post
 	Session presentation.Session
 }
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/index ", r.RemoteAddr)
-	index := IndexPage{}
-	index.Session = auth.ValidateSession(w, r)
+func Feed(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	encoded := vars["encoded_user_name"]
+	logger.Info.Printf("/user/%s/feed %s\n", encoded, r.RemoteAddr)
+	feed := FeedPage{}
+	feed.Session = auth.ValidateSession(w, r)
 	dbposts, err := orm.Da.GetPosts()
 	if err != nil {
-		logger.Error.Println("/index - Could not get Posts: ", err)
+		logger.Error.Printf("/user/%s/feed - Could not get Posts: %s\n", encoded, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
@@ -37,13 +40,13 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		u := mapper.User(dbuser)
 		post := mapper.Post(&dbpost, u)
 		post.Content = template.HTML(post.RawContent)
-		index.Posts = append(index.Posts, *post)
+		feed.Posts = append(feed.Posts, *post)
 	}
-	t, err := template.ParseFiles("templates/index.html")
+	t, err := template.ParseFiles("templates/feed.html")
 	if err != nil {
-		logger.Error.Println("/index - Could not parse template: ", err)
+		logger.Error.Printf("/user/%s/feed - Could not parse template: %s\n", encoded, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	t.Execute(w, index)
+	t.Execute(w, feed)
 }

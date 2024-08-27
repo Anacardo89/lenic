@@ -17,7 +17,6 @@ type Post struct {
 	Rating     int
 	UserRating int
 	Comments   []Comment
-	Session    Session
 }
 
 func (p Post) TruncatedText() string {

@@ -3,8 +3,8 @@ let guidElem;
 let guidElems = document.getElementsByClassName('post_id');
 if (guidElems.length > 0) {
     guidElem = guidElems[0];
+    guid = guidElem.getAttribute('value');
 }
-guid = guidElem.getAttribute('value');
 
 // Edit post textarea hide/show
 post_edit_button = $('#post-editor-button');
