@@ -5,4 +5,5 @@ type Session struct {
 	SessionId     string
 	Authenticated bool
 	User          User
+	Notifs        []Notification
 }

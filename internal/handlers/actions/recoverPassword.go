@@ -1,12 +1,10 @@
 package actions
 
 import (
-	"database/sql"
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
-	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
@@ -42,12 +40,5 @@ func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	dbuser, err := orm.Da.GetUserByName(userName)
-	if err == sql.ErrNoRows {
-		redirect.RedirectToError(w, r, "User does not exist")
-		return
-	}
-	u := mapper.User(dbuser)
-	userFeedPath := "/user/" + u.EncodedName + "/feed"
-	http.Redirect(w, r, userFeedPath, http.StatusMovedPermanently)
+	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }

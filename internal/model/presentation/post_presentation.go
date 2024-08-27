@@ -13,7 +13,7 @@ type Post struct {
 	Content    template.HTML
 	Image      string
 	Date       string
-	IsPublic   int
+	IsPublic   bool
 	Rating     int
 	UserRating int
 	Comments   []Comment

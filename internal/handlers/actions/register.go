@@ -112,8 +112,7 @@ func ActivateUser(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	userFeedPath := "/user/" + encoded + "/feed"
-	http.Redirect(w, r, userFeedPath, http.StatusMovedPermanently)
+	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
 func makeActivateUserLink(user string) string {
