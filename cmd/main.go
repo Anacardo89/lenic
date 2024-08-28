@@ -14,6 +14,7 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/pkg/fsops"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
+	"github.com/Anacardo89/tpsi25_blog/pkg/wsocket"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
@@ -84,6 +85,9 @@ func main() {
 
 	http.Handle("/", r)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
+	// Websocket
+	wsocket.WSConnMan = wsocket.NewWSConnManager()
 
 	// Server
 	server.Server, err = config.LoadServerConfig()

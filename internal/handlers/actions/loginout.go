@@ -2,6 +2,7 @@ package actions
 
 import (
 	"database/sql"
+	"encoding/json"
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
@@ -11,13 +12,29 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
-func Login(w http.ResponseWriter, r *http.Request) {
-	var err error
-	userName := r.FormValue("user_name")
-	userPass := r.FormValue("user_password")
-	logger.Info.Printf("/action/login %s %s\n", r.RemoteAddr, userName)
+type LoginRequest struct {
+	UserName     string `json:"user_name"`
+	UserPassword string `json:"user_password"`
+}
 
-	dbuser, err := orm.Da.GetUserByName(userName)
+func Login(w http.ResponseWriter, r *http.Request) {
+	logger.Info.Println("/action/login ", r.RemoteAddr)
+	var (
+		err      error
+		loginReq LoginRequest
+	)
+
+	err = json.NewDecoder(r.Body).Decode(&loginReq)
+	if err != nil {
+		logger.Error.Println("/action/login - Could not decode JSON: ", err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	defer r.Body.Close()
+
+	logger.Info.Printf("/action/login %s %s\n", r.RemoteAddr, loginReq.UserName)
+
+	dbuser, err := orm.Da.GetUserByName(loginReq.UserName)
 	if err == sql.ErrNoRows {
 		redirect.RedirectToError(w, r, "User does not exist")
 		return
@@ -31,15 +48,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, "User is not active, check your mail")
 		return
 	}
-	u.Pass = userPass
+	u.Pass = loginReq.UserPassword
 	if !auth.CheckPasswordHash(u.Pass, u.HashPass) {
 		redirect.RedirectToError(w, r, "Password does not match")
 		return
 	}
 	usrSession := auth.CreateSession(w, r)
 	auth.UpdateSession(usrSession.SessionId, u.Id)
-	userFeedPath := "/user/" + u.EncodedName + "/feed"
-	http.Redirect(w, r, userFeedPath, http.StatusMovedPermanently)
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +67,13 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+
 	session.Options.MaxAge = -1
-	session.Save(r, w)
-	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+	err = session.Save(r, w)
+	if err != nil {
+		logger.Error.Println("/action/logout - Could not save session: ", err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }

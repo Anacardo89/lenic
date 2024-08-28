@@ -4,6 +4,7 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/actions"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/pages"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/wsoc"
 	"github.com/gorilla/mux"
 )
 
@@ -41,6 +42,8 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/action/post/{post_guid}/comment/{comment_id}/down", actions.RateCommentDown).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/forgot-password", actions.ForgotPassword).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/recover-password", actions.RecoverPassword).Methods("POST").Schemes("https")
+
+	r.HandleFunc("/ws", wsoc.HandleWebSocket)
 
 	r.HandleFunc("/action/image", actions.PostImage).Schemes("https")
 	r.HandleFunc("/action/profile-pic", actions.ProfilePic).Schemes("https")
