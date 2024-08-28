@@ -42,9 +42,7 @@ func UserProfile(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	logger.Debug.Println("dbuser: ", dbuser)
 	u := mapper.User(dbuser)
-	logger.Debug.Println("User: ", u)
 
 	session := auth.ValidateSession(w, r)
 

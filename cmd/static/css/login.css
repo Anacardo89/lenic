@@ -52,7 +52,6 @@
 
 .login-button {
     width: calc(100% + 40px);
-    margin-left: -20px;
 }
 
 .login-button input {
