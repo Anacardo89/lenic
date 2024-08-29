@@ -51,12 +51,12 @@ func (da *DataAccess) GetNotificationById(id int) (*database.Notification, error
 	return &n, nil
 }
 
-func (da *DataAccess) GetNotificationsByUser(user_id int) (*[]database.Notification, error) {
-	notifs := []database.Notification{}
-	rows, err := da.Db.Query(query.SelectNotificationsByUser, user_id)
+func (da *DataAccess) GetNotificationsByUser(user_id int, limit int, offset int) ([]*database.Notification, error) {
+	notifs := []*database.Notification{}
+	rows, err := da.Db.Query(query.SelectNotificationsByUser, user_id, limit, offset)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &notifs, nil
+			return notifs, nil
 		}
 		return nil, err
 	}
@@ -89,9 +89,9 @@ func (da *DataAccess) GetNotificationsByUser(user_id int) (*[]database.Notificat
 		if err != nil {
 			return nil, err
 		}
-		notifs = append(notifs, n)
+		notifs = append(notifs, &n)
 	}
-	return &notifs, nil
+	return notifs, nil
 }
 
 func (da *DataAccess) UpdateNotificationRead(id int) error {
