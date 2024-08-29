@@ -13,8 +13,8 @@
 </head>
 <body>
     <header>
-        <input type="hidden" id="session-username" data-session_username="{{.Session.User.UserName}}">
-        <input type="hidden" id="session-encoded" data-session_encoded="{{.Session.User.EncodedName}}">
+        <input type="hidden" id="session-username" value="{{.Session.User.UserName}}">
+        <input type="hidden" id="session-encoded" value="{{.Session.User.EncodedName}}">
         <div class="logo">
             <h1 class="home-link"><a href="/home">TPSI.25 Blog</a></h1>
             <p class="logo-bottom">O Blog da malta</p>
@@ -26,7 +26,26 @@
             </div>
         {{else}}
             <div class="logout">
-                <button class="notif-button"><i class="fa-solid fa-bell fa-2x"></i></button>
+                <div class="dm-container">
+                    <button class="dm-button"><i class="fa-solid fa-envelope fa-2x"></i></button>
+                    <div class="dm-dropdown">
+                        <div class="dm-body">
+                            <div class="dm-item">You have a new comment on your post.</div>
+                            <div class="dm-item">Your profile picture has been updated.</div>
+                            <div class="dm-item">New friend request received.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="notif-container">
+                    <button class="notif-button"><i class="fa-solid fa-bell fa-2x"></i></button>
+                    <div class="notif-dropdown">
+                        <div class="notif-body">
+                            <div class="notif-item">You have a new comment on your post.</div>
+                            <div class="notif-item">Your profile picture has been updated.</div>
+                            <div class="notif-item">New friend request received.</div>
+                        </div>
+                    </div>
+                </div>
                 <a href="/user/{{.Session.User.EncodedName}}">
                     {{if .Session.User.ProfilePic}}
                         <img class="session-profile-pic" src="/action/profile-pic?user-encoded={{.Session.User.EncodedName}}" alt="Profile Pic" />

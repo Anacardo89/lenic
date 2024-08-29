@@ -66,7 +66,19 @@ header {
     border: none;
 }
 
+
+/* Notifications */
+.notif-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
 .notif-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
     padding: 0 10px;
     background-color: transparent;
     position: relative;
@@ -86,4 +98,101 @@ header {
 
 .notif-button:hover {
     background-color: lightblue;
+}
+
+.notif-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0px; 
+    background-color: rgb(254 186 109 / 75%);
+    color: #333;
+    box-shadow: 5px 5px #857456;
+    width: 500px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.notif-body {
+    padding: 10px;
+}
+
+.notif-item {
+    background-color: azure;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.notif-item:last-child {
+    border-bottom: none;
+}
+
+.notif-container.show .notif-dropdown {
+    display: block;
+}
+
+/* DMs */
+.dm-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.dm-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 0 10px;
+    background-color: transparent;
+    position: relative;
+}
+
+.dm-button::after {
+    content: '';
+    position: absolute;
+    top: 12px; 
+    right: 7px; 
+    width: 10px; 
+    height: 10px; 
+    background-color: red; 
+    border-radius: 50%;
+    display: none;
+}
+
+.dm-button:hover {
+    background-color: lightblue;
+}
+
+.dm-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0px; 
+    background-color: rgb(254 186 109 / 75%);
+    color: #333;
+    box-shadow: 5px 5px #857456;
+    width: 500px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.dm-body {
+    padding: 10px;
+}
+
+.dm-item {
+    background-color: azure;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.dm-item:last-child {
+    border-bottom: none;
+}
+
+.dm-container.show .notif-dropdown {
+    display: block;
 }

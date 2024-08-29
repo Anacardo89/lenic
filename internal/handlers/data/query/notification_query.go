@@ -11,15 +11,15 @@ const (
 	;`
 
 	SelectNotificationById = `
-	SELECT *
-		FROM notifications
+	SELECT * FROM notifications
 		WHERE id=?
 	;`
 
 	SelectNotificationsByUser = `
-	SELECT *
-		FROM notifications
-		WHERE id=?
+	SELECT * FROM notifications
+		WHERE user_id=?
+			ORDER BY created_at DESC
+			LIMIT ? OFFSET ?
 	;`
 
 	UpdateNotificationRead = `
