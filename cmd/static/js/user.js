@@ -2,16 +2,16 @@
 let encodedElem = document.getElementById('encoded-user');
 let encoded = encodedElem.getAttribute('value');
 
-let follow_button = document.getElementById('follow-button');
+let follow_button = $('#follow-button');
 if (follow_button !== null) {
-    follow_button.addEventListener('click', function() {
+    follow_button.on('click', function() {
         followUser();
     })
 }
 
-let unfollow_button = document.getElementById('unfollow-button');
+let unfollow_button = $('#unfollow-button');
 if (unfollow_button !== null) {
-    unfollow_button.addEventListener('click', function() {
+    unfollow_button.on('click', function() {
         unfollowUser();
     })
 }
@@ -46,15 +46,12 @@ function unfollowUser() {
 }
 
 function checkFileSelected() {
-    var fileInput = document.getElementById('profile-pic-input');
-    var confirmButton = document.getElementById('confirm-button');
-    
+    var fileInput = $('#profile-pic-input')[0];
+    var confirmButton = $('#confirm-button');
     if (fileInput.files.length > 0) {
-        // If a file is selected, show the button
-        confirmButton.style.display = 'inline-block';
+        confirmButton.css('display', 'inline-block');
     } else {
-        // If no file is selected, hide the button
-        confirmButton.style.display = 'none';
+        confirmButton.hide();
     }
 }
 

@@ -55,6 +55,7 @@ func PostImage(w http.ResponseWriter, r *http.Request) {
 		mimeType = "application/octet-stream"
 	}
 	w.Header().Set("Content-Type", mimeType)
+	logger.Info.Println("OK - /action/image ", r.RemoteAddr)
 	w.Write(imgData)
 }
 
@@ -105,6 +106,7 @@ func ProfilePic(w http.ResponseWriter, r *http.Request) {
 		mimeType = "application/octet-stream"
 	}
 	w.Header().Set("Content-Type", mimeType)
+	logger.Info.Println("OK - /action/profile-pic ", r.RemoteAddr)
 	w.Write(imgData)
 }
 
@@ -152,4 +154,6 @@ func PostProfilePic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fsops.SaveImg(imgData, fsops.ProfilePicPath, fileName, fileExt)
+	logger.Info.Printf("/action/user/%s/profile-pic  %s\n", encoded, r.RemoteAddr)
+	w.WriteHeader(http.StatusOK)
 }

@@ -52,6 +52,7 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	logger.Info.Println("OK - /action/forgot-password ", r.RemoteAddr)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 

@@ -5,7 +5,7 @@
     padding: 50px 0 15px;
 }
 
-.login-form {
+#login-form {
     background-color: rgb(254 186 109 / 75%);
     margin: 0 auto;
     width: fit-content;

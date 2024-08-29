@@ -19,6 +19,37 @@ func (da *DataAccess) CreateComment(c *database.Comment) error {
 	return err
 }
 
+func (da *DataAccess) GetCommentById(id int) (*database.Comment, error) {
+	var (
+		createdAt []byte
+		updatedAt []byte
+	)
+	c := database.Comment{}
+	row := da.Db.QueryRow(query.SelectCommentById, id)
+	err := row.Scan(
+		&c.Id,
+		&c.PostGUID,
+		&c.AuthorId,
+		&c.Content,
+		&createdAt,
+		&updatedAt,
+		&c.Rating,
+		&c.Active)
+	if err != nil {
+		return nil, err
+	}
+	c.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+	if err != nil {
+		return nil, err
+	}
+	c.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
+	if err != nil {
+		return nil, err
+	}
+
+	return &c, nil
+}
+
 func (da *DataAccess) GetCommentsByPost(guid string) (*[]database.Comment, error) {
 	comments := []database.Comment{}
 	rows, err := da.Db.Query(query.SelectActiveCommentsByPost, guid)

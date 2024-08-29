@@ -1,8 +1,8 @@
 package wsocket
 
-import "encoding/json"
-
 type Message struct {
-	Type    string          `json:"type"`
-	Payload json.RawMessage `json:"payload"`
+	FromUserName string `json:"from_username"`
+	Type         string `json:"type"`
+	Msg          string `json:"msg"`
+	ResourceId   string `json:"resource_id"`
 }

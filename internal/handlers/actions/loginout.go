@@ -3,6 +3,7 @@ package actions
 import (
 	"database/sql"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
@@ -24,7 +25,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		loginReq LoginRequest
 	)
 
-	err = json.NewDecoder(r.Body).Decode(&loginReq)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		logger.Error.Println("/action/login - Error reading body:", err)
+		return
+	}
+
+	err = json.Unmarshal(body, &loginReq)
 	if err != nil {
 		logger.Error.Println("/action/login - Could not decode JSON: ", err)
 		redirect.RedirectToError(w, r, err.Error())
@@ -56,6 +63,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	usrSession := auth.CreateSession(w, r)
 	auth.UpdateSession(usrSession.SessionId, u.Id)
 
+	logger.Info.Println("OK - /action/login ", r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -75,5 +83,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+
+	logger.Info.Println("OK - /action/logout ", r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }

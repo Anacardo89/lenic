@@ -8,7 +8,7 @@ type Notification struct {
 	FromUserId int
 	NotifType  string
 	NotifMsg   string
-	ResourceId int
+	ResourceId string
 	IsRead     bool
 	CreatedAt  time.Time
 	UpdatedAt  time.Time

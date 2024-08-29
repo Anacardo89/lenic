@@ -40,5 +40,6 @@ func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	logger.Info.Println("OK - /action/recover-password ", r.RemoteAddr)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }

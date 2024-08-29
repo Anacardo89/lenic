@@ -10,6 +10,11 @@ const (
 			active=?
 	;`
 
+	SelectCommentById = `
+	SELECT * FROM comments
+		WHERE id=?
+	;`
+
 	SelectActiveCommentsByPost = `
 	SELECT * FROM comments
 		WHERE post_guid=? AND active=1 ORDER BY rating DESC

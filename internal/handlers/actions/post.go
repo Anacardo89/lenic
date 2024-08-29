@@ -80,6 +80,8 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+
+	logger.Info.Println("OK - /action/post ", r.RemoteAddr)
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -117,6 +119,8 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+
+	logger.Info.Printf("OK - PUT /action/post/%s %s\n", postGUID, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -131,6 +135,8 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+
+	logger.Info.Printf("OK - DELETE /action/post/%s %s\n", postGUID, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -154,6 +160,8 @@ func RatePostUp(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+
+	logger.Info.Printf("OK - POST /action/post/%s/up %s\n", postGUID, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -177,5 +185,7 @@ func RatePostDown(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+
+	logger.Info.Printf("OK - POST /action/post/%s/down %s\n", postGUID, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }

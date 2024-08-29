@@ -10,9 +10,16 @@ const (
 			resource_id=?
 	;`
 
+	SelectNotificationById = `
+	SELECT *
+		FROM notifications
+		WHERE id=?
+	;`
+
 	SelectNotificationsByUser = `
-	SELECT * FROM notifications
-		WHERE user_id=?
+	SELECT *
+		FROM notifications
+		WHERE id=?
 	;`
 
 	UpdateNotificationRead = `
