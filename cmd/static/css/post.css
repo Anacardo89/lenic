@@ -23,18 +23,6 @@ button:active {
 }
 
 /* Post */
-.content-container {
-    background-color: rgb(254 186 109 / 75%);
-    max-width: 1000px;
-    width: fit-content;
-    margin: 75px auto 20px auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    box-shadow: 5px 5px #857456;
-}
-
 .content {
     margin-top: 30px;
     background-color: azure;
@@ -63,11 +51,11 @@ button:active {
     display: block;
 }
 
-#post-edit {
+#post-edit-container {
     display: none;
 }
 
-.post-rating-container {
+.rating-container {
     display: flex;
     flex-direction: row;
 }
@@ -78,14 +66,14 @@ button:active {
     align-items: flex-end;
 }
 
-.post-rating-container button {
+.rating-container button {
     background-color: transparent;
     color: #333;
     padding: 0;
     margin: 0;
 }
 
-.post-rate-up-button {
+#post-rate-up-button {
     margin-left: 10px;
 }
 
@@ -108,7 +96,7 @@ button:active {
     
 }
 
-.comment {
+.comment-container {
     background-color: azure;
     box-shadow: -3px -3px rgb(57, 97, 97);
     padding: 10px;
@@ -133,7 +121,7 @@ textarea {
     display: block;
 }
 
-.comment-edit {
+.comment-edit-container {
     display: none;
 }
 

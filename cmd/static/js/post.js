@@ -1,107 +1,90 @@
+import {session_username, session_encoded} from "./auth.js";
+import  * as wsoc from './wsManager.js';
 
-let guidElem;
-let guidElems = document.getElementsByClassName('post_id');
-if (guidElems.length > 0) {
-    guidElem = guidElems[0];
-    guid = guidElem.getAttribute('value');
-}
+export let guid = $('#post-guid').val();
 
 // Edit post textarea hide/show
-post_edit_button = $('#post-editor-button');
-post_edit_button.on('click', function() {
-    const edit_form = $('#post-edit');
-    const post_text = $('#post-text');
-    if (edit_form.css('display') === 'none' || edit_form.css('display') === '') {
-        edit_form.css('display', 'block');
-        post_text.css('display', 'none');
-    } else {
-        edit_form.css('display', 'none');
-        post_text.css('display', 'block');
-    }
-})
+$(document).ready(function() {
+    const post_edit_button = $('#post-editor-button');
+    post_edit_button.on('click', function() {
+        const edit_form = $('#post-edit-container');
+        const post_text = $('#post-text');
+        if (edit_form.is(':hidden')) {
+            edit_form.show();
+            post_text.hide();
+        } else {
+            edit_form.hide();
+            post_text.show();
+        }
+    });
+});
 
 // Delete post modal behaviour
-const postModal = document.getElementById('modal-container-post');
-let  deletePostBtn = document.querySelector('#post-deleter-button')
+const postModal = $('#modal-container-post');
+let  deletePostBtn = $('#post-deleter-button')
 if (deletePostBtn !== null) {
-    deletePostBtn.addEventListener('click', function() {
-        postModal.style.display = "block";
+    deletePostBtn.on('click', function() {
+        postModal.show();
     });
 }
-let modalPostCancelBtn = document.getElementById('delete-post-sure-no');
+let modalPostCancelBtn = $('#delete-post-sure-no');
 if (modalPostCancelBtn !== null) {
-    modalPostCancelBtn.addEventListener('click', function() {
-        postModal.style.display = 'none';
+    modalPostCancelBtn.on('click', function() {
+        postModal.hide();
     });
 }
-let modalPostDeleteBtn = document.getElementById('delete-post-sure-yes');
+let modalPostDeleteBtn = $('#delete-post-sure-yes');
 if (modalPostDeleteBtn !== null) {
-    modalPostDeleteBtn.addEventListener('click', function() {
+    modalPostDeleteBtn.on('click', function() {
         deletePost(document);
-            postModal.style.display = 'none'; 
+        postModal.hide();
     });
 }
 
-window.addEventListener('click', function(event) {
-    if (event.target === postModal) {
-        postModal.style.display = 'none';
+$(window).on('click', function(event) {
+    if ($(event.target).is('#postModal')) { // Use jQuery to compare the event target
+        $('#postModal').hide(); // Hide the modal
     }
 });
 
-// Rate comment buttons behaviour
-let rate_post_up_button = document.getElementById('post_rate_up_button');
+// Rate post buttons behaviour
+let rate_post_up_button = $('#post-rate-up-button');
 if (rate_post_up_button !== null) {
-    rate_post_up_button.addEventListener('click', function() {
+    rate_post_up_button.on('click', function() {
         ratePostUp();
     });
 }
-let rate_post_down_button = document.getElementById('post_rate_down_button');
+let rate_post_down_button = $('#post-rate-down-button');
 if (rate_post_down_button !== null) {
-    rate_post_down_button.addEventListener('click', function() {
+    rate_post_down_button.on('click', function() {
         ratePostDown();
     });
 }
 
-let rate_post_hidden = document.getElementById('post_rating_hidden');
+let rate_post_hidden = $('#post-rating-hidden');
 if (rate_post_hidden !== null) {
-let postUserRating = rate_post_hidden.getAttribute('value');
+let postUserRating = rate_post_hidden.val();
     if (postUserRating > 0) {
-        let rate_up_button = rate_post_hidden.previousElementSibling;
-        rate_up_button.style.color = 'orange';
+        let rate_up_button = rate_post_hidden.prev();
+        rate_up_button.css('color', 'orange');
     } else if (postUserRating < 0) {
-        let rate_down_button = rate_post_hidden.nextElementSibling;
-        rate_down_button.style.color = 'orange';
+        let rate_down_button = rate_post_hidden.next();
+        rate_down_button.css('color', 'orange');
     }
 }
 
 
 // AJAX calls
 
-// Add post
-function addPost() {
-    const user_encoded = $('#user-encoded').val();
-    let form = $('.post-form form')[0];
-    let formData = new FormData(form)
-    $.ajax({
-        url: '/action/post',
-        method: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false, 
-        success: function(res) {
-            window.location.href = '/user/' + user_encoded + '/feed'
-        },
-        error: function(err) {
-            console.error("Error:", err);
-        }
-    })
-    return false;
-}
-
 // Edit Post
+$(document).ready(function() {
+    $('#post-edit-form').on('submit', editPost);  
+});
+
 function editPost(el) {
-    let guid = $(el).find('.post_id').val();
-    let edited_post = $(el).find('.edit_post').val();
+    el.preventDefault();
+    let form = $(el.currentTarget);
+    let edited_post = form.find('#edit-post').val();
     $.ajax({
         url: '/action/post/' + guid,
         method: 'PUT',
@@ -119,13 +102,12 @@ function editPost(el) {
 }
 
 // Delete Post
-function deletePost(el) {
-    let guid = $(el).find('.post_id').val();
+function deletePost() {
     $.ajax({
         url: '/action/post/' + guid,
         method: 'DELETE',
         success: function(res) {
-            window.location.href = '/'
+            window.location.href = '/user/' + session_encoded + '/feed'
         },
         error: function(err) {
             console.error("Error:", err);
@@ -139,10 +121,14 @@ function ratePostUp() {
     $.ajax({
         url: '/action/post/' + guid + '/up',
         method: 'POST',
-        data: ({
-            rating: 1
-        }),
         success: function(res) {
+            const message = {
+                from_username: session_username,
+                type: 'rate_post',
+                msg: wsoc.MSG_POST_RATE,
+                resource_id: guid
+            };
+            wsoc.sendWSmsg(message);
             location.reload()
         },
         error: function(err) {
@@ -157,10 +143,14 @@ function ratePostDown() {
     $.ajax({
         url: '/action/post/' + guid + '/down',
         method: 'POST',
-        data: ({
-            rating: -1
-        }),
         success: function(res) {
+            const message = {
+                from_username: session_username,
+                type: 'rate_post',
+                msg: wsoc.MSG_POST_RATE,
+                resource_id: guid
+            };
+            wsoc.sendWSmsg(message);
             location.reload()
         },
         error: function(err) {

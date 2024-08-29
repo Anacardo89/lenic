@@ -1,8 +1,8 @@
 package presentation
 
 type User struct {
-	Id          int
-	UserName    string
+	Id          int    `json:"id"`
+	UserName    string `json:"username"`
 	EncodedName string
 	Email       string
 	Pass        string

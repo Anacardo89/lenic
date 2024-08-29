@@ -54,7 +54,7 @@ input[type="file"] {
     margin-bottom: 20px;
 }
 
-.post-button {
+#post-button {
     background-color: orange;
     color: white;
     border: none;
@@ -65,10 +65,10 @@ input[type="file"] {
     margin-top: 10px; /* Space above the button */
 }
 
-.post-button:hover {
+#post-button:hover {
     background-color: rgb(255, 198, 66);
 }
 
-.post-button:active {
+#post-button:active {
     background-color: rgb(209, 136, 0);
 }

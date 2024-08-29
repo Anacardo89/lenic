@@ -33,6 +33,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	logger.Info.Printf("OK - POST /action/post/%s/comment %s\n", postGUID, r.RemoteAddr)
 	http.Redirect(w, r, fmt.Sprintf("/post/%s", postGUID), http.StatusSeeOther)
 }
 
@@ -69,6 +70,7 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	logger.Info.Printf("OK - PUT /action/post/%s/comment/%s %s\n", postGUID, id, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -91,6 +93,7 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	logger.Info.Printf("OK - DELETE /action/post/%s/comment/%s %s\n", postGUID, id, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -113,6 +116,7 @@ func RateCommentUp(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	logger.Info.Printf("OK - POST /action/post/%s/comment/%s/up %s\n", postGUID, id, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -135,5 +139,6 @@ func RateCommentDown(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	logger.Info.Printf("OK - POST /action/post/%s/comment/%s/down %s\n", postGUID, id, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }

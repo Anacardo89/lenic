@@ -17,17 +17,7 @@
     border: none;
     height: 100%;
     font-size: 1em;
-    background-color: orange;
-    color: white;
     cursor: pointer;
-}
-
-.add-post-button:hover {
-    background-color: rgb(255, 198, 66);
-}
-
-.add-post-button:active {
-    background-color: rgb(209, 136, 0);
 }
 
 .post-preview-container {

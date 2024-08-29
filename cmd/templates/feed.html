@@ -13,19 +13,20 @@
 </head>
 <body>
     <header>
+        <input type="hidden" id="session-username" data-session_username="{{.Session.User.UserName}}">
+        <input type="hidden" id="session-encoded" data-session_encoded="{{.Session.User.EncodedName}}">
         <div class="logo">
             <h1 class="home-link"><a href="/home">TPSI.25 Blog</a></h1>
             <p class="logo-bottom">O Blog da malta</p>
         </div>
         {{if not .Session.Authenticated}}
             <div class="header-buttons">
-                <a href="/login"><button class="header-button"><strong>Login</strong></button></a>
-                <a href="/register"><button class="header-button"><strong>Register</strong></button></a>
+                <a href="/login"><button class="header-button">Login</button></a>
+                <a href="/register"><button class="header-button">Register</button></a>
             </div>
         {{else}}
             <div class="logout">
-                <p>You are logged in as <a href="/user/{{.Session.User.EncodedName}}"><strong>{{.Session.User.UserName}}</strong></a></p>
-                <input type="hidden" id="user-encoded" value="{{.Session.User.EncodedName}}">
+                <button class="notif-button"><i class="fa-solid fa-bell fa-2x"></i></button>
                 <a href="/user/{{.Session.User.EncodedName}}">
                     {{if .Session.User.ProfilePic}}
                         <img class="session-profile-pic" src="/action/profile-pic?user-encoded={{.Session.User.EncodedName}}" alt="Profile Pic" />
@@ -33,7 +34,7 @@
                         <img class="session-profile-pic" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
                     {{end}}
                 </a>
-                <button class="header-button" onclick="return logout(this);"><strong>Logout</strong></button>
+                <button class="header-button" id="logout-button"><strong>Logout</strong></button>
             </div>
         {{end}}
     </header>
@@ -75,7 +76,7 @@
             </div>
         </div>
     </main>
-    <script src="/static/js/auth.js"></script>
-    <script src="/static/js/post.js"></script>
+    <script type="module" src="/static/js/auth.js"></script>
+    <script type="module" src="/static/js/post.js"></script>
 </body>
 </html>

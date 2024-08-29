@@ -91,6 +91,8 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+
+	logger.Info.Printf("OK - /action/register %s %s\n", r.RemoteAddr, dbuser.UserName)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
@@ -112,6 +114,7 @@ func ActivateUser(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	logger.Info.Printf("OK - /action/activate %s %s\n", r.RemoteAddr, userName)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 

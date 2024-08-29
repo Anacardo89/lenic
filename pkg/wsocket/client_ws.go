@@ -7,9 +7,9 @@ import (
 )
 
 type Client struct {
-	conn    *websocket.Conn
-	userID  string
-	message chan []byte
+	conn     *websocket.Conn
+	username string
+	message  chan []byte
 }
 
 func (client *Client) listen() {

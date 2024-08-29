@@ -31,51 +31,51 @@ func NewWSConnManager() *WSConnManager {
 	}
 }
 
-func (cm *WSConnManager) AddClient(userID string, conn *websocket.Conn) {
+func (cm *WSConnManager) AddClient(username string, conn *websocket.Conn) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
 	client := &Client{
-		conn:    conn,
-		userID:  userID,
-		message: make(chan []byte),
+		conn:     conn,
+		username: username,
+		message:  make(chan []byte),
 	}
 
-	cm.clients[userID] = client
+	cm.clients[username] = client
 
 	go client.listen()
 }
 
-func (cm *WSConnManager) RemoveClient(userID string) {
+func (cm *WSConnManager) RemoveClient(username string) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
-	if client, ok := cm.clients[userID]; ok {
+	if client, ok := cm.clients[username]; ok {
 		close(client.message)
 		client.conn.Close()
-		delete(cm.clients, userID)
+		delete(cm.clients, username)
 	}
 }
 
-func (cm *WSConnManager) GetClient(userID string) (*Client, bool) {
+func (cm *WSConnManager) GetClient(username string) (*Client, bool) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
-	client, exists := cm.clients[userID]
+	client, exists := cm.clients[username]
 	return client, exists
 }
 
-func (cm *WSConnManager) SendMessage(userID string, message []byte) error {
-	client, exists := cm.GetClient(userID)
+func (cm *WSConnManager) SendMessage(username string, message []byte) error {
+	client, exists := cm.GetClient(username)
 	if !exists {
-		return fmt.Errorf("user %s not connected", userID)
+		return fmt.Errorf("user %s not connected", username)
 	}
 
 	client.message <- message
 	return nil
 }
 
-func (cm *WSConnManager) IsConnected(userID string) bool {
-	_, exists := cm.GetClient(userID)
+func (cm *WSConnManager) IsConnected(username string) bool {
+	_, exists := cm.GetClient(username)
 	return exists
 }

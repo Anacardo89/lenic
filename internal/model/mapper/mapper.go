@@ -72,3 +72,15 @@ func Comment(c *database.Comment, u *presentation.User) *presentation.Comment {
 		Rating:  c.Rating,
 	}
 }
+
+func Notification(n *database.Notification, u string, from_u string) *presentation.Notification {
+	return &presentation.Notification{
+		Id:         n.Id,
+		User:       u,
+		FromUser:   from_u,
+		NotifType:  n.NotifType,
+		NotifMsg:   n.NotifMsg,
+		ResourceId: n.ResourceId,
+		IsRead:     n.IsRead,
+	}
+}

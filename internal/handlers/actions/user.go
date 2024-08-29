@@ -40,6 +40,7 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	logger.Info.Printf("OK - POST /action/user/%s/follow %s\n", encoded, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -72,5 +73,6 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	logger.Info.Printf("OK - POST /action/user/%s/unfollow %s\n", encoded, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
