@@ -45,15 +45,15 @@ if (unfollow_button !== null) {
 
 function unfollowUser() {
     $.ajax({
-        url: '/action/user/' + encoded + '/unfollow',
+        url: '/action/user/' + encoded + '/unfollow' + (session_username ? '?requester=' + encodeURIComponent(session_username) : ''),
         method: 'DELETE',
-        success: function(res) {
-            location.reload()
+        success: function() {
+            location.reload();
         },
         error: function(err) {
             console.error("Error:", err);
         }
-    })
+    });
     return false;
 }
 

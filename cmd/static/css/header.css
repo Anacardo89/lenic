@@ -119,6 +119,8 @@ header {
 }
 
 .notif-item {
+    display: flex;
+    flex-direction: column;
     background-color: azure;
     color: #333;
     cursor: pointer;
@@ -145,7 +147,12 @@ header {
 .request-buttons {
     display: flex;
     flex-direction: row;
-    align-items: flex-end;
+    align-items: center;
+    margin: 0 auto;
+}
+
+.request-buttons button {
+    margin: 0 10px;
 }
 
 /* DMs */
