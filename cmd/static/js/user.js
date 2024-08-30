@@ -46,7 +46,7 @@ if (unfollow_button !== null) {
 function unfollowUser() {
     $.ajax({
         url: '/action/user/' + encoded + '/unfollow',
-        method: 'POST',
+        method: 'DELETE',
         success: function(res) {
             location.reload()
         },

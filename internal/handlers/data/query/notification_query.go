@@ -11,6 +11,11 @@ const (
 			parent_id=?
 	;`
 
+	SelectFollowNotification = `
+	SELECT * FROM notifications
+		WHERE user_id=? AND from_user_id=? AND notif_type='follow_request'
+	;`
+
 	SelectNotificationById = `
 	SELECT * FROM notifications
 		WHERE id=?
@@ -26,6 +31,11 @@ const (
 	UpdateNotificationRead = `
 	UPDATE notifications
 		SET is_read=TRUE
+		WHERE id=?
+	;`
+
+	DeleteNotificationByID = `
+	DELETE FROM notifications
 		WHERE id=?
 	;`
 )

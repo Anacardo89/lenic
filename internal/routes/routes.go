@@ -29,7 +29,7 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/action/logout", actions.Logout).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/follow", actions.RequestFollowUser).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/accept", actions.AcceptFollowRequest).Methods("PUT").Schemes("https")
-	r.HandleFunc("/action/user/{encoded_user_name}/unfollow", actions.UnfollowUser).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/user/{encoded_user_name}/unfollow", actions.UnfollowUser).Methods("DELETE").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/profile-pic", actions.PostProfilePic).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/notifications", actions.GetNotifs).Methods("GET").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/notifications/{notif_id}/read", actions.UpdateNotif).Methods("PUT").Schemes("https")

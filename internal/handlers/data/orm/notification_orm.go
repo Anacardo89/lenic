@@ -20,6 +20,39 @@ func (da *DataAccess) CreateNotification(n *database.Notification) (sql.Result, 
 	return result, err
 }
 
+func (da *DataAccess) GetFollowNotification(user_id int, from_user_id int) (*database.Notification, error) {
+	var (
+		createdAt []byte
+		updatedAt []byte
+	)
+	n := database.Notification{}
+	row := da.Db.QueryRow(query.SelectFollowNotification, user_id, from_user_id)
+	err := row.Scan(
+		&n.Id,
+		&n.UserID,
+		&n.FromUserId,
+		&n.NotifType,
+		&n.NotifMsg,
+		&n.ResourceId,
+		&n.ParentId,
+		&n.IsRead,
+		&createdAt,
+		&updatedAt)
+	if err != nil {
+		return nil, err
+	}
+	n.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+	if err != nil {
+		return nil, err
+	}
+	n.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
+	if err != nil {
+		return nil, err
+	}
+
+	return &n, nil
+}
+
 func (da *DataAccess) GetNotificationById(id int) (*database.Notification, error) {
 	var (
 		createdAt []byte
@@ -99,6 +132,14 @@ func (da *DataAccess) GetNotificationsByUser(user_id int, limit int, offset int)
 
 func (da *DataAccess) UpdateNotificationRead(id int) error {
 	_, err := da.Db.Exec(query.UpdateNotificationRead, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (da *DataAccess) DeleteNotificationByID(id int) error {
+	_, err := da.Db.Exec(query.DeleteNotificationByID, id)
 	if err != nil {
 		return err
 	}
