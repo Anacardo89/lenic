@@ -36,6 +36,7 @@ func Follows(f *database.Follows) *presentation.Follows {
 	return &presentation.Follows{
 		FollowerId: f.FollowerId,
 		FollowedId: f.FollowedId,
+		Status:     f.Status,
 	}
 }
 

@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func FollowUser(w http.ResponseWriter, r *http.Request) {
+func RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("POST /action/user/%s/follow %s\n", encoded, r.RemoteAddr)
@@ -74,5 +74,51 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.Info.Printf("OK - POST /action/user/%s/unfollow %s\n", encoded, r.RemoteAddr)
+	w.WriteHeader(http.StatusOK)
+}
+
+func AcceptFollowRequest(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	encoded := vars["encoded_user_name"]
+	logger.Info.Printf("PUT /action/user/%s/accept %s\n", encoded, r.RemoteAddr)
+
+	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/accept - Could not decode user: %s\n", encoded, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	userName := string(bytes)
+	logger.Info.Printf("PUT /action/user/%s/accept %s %s\n", encoded, r.RemoteAddr, userName)
+
+	err = r.ParseForm()
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/accept - Could not parse form: %s\n", encoded, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	requesterName := r.FormValue("requester")
+
+	dbuser, err := orm.Da.GetUserByName(userName)
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/accept - Could not decode user: %s\n", encoded, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
+	dbrequester, err := orm.Da.GetUserByName(requesterName)
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/accept - Could not decode user: %s\n", encoded, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
+	err = orm.Da.AcceptFollow(dbrequester.Id, dbuser.Id)
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/accept - Could not accept follow: %s\n", encoded, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	logger.Info.Printf("OK - PUT /action/user/%s/accept %s\n", encoded, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }

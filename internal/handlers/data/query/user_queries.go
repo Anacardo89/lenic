@@ -50,18 +50,25 @@ const (
 
 	SelectUserFollowers = `
 	SELECT * FROM follows
-		WHERE followed_id=?
+		WHERE followed_id=? AND follow_status=1
 	;`
 
 	SelectUserFollowing = `
 	SELECT * FROM follows
-		WHERE follower_id=?
+		WHERE follower_id=? AND follow_status=1
 	;`
 
 	FollowUser = `
 	INSERT INTO follows
 		SET follower_id=?,
-			followed_id=?
+			followed_id=?,
+			follow_status=0
+	;`
+
+	AcceptFollow = `
+	UPDATE follows
+		SET follow_status=1
+		WHERE follower_id=? AND followed_id=?
 	;`
 
 	UnfollowUser = `

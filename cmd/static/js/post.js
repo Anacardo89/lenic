@@ -121,10 +121,10 @@ function ratePostUp() {
     $.ajax({
         url: '/action/post/' + guid + '/up',
         method: 'POST',
-        success: function(res) {
+        success: function() {
             const message = {
                 from_username: session_username,
-                type: 'rate_post',
+                type: wsoc.TYPE_POST_RATE,
                 msg: wsoc.MSG_POST_RATE,
                 resource_id: guid
             };
@@ -143,10 +143,10 @@ function ratePostDown() {
     $.ajax({
         url: '/action/post/' + guid + '/down',
         method: 'POST',
-        success: function(res) {
+        success: function() {
             const message = {
                 from_username: session_username,
-                type: 'rate_post',
+                type: wsoc.TYPE_POST_RATE,
                 msg: wsoc.MSG_POST_RATE,
                 resource_id: guid
             };

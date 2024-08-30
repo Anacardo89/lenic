@@ -1,18 +1,15 @@
+import * as wsoc from './wsManager.js';
+import { session_username } from './auth.js';
 
 let encodedElem = document.getElementById('encoded-user');
 let encoded = encodedElem.getAttribute('value');
+console.log(encoded);
 
 let follow_button = $('#follow-button');
+console.log(follow_button);
 if (follow_button !== null) {
     follow_button.on('click', function() {
         followUser();
-    })
-}
-
-let unfollow_button = $('#unfollow-button');
-if (unfollow_button !== null) {
-    unfollow_button.on('click', function() {
-        unfollowUser();
     })
 }
 
@@ -20,7 +17,15 @@ function followUser() {
     $.ajax({
         url: '/action/user/' + encoded + '/follow',
         method: 'POST',
-        success: function(res) {
+        success: function() {
+            const message = {
+                from_username: session_username,
+                type: wsoc.TYPE_FOLLOW_REQUEST,
+                msg: wsoc.MSG_FOLLOW_REQUEST,
+                resource_id: encoded,
+                parent_id: ''
+            };
+            wsoc.sendWSmsg(message);
             location.reload()
         },
         error: function(err) {
@@ -30,6 +35,13 @@ function followUser() {
     return false;
 }
 
+
+let unfollow_button = $('#unfollow-button');
+if (unfollow_button !== null) {
+    unfollow_button.on('click', function() {
+        unfollowUser();
+    })
+}
 
 function unfollowUser() {
     $.ajax({

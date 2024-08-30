@@ -19,7 +19,7 @@ type ProfilePage struct {
 	Session presentation.Session
 	User    presentation.User
 	Posts   []presentation.Post
-	Follows bool
+	Follows int
 }
 
 func UserProfile(w http.ResponseWriter, r *http.Request) {
@@ -51,17 +51,17 @@ func UserProfile(w http.ResponseWriter, r *http.Request) {
 		Session: session,
 	}
 
-	_, err = orm.Da.GetUserFollows(session.User.Id, u.Id)
+	dbfollow, err := orm.Da.GetUserFollows(session.User.Id, u.Id)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			logger.Error.Printf("/user/%s - Could not get follows: %s\n", encoded, err)
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		} else {
-			pp.Follows = false
+			pp.Follows = -1
 		}
 	} else {
-		pp.Follows = true
+		pp.Follows = dbfollow.Status
 	}
 
 	dbposts, err := orm.Da.GetUserPosts(u.Id)

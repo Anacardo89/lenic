@@ -25,6 +25,7 @@ CREATE TABLE users (
 CREATE TABLE follows (
 	follower_id INT NOT NULL REFERENCES users(id),
 	followed_id INT NOT NULL REFERENCES users(id),
+	follow_status INT NOT NULL DEFAULT 0,
 	UNIQUE KEY follow_relation (follower_id, followed_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

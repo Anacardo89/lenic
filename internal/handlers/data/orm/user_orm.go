@@ -138,7 +138,8 @@ func (da *DataAccess) GetUserFollows(follower_id int, followed_id int) (*databas
 	row := da.Db.QueryRow(query.SelectUserFollows, follower_id, followed_id)
 	err := row.Scan(
 		&f.FollowerId,
-		&f.FollowedId)
+		&f.FollowedId,
+		&f.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -160,11 +161,14 @@ func (da *DataAccess) GetFollowers(followed_id int) (*[]database.Follows, error)
 		err = rows.Scan(
 			&f.FollowerId,
 			&f.FollowedId,
+			&f.Status,
 		)
 		if err != nil {
 			return nil, err
 		}
-		follows = append(follows, f)
+		if f.Status == 1 {
+			follows = append(follows, f)
+		}
 	}
 	return &follows, nil
 }
@@ -184,11 +188,14 @@ func (da *DataAccess) GetFollowing(follower_id int) (*[]database.Follows, error)
 		err = rows.Scan(
 			&f.FollowerId,
 			&f.FollowedId,
+			&f.Status,
 		)
 		if err != nil {
 			return nil, err
 		}
-		follows = append(follows, f)
+		if f.Status == 1 {
+			follows = append(follows, f)
+		}
 	}
 	return &follows, nil
 }
@@ -199,6 +206,15 @@ func (da *DataAccess) FollowUser(follower_id int, followed_id int) error {
 		return err
 	}
 	return nil
+}
+
+func (da *DataAccess) AcceptFollow(follower_id int, followed_id int) error {
+	_, err := da.Db.Exec(query.AcceptFollow, follower_id, followed_id)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 func (da *DataAccess) UnfollowUser(follower_id int, followed_id int) error {

@@ -23,4 +23,5 @@ type UserNotif struct {
 type Follows struct {
 	FollowerId int
 	FollowedId int
+	Status     int
 }

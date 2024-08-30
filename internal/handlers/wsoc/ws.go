@@ -55,6 +55,8 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 			handleCommentRate(msg)
 		case "rate_post":
 			handlePostRate(msg)
+		case "follow_request":
+			handleFollowRequest(msg)
 		default:
 			logger.Warn.Printf("/ws - Unknown message type: %s\n", msg.Type)
 		}

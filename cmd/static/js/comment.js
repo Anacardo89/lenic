@@ -160,10 +160,10 @@ function rateCommentUp(el) {
     $.ajax({
         url: '/action/post/' + guid + '/comment/' + id + '/up',
         method: 'POST',
-        success: function(res) {
+        success: function() {
             const message = {
                 from_username: session_username,
-                type: 'rate_comment',
+                type: wsoc.TYPE_COMMENT_RATE,
                 msg: wsoc.MSG_COMMENT_RATE,
                 resource_id: id,
                 parent_id: guid
@@ -184,10 +184,10 @@ function rateCommentDown(el) {
     $.ajax({
         url: '/action/post/' + guid + '/comment/' + id + '/down',
         method: 'POST',
-        success: function(res) {
+        success: function() {
             const message = {
                 from_username: session_username,
-                type: 'rate_comment',
+                type: wsoc.TYPE_COMMENT_RATE,
                 msg: wsoc.MSG_COMMENT_RATE,
                 resource_id: id,
                 parent_id: guid
