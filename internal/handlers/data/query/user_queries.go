@@ -48,6 +48,16 @@ const (
 		WHERE follower_id=? AND followed_id=?
 	;`
 
+	SelectUserFollowers = `
+	SELECT * FROM follows
+		WHERE followed_id=?
+	;`
+
+	SelectUserFollowing = `
+	SELECT * FROM follows
+		WHERE follower_id=?
+	;`
+
 	FollowUser = `
 	INSERT INTO follows
 		SET follower_id=?,

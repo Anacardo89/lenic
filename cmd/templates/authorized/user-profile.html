@@ -6,10 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/css/base.css">
     <link rel="stylesheet" href="/static/css/header.css">
-    <link rel="stylesheet" href="/static/css/feed.css">
+    <link rel="stylesheet" href="/static/css/user-profile.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <!-- FontAwesome Link -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 </head>
 <body>
     <header>
@@ -26,6 +27,7 @@
             </div>
         {{else}}
             <div class="logout">
+                <!-- DM Not Implemented
                 <div class="dm-container">
                     <button class="dm-button"><i class="fa-solid fa-envelope fa-2x"></i></button>
                     <div class="dm-dropdown">
@@ -36,6 +38,7 @@
                         </div>
                     </div>
                 </div>
+                -->
                 <div class="notif-container">
                     <button class="notif-button"><i class="fa-solid fa-bell fa-2x"></i></button>
                     <div class="notif-dropdown">
@@ -56,13 +59,61 @@
         {{end}}
     </header>
     <main>
-        <h1 class="index-title">Feed</h1>
-        {{if .Session.Authenticated}}
-        <div class="add-post-container">
-            <button class="add-post-button"><a href="/newPost">Create a new Post</a></button>
+        <div class="main-container">
+            <h1>{{.User.UserName}}</h1>
+            <div class="profile">
+                <div class="profile-personal">
+                    <div class="profile-pic">
+                        {{if .User.ProfilePic}}
+                            <img src="/action/profile-pic?user-encoded={{.User.EncodedName}}" alt="Profile Pic">
+                        {{else}}
+                            <img src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
+                        {{end}}
+                        {{if eq .Session.User.UserName .User.UserName}}
+                            <div class="profile-pic-add-container">
+                                <form id="profile-pic-form" method="POST" enctype="multipart/form-data">
+                                    <input type="file" name="image" accept="image/*" id="profile-pic-input" onchange="checkFileSelected();" />
+                                </form>
+                                <button class="profile-pic-add-button" id="confirm-button" onclick="return addProfilePic();"><strong>Confirm</strong></button>
+                            </div>
+                        {{end}}
+                    </div>
+                    <div class="profile-info">
+                        <input type="hidden" id="encoded-user" value="{{.User.EncodedName}}" />
+                        <div><p><strong>User: {{.User.UserName}}</strong></p></div>
+                        <br>
+                        {{if eq .User.UserName .Session.User.UserName}}
+                            <p>{{.User.Email}}</p>
+                            <br>
+                            <a href="/recover-password/{{.User.EncodedName}}"><button>Change password</button></a>
+                            <br>
+                            <br>
+                            <div class="user-profile-buttons">
+                                <a href="/user/{{.User.EncodedName}}/feed"><button>Feed</button></a>
+                                <a href="/newPost"><button>Create a new Post</button></a>
+                            </div>
+                        {{end}}
+                    </div>
+                </div>
+                <br>
+                <div class="follow-container">
+                    <div class="follower-info">
+                        <div><a href="/user/{{.User.EncodedName}}/followers"><strong>Followers:</strong></a> {{.User.Followers}}</div>
+                        <div><a href="/user/{{.User.EncodedName}}/following"><strong>Following:</strong></a> {{.User.Following}}</div>
+                    </div>
+                    {{if .Session.Authenticated}}
+                        {{if ne .Session.User.UserName .User.UserName}}
+                            {{if .Follows}}
+                                <button id="unfollow-button">Unfollow</button>
+                            {{else}}
+                                <button id="follow-button">Follow</button>
+                            {{end}}
+                        {{end}}
+                    {{end}}
+                </div>
+            </div>
         </div>
-        {{end}}
-        <div class="post-feed">
+        <div class="user-posts">
             <div class="post-preview-container">
                 {{range .Posts}}
                     <div class="post-preview" onclick="location.href='/post/{{.GUID}}';">
@@ -94,6 +145,6 @@
         </div>
     </main>
     <script type="module" src="/static/js/auth.js"></script>
-    <script type="module" src="/static/js/post.js"></script>
+    <script src="/static/js/user.js"></script>
 </body>
 </html>
