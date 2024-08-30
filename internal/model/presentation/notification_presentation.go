@@ -6,7 +6,7 @@ type Notification struct {
 	FromUser   UserNotif `json:"fromuser"`
 	NotifType  string    `json:"type"`
 	NotifMsg   string    `json:"msg"`
-	ResourceId string    `json:"resouce_id"`
+	ResourceId string    `json:"resource_id"`
 	ParentId   string    `json:"parent_id"`
 	IsRead     bool      `json:"is_read"`
 }

@@ -41,6 +41,7 @@ func handleCommentRate(msg wsocket.Message) {
 		NotifType:  msg.Type,
 		NotifMsg:   msg.Msg,
 		ResourceId: msg.ResourceId,
+		ParentId:   msg.ParentId,
 	}
 
 	res, err := orm.Da.CreateNotification(n)
@@ -94,6 +95,7 @@ func handlePostRate(msg wsocket.Message) {
 		NotifType:  msg.Type,
 		NotifMsg:   msg.Msg,
 		ResourceId: msg.ResourceId,
+		ParentId:   "",
 	}
 
 	res, err := orm.Da.CreateNotification(n)

@@ -64,7 +64,7 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 	for _, dbnotif := range dbnotifs {
 		dbfromuser, err := orm.Da.GetUserByID(dbnotif.FromUserId)
 		if err != nil {
-			logger.Error.Printf("GET /action/user/%s/notifications - Could not get notifs: %s\n", encoded, err)
+			logger.Error.Printf("GET /action/user/%s/notifications - Could not get user: %s\n", encoded, err)
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
@@ -82,4 +82,34 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
+}
+
+func UpdateNotif(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	encoded := vars["encoded_user_name"]
+	notif_id := vars["notif_id"]
+	logger.Info.Printf("PUT /action/user/%s/notifications/%s/read %s\n", encoded, notif_id, r.RemoteAddr)
+
+	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not decode user: %s\n", encoded, notif_id, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	userName := string(bytes)
+	logger.Info.Printf("PUT /action/user/%s/notifications/%s/read %s %s\n", encoded, notif_id, r.RemoteAddr, userName)
+
+	notif_id_int, err := strconv.Atoi(notif_id)
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not parse notif_id to int: %s\n", encoded, notif_id, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
+	err = orm.Da.UpdateNotificationRead(notif_id_int)
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not update notif: %s\n", encoded, notif_id, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
 }

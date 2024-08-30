@@ -21,13 +21,21 @@ export function connectWS(user_name) {
 
     ws.onmessage = function(event) {
         const message = JSON.parse(event.data);
+        const notifButton = $('.notif-button');
+        console.log(message);
 
         switch (message.type) {
             case 'rate_comment':
                 handleRateComment(message);
+                if (!message.is_read) {
+                    notifButton.css('--notif-display', 'block');
+                }
                 break;
             case 'rate_post':
                 handleRatePost(message);
+                if (!message.is_read) {
+                    notifButton.css('--notif-display', 'block');
+                }
                 break;
             default:
                 console.warn('Unknown message type:', message.type);
