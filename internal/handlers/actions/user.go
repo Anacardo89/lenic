@@ -65,45 +65,35 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session := auth.ValidateSession(w, r)
+	queryParams := r.URL.Query()
+	requesterName := queryParams.Get("requester")
 
-	err = orm.Da.UnfollowUser(session.User.Id, dbuser.Id)
+	dbrequester, err := orm.Da.GetUserByName(requesterName)
+	if err != nil {
+		logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not get dbrequester: %s\n", encoded, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
+	err = orm.Da.UnfollowUser(dbrequester.Id, dbuser.Id)
 	if err != nil {
 		logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not unfollow: %s\n", encoded, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 
-	err = r.ParseForm()
+	dbnotif, err := orm.Da.GetFollowNotification(dbuser.Id, dbrequester.Id)
 	if err != nil {
-		logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not parse form: %s\n", encoded, err)
+		logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not get notif: %s\n", encoded, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	requesterName := r.FormValue("requester")
-	logger.Debug.Println(requesterName)
 
-	if requesterName != "" {
-		dbrequester, err := orm.Da.GetUserByName(requesterName)
-		if err != nil {
-			logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not get dbrequester: %s\n", encoded, err)
-			redirect.RedirectToError(w, r, err.Error())
-			return
-		}
-
-		dbnotif, err := orm.Da.GetFollowNotification(dbuser.Id, dbrequester.Id)
-		if err != nil {
-			logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not get notif: %s\n", encoded, err)
-			redirect.RedirectToError(w, r, err.Error())
-			return
-		}
-
-		err = orm.Da.DeleteNotificationByID(dbnotif.Id)
-		if err != nil {
-			logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not delete notif: %s\n", encoded, err)
-			redirect.RedirectToError(w, r, err.Error())
-			return
-		}
+	err = orm.Da.DeleteNotificationByID(dbnotif.Id)
+	if err != nil {
+		logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not delete notif: %s\n", encoded, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
 	}
 
 	logger.Info.Printf("OK - DELETE /action/user/%s/unfollow %s\n", encoded, r.RemoteAddr)
@@ -132,7 +122,6 @@ func AcceptFollowRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	requesterName := r.FormValue("requester")
-	logger.Debug.Println(requesterName)
 
 	dbuser, err := orm.Da.GetUserByName(userName)
 	if err != nil {

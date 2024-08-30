@@ -284,7 +284,7 @@ export function makeFollowRequestNotif(notification) {
     authorInline.classList.add('author-info-inline');
 
     const profilePicLink = document.createElement('a');
-    profilePicLink.href = '/user/' + encoded;
+    profilePicLink.href = '/user/' + notification.fromuser.encoded;
     
     const profilePic = document.createElement('img');
     profilePic.classList.add('profile-pic-mini');
@@ -341,20 +341,17 @@ export function makeFollowRequestNotif(notification) {
     });
     
     refuseRequestButton.addEventListener('click', function() {
-        $.ajax({
-            url: '/action/user/' + session_encoded + '/unfollow',
-            method: 'DELETE',
-            data: {
-                requester: fromUser
-            },
-            success: function() {
-                location.reload();
-            },
-            error: function(err) {
-                console.error("Error:", err);
-            }
-        });
+    $.ajax({
+        url: '/action/user/' + session_encoded + '/unfollow' + (fromUser ? '?requester=' + encodeURIComponent(fromUser) : ''),
+        method: 'DELETE',
+        success: function() {
+            location.reload();
+        },
+        error: function(err) {
+            console.error("Error:", err);
+        }
     });
+});
 
 
     
