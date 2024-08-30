@@ -1,0 +1,30 @@
+
+/* Followers */
+.profile-grid {
+    background-color: azure;
+    box-shadow: -3px -3px rgb(57, 97, 97);
+    display: grid;
+    grid-template:repeat(1, 150px) / repeat(6, 1fr);
+    grid-gap: 3px;
+    padding: 10px;
+    margin: 10px;
+}
+
+.profile {
+    background-color: azure;
+    height: 150px;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .profile:hover {
+    background-color: white;
+  }
+
+  .profile-pic-med {
+    height: 130px;
+    margin: 5px 5px 0 0;
+    align-self: center;
+}

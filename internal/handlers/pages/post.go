@@ -15,8 +15,8 @@ import (
 )
 
 type PostPage struct {
-	Post    presentation.Post
 	Session presentation.Session
+	Post    presentation.Post
 }
 
 func NewPost(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,7 @@ func NewPost(w http.ResponseWriter, r *http.Request) {
 		Session: auth.ValidateSession(w, r),
 		Post:    presentation.Post{},
 	}
-	t, err := template.ParseFiles("templates/newPost.html")
+	t, err := template.ParseFiles("templates/authorized/newPost.html")
 	if err != nil {
 		logger.Error.Println("/newPost - Could not parse template: ", err)
 		redirect.RedirectToError(w, r, err.Error())
@@ -104,7 +104,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		p.Comments = append(p.Comments, *c)
 	}
 	postp.Post = *p
-	t, err := template.ParseFiles("templates/post.html")
+	t, err := template.ParseFiles("templates/authorized/post.html")
 	if err != nil {
 		logger.Error.Printf("/post/%s - Could not parse template: %s\n", postGUID, err)
 		redirect.RedirectToError(w, r, err.Error())

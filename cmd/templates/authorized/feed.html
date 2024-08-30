@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/css/base.css">
     <link rel="stylesheet" href="/static/css/header.css">
-    <link rel="stylesheet" href="/static/css/newPost.css">
+    <link rel="stylesheet" href="/static/css/feed.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <!-- FontAwesome Link -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -26,6 +26,7 @@
             </div>
         {{else}}
             <div class="logout">
+                <!-- DM Not Implemented
                 <div class="dm-container">
                     <button class="dm-button"><i class="fa-solid fa-envelope fa-2x"></i></button>
                     <div class="dm-dropdown">
@@ -36,6 +37,7 @@
                         </div>
                     </div>
                 </div>
+                -->
                 <div class="notif-container">
                     <button class="notif-button"><i class="fa-solid fa-bell fa-2x"></i></button>
                     <div class="notif-dropdown">
@@ -55,20 +57,45 @@
             </div>
         {{end}}
     </header>
-    <div class="content">
-        <div class="post-form">
-            <form enctype="multipart/form-data">
-                <div><input type="text" name="post_title" placeholder="Post Title" /></div>
-                <div><textarea name="post_content" placeholder="The post"></textarea></div>
-                <div>
-                    <p>Add an image to your post:</p>    
-                    <div><input type="file" name="image" accept="image/*"/></div>
-                </div>
-            </form>
+    <main>
+        <h1 class="index-title">Feed</h1>
+        {{if .Session.Authenticated}}
+        <div class="add-post-container">
+            <button class="add-post-button"><a href="/newPost">Create a new Post</a></button>
         </div>
-        <button id="post-button"><strong>Post</strong></button>
-    </div>
+        {{end}}
+        <div class="post-feed">
+            <div class="post-preview-container">
+                {{range .Posts}}
+                    <div class="post-preview" onclick="location.href='/post/{{.GUID}}';">
+                        <div class="post-preview-content">
+                            <div class="author-info-inline">
+                                <a href="/user/{{.Author.EncodedName}}">
+                                    {{if .Author.ProfilePic}}
+                                        <img class="profile-pic-mini" src="/action/profile-pic?user-encoded={{.Author.EncodedName}}" alt="Profile Pic">
+                                    {{else}}
+                                        <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
+                                    {{end}}
+                                </a>
+                                <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.UserName}}</strong></a>   -   <strong>{{.Date}}</strong></div>
+                            </div>
+                            {{if .Image}}
+                                <img class="post-pic-mini" src="/action/image?guid={{.GUID}}" alt="Post Image">
+                                <br>
+                            {{end}}
+                            <div><h2>{{.Title}}</h2></div>
+                            <div>{{.TruncatedText}}</div>
+                            <br>
+                            <div class="post-rating-container">
+                                <div class="post-rating">Rating <strong>{{.Rating}}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                {{end}}
+            </div>
+        </div>
+    </main>
     <script type="module" src="/static/js/auth.js"></script>
-    <script type="module" src="/static/js/newPost.js"></script>
+    <script type="module" src="/static/js/post.js"></script>
 </body>
 </html>

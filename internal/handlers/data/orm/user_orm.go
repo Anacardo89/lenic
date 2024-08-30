@@ -1,6 +1,7 @@
 package orm
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/query"
@@ -142,6 +143,54 @@ func (da *DataAccess) GetUserFollows(follower_id int, followed_id int) (*databas
 		return nil, err
 	}
 	return &f, nil
+}
+
+func (da *DataAccess) GetFollowers(followed_id int) (*[]database.Follows, error) {
+	follows := []database.Follows{}
+	rows, err := da.Db.Query(query.SelectUserFollowers, followed_id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &follows, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		f := database.Follows{}
+		err = rows.Scan(
+			&f.FollowerId,
+			&f.FollowedId,
+		)
+		if err != nil {
+			return nil, err
+		}
+		follows = append(follows, f)
+	}
+	return &follows, nil
+}
+
+func (da *DataAccess) GetFollowing(follower_id int) (*[]database.Follows, error) {
+	follows := []database.Follows{}
+	rows, err := da.Db.Query(query.SelectUserFollowing, follower_id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &follows, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		f := database.Follows{}
+		err = rows.Scan(
+			&f.FollowerId,
+			&f.FollowedId,
+		)
+		if err != nil {
+			return nil, err
+		}
+		follows = append(follows, f)
+	}
+	return &follows, nil
 }
 
 func (da *DataAccess) FollowUser(follower_id int, followed_id int) error {

@@ -16,9 +16,9 @@ import (
 )
 
 type ProfilePage struct {
+	Session presentation.Session
 	User    presentation.User
 	Posts   []presentation.Post
-	Session presentation.Session
 	Follows bool
 }
 
@@ -83,7 +83,7 @@ func UserProfile(w http.ResponseWriter, r *http.Request) {
 		pp.Posts = append(pp.Posts, *post)
 	}
 
-	t, err := template.ParseFiles("templates/user-profile.html")
+	t, err := template.ParseFiles("templates/authorized/user-profile.html")
 	if err != nil {
 		logger.Error.Printf("/user/%s - Could not parse template: %s\n", encoded, err)
 		redirect.RedirectToError(w, r, err.Error())

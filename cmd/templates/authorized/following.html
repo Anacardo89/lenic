@@ -6,10 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/css/base.css">
     <link rel="stylesheet" href="/static/css/header.css">
-    <link rel="stylesheet" href="/static/css/home.css">
+    <link rel="stylesheet" href="/static/css/followers.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <!-- FontAwesome Link -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 </head>
 <body>
     <header>
@@ -26,6 +27,7 @@
             </div>
         {{else}}
             <div class="logout">
+                <!-- DM Not Implemented
                 <div class="dm-container">
                     <button class="dm-button"><i class="fa-solid fa-envelope fa-2x"></i></button>
                     <div class="dm-dropdown">
@@ -36,6 +38,7 @@
                         </div>
                     </div>
                 </div>
+                -->
                 <div class="notif-container">
                     <button class="notif-button"><i class="fa-solid fa-bell fa-2x"></i></button>
                     <div class="notif-dropdown">
@@ -56,11 +59,22 @@
         {{end}}
     </header>
     <main>
-        <div class="home-container">
-            <h1>It started out with a blog</h1>
-            <br>
-            <h2>It was only a blog</h2>
-            <h2>It was only a blog</h2>
+        <div class="main-container">
+            <h1>{{.User.UserName}} is Following</h1>
+            <div class="profile-grid">
+                {{range .Following}}
+                    <a href="/user/{{.EncodedName}}">
+                        <div class="profile">
+                            {{if .ProfilePic}}
+                                <img class="profile-pic-med" src="/action/profile-pic?user-encoded={{.EncodedName}}" alt="Profile Pic">
+                            {{else}}
+                                <img class="profile-pic-med" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
+                            {{end}}
+                            <p><strong>{{.UserName}}</strong></p>
+                        </div>
+                    </a>
+                {{end}}
+            </div>
         </div>
     </main>
     <script type="module" src="/static/js/auth.js"></script>

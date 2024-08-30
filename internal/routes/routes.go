@@ -18,8 +18,8 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/post/{post_guid}", pages.Post).Schemes("https")
 	r.HandleFunc("/user/{encoded_user_name}", pages.UserProfile).Schemes("https")
 	r.HandleFunc("/user/{encoded_user_name}/feed", pages.Feed).Schemes("https")
-	r.HandleFunc("/user/{encoded_user_name}/followers", pages.UserProfile).Schemes("https")
-	r.HandleFunc("/user/{encoded_user_name}/following", pages.UserProfile).Schemes("https")
+	r.HandleFunc("/user/{encoded_user_name}/followers", pages.UserFollowers).Schemes("https")
+	r.HandleFunc("/user/{encoded_user_name}/following", pages.UserFollowing).Schemes("https")
 	r.HandleFunc("/forgot-password", pages.ForgotPassword).Schemes("https")
 	r.HandleFunc("/recover-password/{encoded_user_name}", pages.RecoverPassword).Schemes("https")
 

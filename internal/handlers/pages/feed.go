@@ -14,8 +14,8 @@ import (
 )
 
 type FeedPage struct {
-	Posts   []presentation.Post
 	Session presentation.Session
+	Posts   []presentation.Post
 }
 
 func Feed(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func Feed(w http.ResponseWriter, r *http.Request) {
 		post.Content = template.HTML(post.RawContent)
 		feed.Posts = append(feed.Posts, *post)
 	}
-	t, err := template.ParseFiles("templates/feed.html")
+	t, err := template.ParseFiles("templates/authorized/feed.html")
 	if err != nil {
 		logger.Error.Printf("/user/%s/feed - Could not parse template: %s\n", encoded, err)
 		redirect.RedirectToError(w, r, err.Error())
