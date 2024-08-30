@@ -100,8 +100,8 @@ CREATE TABLE notifications (
 
 DELIMITER $$
 
-CREATE TRIGGER after_follow_insert
-AFTER INSERT ON follows
+CREATE TRIGGER after_follow_update
+AFTER UPDATE ON follows
 FOR EACH ROW
 BEGIN
     -- Increment the user_followers count for the followed user
@@ -123,15 +123,18 @@ CREATE TRIGGER after_follow_delete
 AFTER DELETE ON follows
 FOR EACH ROW
 BEGIN
-    -- Decrement the user_followers count for the followed user
-    UPDATE users
-    SET user_followers = user_followers - 1
-    WHERE id = OLD.followed_id;
+    -- Only update counts if the follow_status was 1 before deletion
+    IF OLD.follow_status = 1 THEN
+        -- Decrement the user_followers count for the followed user
+        UPDATE users
+        SET user_followers = user_followers - 1
+        WHERE id = OLD.followed_id;
 
-    -- Decrement the user_following count for the follower
-    UPDATE users
-    SET user_following = user_following - 1
-    WHERE id = OLD.follower_id;
+        -- Decrement the user_following count for the follower
+        UPDATE users
+        SET user_following = user_following - 1
+        WHERE id = OLD.follower_id;
+    END IF;
 END $$
 
 DELIMITER ;

@@ -120,9 +120,14 @@ header {
 
 .notif-item {
     background-color: azure;
+    color: #333;
     cursor: pointer;
     padding: 10px;
     border-bottom: 1px solid #333;
+}
+
+.notif-item a {
+    color: #333;
 }
 
 .notif-item:hover {

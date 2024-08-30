@@ -276,6 +276,7 @@ export function makePostRateNotif(notification) {
 
 export function makeFollowRequestNotif(notification) {
     const encoded = notification.resource_id;
+    const fromUser = notification.fromuser.username;
     const notif = document.createElement('div');
     notif.classList.add('notif-item');
     
@@ -295,7 +296,7 @@ export function makeFollowRequestNotif(notification) {
     profilePicLink.append(profilePic);
 
     const notifMsg = document.createElement('div');
-    notifMsg.innerHTML = '<a href="/user/' + encoded + '"><strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    notifMsg.innerHTML = '<a href="/user/' + notification.fromuser.encoded + '"><strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
     
     const idHidden = document.createElement('input');
     idHidden.type = 'hidden';
@@ -328,7 +329,7 @@ export function makeFollowRequestNotif(notification) {
             url: '/action/user/' + session_encoded + '/accept',
             method: 'PUT',
             data: {
-                requester: notification.fromuser.username
+                requester: fromUser
             },
             success: function() {
                 location.reload();
@@ -338,5 +339,24 @@ export function makeFollowRequestNotif(notification) {
             }
         });
     });
+    
+    refuseRequestButton.addEventListener('click', function() {
+        $.ajax({
+            url: '/action/user/' + session_encoded + '/unfollow',
+            method: 'DELETE',
+            data: {
+                requester: fromUser
+            },
+            success: function() {
+                location.reload();
+            },
+            error: function(err) {
+                console.error("Error:", err);
+            }
+        });
+    });
+
+
+    
     return notif;
 }
