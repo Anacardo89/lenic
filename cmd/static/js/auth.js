@@ -103,7 +103,7 @@ $(document).ready(function() {
 
 // Fetch notifications
 $(document).ready(function() {
-    const $container = $('#notif-body');
+    const $container = $('.notif-body');
     let offset = 0;
     const limit = 50;
     let loading = false;
@@ -144,10 +144,19 @@ $(document).ready(function() {
 
     // Function to append notifications to the container
     function appendNotifications(notifications) {
-      notifications.forEach(function(notification) {
-        const $div = $('<div></div>').addClass('notif-item').text(notification.msg);
-        $container.append($div);
-      });
+        const notifContainer = $('.notif-body');
+        notifications.forEach(function(notification) {
+            let notif = null;
+            switch (notification.type) {
+            case 'rate_comment':
+                notif = makeCommentNotif(notification);
+                break;
+            case 'rate_post':
+                notif = makePostNotif(notification);
+                break;
+            }
+            notifContainer.append(notif);
+        });
     }
 
     // Scroll event handler
@@ -166,3 +175,53 @@ $(document).ready(function() {
 
     fetchNotifications();
 });
+
+function makeCommentNotif(notification) {
+    const notif = document.createElement('div');
+    notif.classList.add('notif-item');
+    let postGuid = notification.parent_id;
+    const notifLink = document.createElement('a');
+    notifLink.href = '/post/' + postGuid;
+    const authorInline = document.createElement('div');
+    authorInline.classList.add('author-info-inline');
+    const profilePic = document.createElement('img');
+    profilePic.classList.add('profile-pic-mini');
+    if (notification.fromuser.profile_pic === '') {
+        profilePic.src = '/static/img/no-profile-pic.jpg';
+    } else {
+        profilePic.src = '/action/profile-pic?user-encoded=' + notification.fromuser.encoded
+    }
+    const notifMsg = document.createElement('div');
+    notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    authorInline.append(profilePic);
+    authorInline.append(notifMsg);
+    authorInline.style.color = '#333';
+    notifLink.append(authorInline);
+    notif.append(notifLink);
+    return notif;
+}
+
+function makePostNotif(notification) {
+    const notif = document.createElement('div');
+    notif.classList.add('notif-item');
+    let postGuid = notification.resource_id;
+    const notifLink = document.createElement('a');
+    notifLink.href = '/post/' + postGuid;
+    const authorInline = document.createElement('div');
+    authorInline.classList.add('author-info-inline');
+    const profilePic = document.createElement('img');
+    profilePic.classList.add('profile-pic-mini');
+    if (notification.fromuser.profile_pic === '') {
+        profilePic.src = '/static/img/no-profile-pic.jpg';
+    } else {
+        profilePic.src = '/action/profile-pic?user-encoded=' + notification.fromuser.encoded
+    }
+    const notifMsg = document.createElement('div');
+    notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    authorInline.append(profilePic);
+    authorInline.append(notifMsg);
+    authorInline.style.color = '#333';
+    notifLink.append(authorInline);
+    notif.append(notifLink);
+    return notif;
+}

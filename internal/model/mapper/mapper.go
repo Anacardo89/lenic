@@ -23,6 +23,15 @@ func User(u *database.User) *presentation.User {
 	}
 }
 
+func UserNotif(u *database.User) *presentation.UserNotif {
+	return &presentation.UserNotif{
+		Id:          u.Id,
+		UserName:    u.UserName,
+		EncodedName: base64.URLEncoding.EncodeToString([]byte(u.UserName)),
+		ProfilePic:  u.ProfilePic,
+	}
+}
+
 func Follows(f *database.Follows) *presentation.Follows {
 	return &presentation.Follows{
 		FollowerId: f.FollowerId,
@@ -73,7 +82,7 @@ func Comment(c *database.Comment, u *presentation.User) *presentation.Comment {
 	}
 }
 
-func Notification(n *database.Notification, u string, from_u string) *presentation.Notification {
+func Notification(n *database.Notification, u presentation.UserNotif, from_u presentation.UserNotif) *presentation.Notification {
 	return &presentation.Notification{
 		Id:         n.Id,
 		User:       u,

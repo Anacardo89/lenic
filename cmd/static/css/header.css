@@ -120,8 +120,13 @@ header {
 
 .notif-item {
     background-color: azure;
+    cursor: pointer;
     padding: 10px;
     border-bottom: 1px solid #333;
+}
+
+.notif-item:hover {
+    background-color: white;
 }
 
 .notif-item:last-child {
