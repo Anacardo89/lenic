@@ -9,6 +9,7 @@ type Notification struct {
 	NotifType  string
 	NotifMsg   string
 	ResourceId string
+	ParentId   string
 	IsRead     bool
 	CreatedAt  time.Time
 	UpdatedAt  time.Time

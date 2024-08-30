@@ -7,7 +7,8 @@ const (
 			from_user_id=?,
 			notif_type=?,
 			notif_message=?,
-			resource_id=?
+			resource_id=?,
+			parent_id=?
 	;`
 
 	SelectNotificationById = `

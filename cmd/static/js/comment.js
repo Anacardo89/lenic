@@ -165,7 +165,8 @@ function rateCommentUp(el) {
                 from_username: session_username,
                 type: 'rate_comment',
                 msg: wsoc.MSG_COMMENT_RATE,
-                resource_id: id
+                resource_id: id,
+                parent_id: guid
             };
             wsoc.sendWSmsg(message);
             location.reload()
@@ -188,7 +189,8 @@ function rateCommentDown(el) {
                 from_username: session_username,
                 type: 'rate_comment',
                 msg: wsoc.MSG_COMMENT_RATE,
-                resource_id: id
+                resource_id: id,
+                parent_id: guid
             };
             wsoc.sendWSmsg(message);
             location.reload()

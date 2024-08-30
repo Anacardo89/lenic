@@ -126,11 +126,12 @@ $(document).ready(function() {
         dataType: 'json',
         success: function(data) {
             if (data.length > 0) {
-            appendNotifications(data);
-            hasMore = data.hasMore;
-            offset += limit;
+                console.log(data);
+                appendNotifications(data);
+                hasMore = data.hasMore;
+                offset += limit;
             } else {
-            hasMore = false;
+                hasMore = false;
             }
         },
         error: function(textStatus, errorThrown) {
@@ -145,14 +146,21 @@ $(document).ready(function() {
     // Function to append notifications to the container
     function appendNotifications(notifications) {
         const notifContainer = $('.notif-body');
+        const notifButton = $('.notif-button');
         notifications.forEach(function(notification) {
             let notif = null;
             switch (notification.type) {
             case 'rate_comment':
                 notif = makeCommentNotif(notification);
+                if (!notification.is_read) {
+                    notifButton.css('--notif-display', 'block');
+                }
                 break;
             case 'rate_post':
                 notif = makePostNotif(notification);
+                if (!notification.is_read) {
+                    notifButton.css('--notif-display', 'block');
+                }
                 break;
             }
             notifContainer.append(notif);
@@ -177,11 +185,9 @@ $(document).ready(function() {
 });
 
 export function makeCommentNotif(notification) {
+    const postGuid = notification.parent_id;
     const notif = document.createElement('div');
     notif.classList.add('notif-item');
-    let postGuid = notification.parent_id;
-    const notifLink = document.createElement('a');
-    notifLink.href = '/post/' + postGuid;
     const authorInline = document.createElement('div');
     authorInline.classList.add('author-info-inline');
     const profilePic = document.createElement('img');
@@ -193,20 +199,37 @@ export function makeCommentNotif(notification) {
     }
     const notifMsg = document.createElement('div');
     notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    const idHidden = document.createElement('input');
+    idHidden.type = 'hidden';
+    idHidden.value = notification.id;
+    const readHidden = document.createElement('input');
+    readHidden.type = 'hidden';
+    readHidden.value = notification.is_read;
     authorInline.append(profilePic);
     authorInline.append(notifMsg);
-    authorInline.style.color = '#333';
-    notifLink.append(authorInline);
-    notif.append(notifLink);
+    authorInline.append(idHidden);
+    authorInline.append(readHidden);
+    notif.append(authorInline);
+
+    notif.addEventListener('click', function() {
+        $.ajax({
+            url: '/action/user/' + session_encoded + '/notifications/' + idHidden.value + '/read',
+            method: 'PUT',
+            success: function() {
+                window.location.href = '/post/' +  postGuid;
+            },
+            error: function(err) {
+                console.error("Error:", err);
+            }
+        });
+    });
     return notif;
 }
 
 export function makePostNotif(notification) {
+    const postGuid = notification.resource_id;
     const notif = document.createElement('div');
     notif.classList.add('notif-item');
-    let postGuid = notification.resource_id;
-    const notifLink = document.createElement('a');
-    notifLink.href = '/post/' + postGuid;
     const authorInline = document.createElement('div');
     authorInline.classList.add('author-info-inline');
     const profilePic = document.createElement('img');
@@ -218,10 +241,28 @@ export function makePostNotif(notification) {
     }
     const notifMsg = document.createElement('div');
     notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    const idHidden = document.createElement('input');
+    idHidden.type = 'hidden';
+    idHidden.value = notification.id;
+    const readHidden = document.createElement('input');
+    readHidden.type = 'hidden';
+    readHidden.value = notification.is_read;
     authorInline.append(profilePic);
     authorInline.append(notifMsg);
-    authorInline.style.color = '#333';
-    notifLink.append(authorInline);
-    notif.append(notifLink);
+    authorInline.append(idHidden);
+    notif.append(authorInline);
+
+    notif.addEventListener('click', function() {
+        $.ajax({
+            url: '/action/user/' + session_encoded + '/notifications/' + idHidden.value + '/read',
+            method: 'PUT',
+            success: function() {
+                window.location.href = '/post/' +  postGuid;
+            },
+            error: function(err) {
+                console.error("Error:", err);
+            }
+        });
+    });
     return notif;
 }

@@ -90,6 +90,7 @@ func Notification(n *database.Notification, u presentation.UserNotif, from_u pre
 		NotifType:  n.NotifType,
 		NotifMsg:   n.NotifMsg,
 		ResourceId: n.ResourceId,
+		ParentId:   n.ParentId,
 		IsRead:     n.IsRead,
 	}
 }

@@ -15,7 +15,8 @@ func (da *DataAccess) CreateNotification(n *database.Notification) (sql.Result, 
 		n.FromUserId,
 		n.NotifType,
 		n.NotifMsg,
-		n.ResourceId)
+		n.ResourceId,
+		n.ParentId)
 	return result, err
 }
 
@@ -33,6 +34,7 @@ func (da *DataAccess) GetNotificationById(id int) (*database.Notification, error
 		&n.NotifType,
 		&n.NotifMsg,
 		&n.ResourceId,
+		&n.ParentId,
 		&n.IsRead,
 		&createdAt,
 		&updatedAt)
@@ -74,6 +76,7 @@ func (da *DataAccess) GetNotificationsByUser(user_id int, limit int, offset int)
 			&n.NotifType,
 			&n.NotifMsg,
 			&n.ResourceId,
+			&n.ParentId,
 			&n.IsRead,
 			&createdAt,
 			&updatedAt,
