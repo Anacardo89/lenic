@@ -103,10 +103,12 @@
                     </div>
                     {{if .Session.Authenticated}}
                         {{if ne .Session.User.UserName .User.UserName}}
-                            {{if .Follows}}
+                            {{if gt .Follows 0}}
                                 <button id="unfollow-button">Unfollow</button>
-                            {{else}}
+                            {{else if lt .Follows 0}}
                                 <button id="follow-button">Follow</button>
+                            {{else}}
+                                <p>A request has been sent</p>
                             {{end}}
                         {{end}}
                     {{end}}
@@ -145,6 +147,6 @@
         </div>
     </main>
     <script type="module" src="/static/js/auth.js"></script>
-    <script src="/static/js/user.js"></script>
+    <script type="module" src="/static/js/user.js"></script>
 </body>
 </html>

@@ -1,9 +1,14 @@
-import { makeCommentNotif, makePostNotif } from './auth.js';
+import { makeCommentRateNotif, makeFollowRequestNotif, makePostRateNotif } from './auth.js';
 
 export let ws = null;
 
-export const MSG_COMMENT_RATE = ' has rated your comment.'
-export const MSG_POST_RATE = ' has rated your post.'
+export const MSG_COMMENT_RATE = ' has rated your comment.';
+export const MSG_POST_RATE = ' has rated your post.';
+export const MSG_FOLLOW_REQUEST = ' has requested to follow you.';
+
+export const TYPE_COMMENT_RATE = 'rate_comment';
+export const TYPE_POST_RATE = 'rate_post';
+export const TYPE_FOLLOW_REQUEST = 'follow_request';
 
 // WebSocket connection
 export function connectWS(user_name) {
@@ -25,18 +30,25 @@ export function connectWS(user_name) {
         console.log(message);
 
         switch (message.type) {
-            case 'rate_comment':
+            case TYPE_COMMENT_RATE:
                 handleRateComment(message);
                 if (!message.is_read) {
                     notifButton.css('--notif-display', 'block');
                 }
                 break;
-            case 'rate_post':
+            case TYPE_POST_RATE:
                 handleRatePost(message);
                 if (!message.is_read) {
                     notifButton.css('--notif-display', 'block');
                 }
                 break;
+            case TYPE_FOLLOW_REQUEST:
+                handleFollowRequest(message);
+                if (!message.is_read) {
+                    notifButton.css('--notif-display', 'block');
+                }
+                break;
+
             default:
                 console.warn('Unknown message type:', message.type);
         }
@@ -74,12 +86,18 @@ export function closeWS() {
 
 function handleRateComment(notification) {
     const notifContainer = $('.notif-body');
-    const notif = makeCommentNotif(notification);
+    const notif = makeCommentRateNotif(notification);
     notifContainer.prepend(notif);
 }
 
 function handleRatePost(notification) {
     const notifContainer = $('.notif-body');
-    const notif = makePostNotif(notification);
+    const notif = makePostRateNotif(notification);
+    notifContainer.prepend(notif);
+}
+
+function handleFollowRequest(notification) {
+    const notifContainer = $('.notif-body');
+    const notif = makeFollowRequestNotif(notification);
     notifContainer.prepend(notif);
 }
