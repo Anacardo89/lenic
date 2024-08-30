@@ -1,3 +1,4 @@
+import { makeCommentNotif, makePostNotif } from './auth.js';
 
 export let ws = null;
 
@@ -22,14 +23,11 @@ export function connectWS(user_name) {
         const message = JSON.parse(event.data);
 
         switch (message.type) {
-            case 'rate-comment':
-                handleRateComment(message.data);
+            case 'rate_comment':
+                handleRateComment(message);
                 break;
-            case 'rate-post':
-                handleRatePost(message.data);
-                break;
-            case 'command':
-                executeCommand(message.data);
+            case 'rate_post':
+                handleRatePost(message);
                 break;
             default:
                 console.warn('Unknown message type:', message.type);
@@ -64,4 +62,16 @@ export function closeWS() {
         ws.close();
     }
     ws = null;
+}
+
+function handleRateComment(notification) {
+    const notifContainer = $('.notif-body');
+    const notif = makeCommentNotif(notification);
+    notifContainer.prepend(notif);
+}
+
+function handleRatePost(notification) {
+    const notifContainer = $('.notif-body');
+    const notif = makePostNotif(notification);
+    notifContainer.prepend(notif);
 }

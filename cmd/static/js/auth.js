@@ -176,7 +176,7 @@ $(document).ready(function() {
     fetchNotifications();
 });
 
-function makeCommentNotif(notification) {
+export function makeCommentNotif(notification) {
     const notif = document.createElement('div');
     notif.classList.add('notif-item');
     let postGuid = notification.parent_id;
@@ -201,7 +201,7 @@ function makeCommentNotif(notification) {
     return notif;
 }
 
-function makePostNotif(notification) {
+export function makePostNotif(notification) {
     const notif = document.createElement('div');
     notif.classList.add('notif-item');
     let postGuid = notification.resource_id;
