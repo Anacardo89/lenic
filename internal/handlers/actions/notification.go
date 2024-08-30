@@ -34,6 +34,7 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+	u := mapper.UserNotif(dbuser)
 
 	queryParams := r.URL.Query()
 	offset := queryParams.Get("offset")
@@ -67,7 +68,8 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
-		n := mapper.Notification(dbnotif, dbuser.UserName, dbfromuser.UserName)
+		from_u := mapper.UserNotif(dbfromuser)
+		n := mapper.Notification(dbnotif, *u, *from_u)
 		notifs = append(notifs, n)
 	}
 

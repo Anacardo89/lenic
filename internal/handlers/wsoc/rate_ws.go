@@ -26,14 +26,14 @@ func handleCommentRate(msg wsocket.Message) {
 	if err != nil {
 		logger.Error.Println("Could not get user: ", err)
 	}
-	u := mapper.User(dbuser)
+	u := mapper.UserNotif(dbuser)
 
 	fromuser, err := orm.Da.GetUserByName(msg.FromUserName)
 	if err != nil {
 		logger.Error.Println("Could not get from user: ", err)
 		return
 	}
-	from_u := mapper.User(fromuser)
+	from_u := mapper.UserNotif(fromuser)
 
 	n := &database.Notification{
 		UserID:     c.AuthorId,
@@ -57,7 +57,7 @@ func handleCommentRate(msg wsocket.Message) {
 	if err != nil {
 		logger.Error.Println("Could not get notification: ", err)
 	}
-	notif := mapper.Notification(dbnotif, u.UserName, from_u.UserName)
+	notif := mapper.Notification(dbnotif, *u, *from_u)
 	notif.ParentId = c.PostGUID
 
 	data, err := json.Marshal(notif)
@@ -79,14 +79,14 @@ func handlePostRate(msg wsocket.Message) {
 	if err != nil {
 		logger.Error.Println("Could not get user: ", err)
 	}
-	u := mapper.User(dbuser)
+	u := mapper.UserNotif(dbuser)
 
 	fromuser, err := orm.Da.GetUserByName(msg.FromUserName)
 	if err != nil {
 		logger.Error.Println("Could not get from user: ", err)
 		return
 	}
-	from_u := mapper.User(fromuser)
+	from_u := mapper.UserNotif(fromuser)
 
 	n := &database.Notification{
 		UserID:     p.AuthorId,
@@ -110,7 +110,7 @@ func handlePostRate(msg wsocket.Message) {
 	if err != nil {
 		logger.Error.Println("Could not get notification: ", err)
 	}
-	notif := mapper.Notification(dbnotif, u.UserName, from_u.UserName)
+	notif := mapper.Notification(dbnotif, *u, *from_u)
 	notif.ParentId = ""
 
 	data, err := json.Marshal(notif)
