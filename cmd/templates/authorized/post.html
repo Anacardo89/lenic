@@ -80,7 +80,15 @@
                     <div id="post-text"><p>{{.Post.Content}}</p></div>
                     <div id="post-edit-container">
                         <form id="post-edit-form">
+                            <input type="text" id="edit-post-title" name="title" value="{{.Post.Title}}">
                             <textarea id="edit-post" name="post">{{.Post.Content}}</textarea>
+                            <div class="visibility-container">
+                                <p>Select Post Visibility:</p>
+                                <div class="visibility-buttons">
+                                    <label><input type="radio" name="visibility" value="1">  Public</label>
+                                    <label><input type="radio" name="visibility" value="0">  Private</label>
+                                </div>
+                            </div>
                             <button class="post-edit-button" type="submit">Confirm</button>
                         </form>
                     </div>

@@ -28,6 +28,12 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 	}
 	session := auth.ValidateSession(w, r)
 
+	is_public := false
+	visibility := r.FormValue("post_visibility")
+	if visibility == "1" {
+		is_public = true
+	}
+
 	dbpost := database.Post{
 		GUID:     createGUID(r.FormValue("post_title"), session.User.UserName),
 		Title:    r.FormValue("post_title"),
@@ -35,7 +41,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		AuthorId: session.User.Id,
 		Image:    "",
 		ImageExt: "",
-		IsPublic: true,
+		IsPublic: is_public,
 		Rating:   0,
 		Active:   1,
 	}
@@ -44,7 +50,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, header, err := r.FormFile("image")
+	file, header, err := r.FormFile("post-image")
 	if err != nil {
 		if err != http.ErrMissingFile {
 			logger.Error.Println("/action/post - Could not get image: ", err)
@@ -104,16 +110,25 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+
+	is_public := false
+	visibility := r.FormValue("post_visibility")
+	if visibility == "1" {
+		is_public = true
+	}
+
 	p := database.Post{
-		GUID:    postGUID,
-		Content: r.FormValue("post"),
+		GUID:     postGUID,
+		Title:    r.FormValue("title"),
+		Content:  r.FormValue("post"),
+		IsPublic: is_public,
 	}
 	if p.Content == "" {
 		redirect.RedirectToError(w, r, "All form fields must be filled out")
 		return
 	}
 
-	err = orm.Da.UpdatePostText(p.GUID, p.Content)
+	err = orm.Da.UpdatePost(p)
 	if err != nil {
 		logger.Error.Printf("PUT /action/post/%s - Could not update post: %s\n", postGUID, err)
 		redirect.RedirectToError(w, r, err.Error())

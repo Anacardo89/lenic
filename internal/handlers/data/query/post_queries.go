@@ -26,14 +26,22 @@ const (
 		ORDER BY created_at DESC
 	;`
 
+	SelectUserPublicPosts = `
+	SELECT * FROM posts
+		WHERE author_id=? AND is_public=TRUE AND active=1
+		ORDER BY created_at DESC
+	;`
+
 	SelectPostByGUID = `
 	SELECT * FROM posts
 		WHERE post_guid=?
 	;`
 
-	UpdatePostText = `
+	UpdatePost = `
 	UPDATE posts
-		SET content=?
+		SET title=?,
+			content=?,
+			is_public=?
 		WHERE post_guid=?
 	;`
 

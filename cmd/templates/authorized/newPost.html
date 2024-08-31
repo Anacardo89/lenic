@@ -62,9 +62,16 @@
             <form enctype="multipart/form-data">
                 <div><input type="text" name="post_title" placeholder="Post Title" /></div>
                 <div><textarea name="post_content" placeholder="The post"></textarea></div>
+                <div class="visibility-container">
+                    <p>Select Post Visibility:</p>
+                    <div class="visibility-buttons">
+                        <label><input type="radio" name="post-visibility" value="1">  Public</label>
+                        <label><input type="radio" name="post-visibility" value="0">  Private</label>
+                    </div>
+                </div>
                 <div>
                     <p>Add an image to your post:</p>    
-                    <div><input type="file" name="image" accept="image/*"/></div>
+                    <div><input type="file" name="post-image" accept="image/*"/></div>
                 </div>
             </form>
         </div>
