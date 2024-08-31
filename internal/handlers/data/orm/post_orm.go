@@ -23,6 +23,52 @@ func (da *DataAccess) CreatePost(p *database.Post) error {
 	return err
 }
 
+func (da *DataAccess) GetFeed(user_id int) (*[]database.Post, error) {
+	posts := []database.Post{}
+	rows, err := da.Db.Query(query.SelectFeed, user_id, user_id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &posts, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var (
+			createdAt []byte
+			updatedAt []byte
+		)
+		p := database.Post{}
+		err = rows.Scan(
+			&p.Id,
+			&p.GUID,
+			&p.AuthorId,
+			&p.Title,
+			&p.Content,
+			&p.Image,
+			&p.ImageExt,
+			&createdAt,
+			&updatedAt,
+			&p.IsPublic,
+			&p.Rating,
+			&p.Active,
+		)
+		if err != nil {
+			return nil, err
+		}
+		p.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+		if err != nil {
+			return nil, err
+		}
+		p.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, p)
+	}
+	return &posts, nil
+}
+
 func (da *DataAccess) GetPosts() (*[]database.Post, error) {
 	posts := []database.Post{}
 	rows, err := da.Db.Query(query.SelectActivePosts)

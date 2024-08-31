@@ -14,6 +14,19 @@ const (
 			active=?
 	;`
 
+	SelectFeed = `
+	SELECT p.* FROM posts p
+	LEFT JOIN follows f ON p.author_id = f.followed_id AND f.follower_id=?
+	WHERE p.is_public = TRUE OR (f.follower_id=? AND f.follow_status = 1)
+	ORDER BY 
+		CASE 
+			WHEN p.created_at >= NOW() - INTERVAL 24 HOUR THEN 1 
+			ELSE 2 
+    	END ASC,
+		p.rating DESC,
+		p.created_at DESC
+	;`
+
 	SelectActivePosts = `
 	SELECT * FROM posts
 		WHERE active=1

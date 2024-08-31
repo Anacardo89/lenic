@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"encoding/base64"
 	"html/template"
 	"net/http"
 
@@ -22,9 +23,26 @@ func Feed(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("/user/%s/feed %s\n", encoded, r.RemoteAddr)
+
+	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	if err != nil {
+		logger.Error.Printf("/user/%s/feed - Could not decode user: %s\n", encoded, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	userName := string(bytes)
+	logger.Info.Printf("/user/%s/feed %s %s\n", encoded, r.RemoteAddr, userName)
+
+	dbuser, err := orm.Da.GetUserByName(userName)
+	if err != nil {
+		logger.Error.Printf("/user/%s/feed - Could not get user: %s\n", encoded, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
 	feed := FeedPage{}
 	feed.Session = auth.ValidateSession(w, r)
-	dbposts, err := orm.Da.GetPosts()
+	dbposts, err := orm.Da.GetFeed(dbuser.Id)
 	if err != nil {
 		logger.Error.Printf("/user/%s/feed - Could not get Posts: %s\n", encoded, err)
 		redirect.RedirectToError(w, r, err.Error())
