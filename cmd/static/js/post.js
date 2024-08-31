@@ -84,12 +84,16 @@ $(document).ready(function() {
 function editPost(el) {
     el.preventDefault();
     let form = $(el.currentTarget);
+    let edited_title = form.find('#edit-post-title').val();
     let edited_post = form.find('#edit-post').val();
+    let edited_visibility = form.find('input[name="visibility"]:checked').val();
     $.ajax({
         url: '/action/post/' + guid,
         method: 'PUT',
         data: ({
-            post: edited_post
+            title: edited_title,
+            post: edited_post,
+            visibility: edited_visibility
         }),
         success: function(res) {
             location.reload()

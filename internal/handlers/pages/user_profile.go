@@ -8,6 +8,7 @@ import (
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
@@ -60,16 +61,29 @@ func UserProfile(w http.ResponseWriter, r *http.Request) {
 		} else {
 			pp.Follows = -1
 		}
-	} else {
+	} else if dbfollow != nil { // Check if dbfollow is not nil
 		pp.Follows = dbfollow.Status
+	} else {
+		pp.Follows = -1 // Default or handle case where dbfollow is nil
 	}
 
-	dbposts, err := orm.Da.GetUserPosts(u.Id)
-	if err != nil {
-		logger.Error.Printf("/user/%s - Could not get Posts: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
-		return
+	var dbposts *[]database.Post
+	if (session.User.Id == u.Id) || (dbfollow != nil && dbfollow.Status == 1) {
+		dbposts, err = orm.Da.GetUserPosts(u.Id)
+		if err != nil {
+			logger.Error.Printf("/user/%s - Could not get Posts: %s\n", encoded, err)
+			redirect.RedirectToError(w, r, err.Error())
+			return
+		}
+	} else {
+		dbposts, err = orm.Da.GetUserPublicPosts(u.Id)
+		if err != nil {
+			logger.Error.Printf("/user/%s - Could not get Posts: %s\n", encoded, err)
+			redirect.RedirectToError(w, r, err.Error())
+			return
+		}
 	}
+
 	for _, dbpost := range *dbposts {
 		dbuser, err := orm.Da.GetUserByID(dbpost.AuthorId)
 		if err != nil {

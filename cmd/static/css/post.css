@@ -55,6 +55,10 @@ button:active {
     display: none;
 }
 
+label {
+    margin-right: 40px;
+}
+
 .rating-container {
     display: flex;
     flex-direction: row;
