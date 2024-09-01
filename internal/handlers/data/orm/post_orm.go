@@ -25,7 +25,7 @@ func (da *DataAccess) CreatePost(p *database.Post) error {
 
 func (da *DataAccess) GetFeed(user_id int) (*[]database.Post, error) {
 	posts := []database.Post{}
-	rows, err := da.Db.Query(query.SelectFeed, user_id, user_id)
+	rows, err := da.Db.Query(query.SelectFeed, user_id, user_id, user_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return &posts, nil

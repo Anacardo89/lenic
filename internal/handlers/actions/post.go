@@ -29,15 +29,15 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 	session := auth.ValidateSession(w, r)
 
 	is_public := false
-	visibility := r.FormValue("post_visibility")
+	visibility := r.FormValue("post-visibility")
 	if visibility == "1" {
 		is_public = true
 	}
 
 	dbpost := database.Post{
-		GUID:     createGUID(r.FormValue("post_title"), session.User.UserName),
-		Title:    r.FormValue("post_title"),
-		Content:  r.FormValue("post_content"),
+		GUID:     createGUID(r.FormValue("post-title"), session.User.UserName),
+		Title:    r.FormValue("post-title"),
+		Content:  r.FormValue("post-content"),
 		AuthorId: session.User.Id,
 		Image:    "",
 		ImageExt: "",
@@ -112,7 +112,7 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	is_public := false
-	visibility := r.FormValue("post_visibility")
+	visibility := r.FormValue("visibility")
 	if visibility == "1" {
 		is_public = true
 	}
@@ -120,10 +120,10 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 	p := database.Post{
 		GUID:     postGUID,
 		Title:    r.FormValue("title"),
-		Content:  r.FormValue("post"),
+		Content:  r.FormValue("content"),
 		IsPublic: is_public,
 	}
-	if p.Content == "" {
+	if p.Content == "" || p.Title == "" {
 		redirect.RedirectToError(w, r, "All form fields must be filled out")
 		return
 	}

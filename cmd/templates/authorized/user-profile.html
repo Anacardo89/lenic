@@ -72,9 +72,9 @@
                         {{if eq .Session.User.UserName .User.UserName}}
                             <div class="profile-pic-add-container">
                                 <form id="profile-pic-form" method="POST" enctype="multipart/form-data">
-                                    <input type="file" name="image" accept="image/*" id="profile-pic-input" onchange="checkFileSelected();" />
+                                    <input id="profile-pic-input" type="file" name="image" accept="image/*" id="profile-pic-input"/>
                                 </form>
-                                <button class="profile-pic-add-button" id="confirm-button" onclick="return addProfilePic();"><strong>Confirm</strong></button>
+                                <button class="profile-pic-add-button" id="profile-pic-confirm-button"><strong>Confirm</strong></button>
                             </div>
                         {{end}}
                     </div>

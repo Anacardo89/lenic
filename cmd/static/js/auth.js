@@ -125,13 +125,15 @@ $(document).ready(function() {
         method: 'GET',
         dataType: 'json',
         success: function(data) {
-            if (data.length > 0) {
-                console.log(data);
-                appendNotifications(data);
-                hasMore = data.hasMore;
-                offset += limit;
-            } else {
-                hasMore = false;
+            if (data !== null) {
+                if (data.length > 0) {
+                    console.log(data);
+                    appendNotifications(data);
+                    hasMore = data.hasMore;
+                    offset += limit;
+                } else {
+                    hasMore = false;
+                }
             }
         },
         error: function(textStatus, errorThrown) {
