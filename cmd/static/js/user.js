@@ -1,17 +1,41 @@
 import * as wsoc from './wsManager.js';
 import { session_username } from './auth.js';
 
-let encodedElem = document.getElementById('encoded-user');
-let encoded = encodedElem.getAttribute('value');
-console.log(encoded);
+$(document).ready(function() {
+    let follow_button = $('#follow-button');
+    let unfollow_button = $('#unfollow-button');
+    let profilePicInput = $('#profile-pic-input');
+    let confirmButton = $('#profile-pic-confirm-button');
 
-let follow_button = $('#follow-button');
-console.log(follow_button);
-if (follow_button !== null) {
     follow_button.on('click', function() {
         followUser();
     })
-}
+
+    unfollow_button.on('click', function() {
+        unfollowUser();
+    })
+
+    profilePicInput.on('change', function() {
+        checkFileSelected();
+    });
+
+    confirmButton.on('click', function() {
+        addProfilePic();
+    });
+
+    function checkFileSelected() {
+        if (profilePicInput[0].files.length > 0) {
+            confirmButton.show();
+        } else {
+            confirmButton.hide();
+        }
+    }
+});
+
+
+// AJAX calls
+
+let encoded = $('#encoded-user').val();
 
 function followUser() {
     $.ajax({
@@ -35,14 +59,6 @@ function followUser() {
     return false;
 }
 
-
-let unfollow_button = $('#unfollow-button');
-if (unfollow_button !== null) {
-    unfollow_button.on('click', function() {
-        unfollowUser();
-    })
-}
-
 function unfollowUser() {
     $.ajax({
         url: '/action/user/' + encoded + '/unfollow' + (session_username ? '?requester=' + encodeURIComponent(session_username) : ''),
@@ -55,30 +71,6 @@ function unfollowUser() {
         }
     });
     return false;
-}
-
-
-let profilePicInput = $('#cprofile-pic-input');
-if (profilePicInput !== null) {
-    profilePicInput.on('change', function() {
-        checkFileSelected();
-    })
-}
-
-let confirm_button = $('#profile-pic-confirm-button');
-if (confirm_button !== null) {
-    confirm_button.on('click', function() {
-        addProfilePic();
-    })
-}
-
-function checkFileSelected() {
-    let fileInput = $('#profile-pic-input');
-    if (fileInput.files.length > 0) {
-        confirm_button.show();
-    } else {
-        confirm_button.hide();
-    }
 }
 
 function addProfilePic() {
