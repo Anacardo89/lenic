@@ -19,6 +19,11 @@ const (
 		WHERE username = ?
 	;`
 
+	SelectSearchUsers = `
+	SELECT * FROM users
+		WHERE username LIKE ? COLLATE utf8mb4_general_ci;
+	;`
+
 	SelectUserByEmail = `
 	SELECT * FROM users
 		WHERE email = ?

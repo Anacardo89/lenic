@@ -84,6 +84,52 @@ func (da *DataAccess) GetUserByName(name string) (*database.User, error) {
 	return &u, nil
 }
 
+func (da *DataAccess) GetSearchUsers(username string) (*[]database.User, error) {
+	users := []database.User{}
+	likeuser := "%" + username + "%"
+	rows, err := da.Db.Query(query.SelectSearchUsers, likeuser)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &users, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var (
+			createdAt []byte
+			updatedAt []byte
+		)
+		u := database.User{}
+		err = rows.Scan(
+			&u.Id,
+			&u.UserName,
+			&u.Email,
+			&u.HashPass,
+			&u.ProfilePic,
+			&u.ProfilePicExt,
+			&u.Followers,
+			&u.Following,
+			&createdAt,
+			&updatedAt,
+			&u.Active,
+		)
+		if err != nil {
+			return nil, err
+		}
+		u.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+		if err != nil {
+			return nil, err
+		}
+		u.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	return &users, nil
+}
+
 func (da *DataAccess) GetUserByEmail(email string) (*database.User, error) {
 	var (
 		createdAt []byte

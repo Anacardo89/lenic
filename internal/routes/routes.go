@@ -27,6 +27,7 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/action/activate/{encoded_user_name}", actions.ActivateUser).Schemes("https")
 	r.HandleFunc("/action/login", actions.Login).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/logout", actions.Logout).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/search/user", actions.SearchUsers).Methods("GET").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/follow", actions.RequestFollowUser).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/accept", actions.AcceptFollowRequest).Methods("PUT").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/unfollow", actions.UnfollowUser).Methods("DELETE").Schemes("https")

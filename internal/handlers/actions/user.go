@@ -1,15 +1,55 @@
 package actions
 
 import (
+	"database/sql"
 	"encoding/base64"
+	"encoding/json"
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/mux"
 )
+
+func SearchUsers(w http.ResponseWriter, r *http.Request) {
+	logger.Info.Println("GET /action/search/user", r.RemoteAddr)
+	queryParams := r.URL.Query()
+	username := queryParams.Get("username")
+	logger.Info.Printf("GET /action/search/user %s %s\n", r.RemoteAddr, username)
+
+	dbusers, err := orm.Da.GetSearchUsers(username)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			logger.Error.Printf("GET /action/search/user %s - Could not get users: %s\n", username, err)
+			redirect.RedirectToError(w, r, err.Error())
+			return
+		}
+	}
+	if dbusers == nil {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	var users []presentation.UserNotif
+	for _, dbuser := range *dbusers {
+		u := mapper.UserNotif(&dbuser)
+		users = append(users, *u)
+	}
+
+	data, err := json.Marshal(users)
+	if err != nil {
+		logger.Error.Printf("GET /action/search/user %s - Could not marshal users: %s\n", username, err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
+	logger.Info.Printf("OK - GET /action/search/user %s %s\n", r.RemoteAddr, username)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
+}
 
 func RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
