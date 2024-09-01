@@ -112,37 +112,37 @@ $(document).ready(function() {
     // Function to fetch notifications
     function fetchNotifications() {
 
-    if (!session_encoded) {
-        console.error('session_encoded is not defined');
-        return;
-    }
-    if (loading || !hasMore) return;
-
-    loading = true;
-
-    $.ajax({
-        url: '/action/user/'+ session_encoded +'/notifications?offset=' + offset + '&limit=' + limit,
-        method: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            if (data !== null) {
-                if (data.length > 0) {
-                    console.log(data);
-                    appendNotifications(data);
-                    hasMore = data.hasMore;
-                    offset += limit;
-                } else {
-                    hasMore = false;
-                }
-            }
-        },
-        error: function(textStatus, errorThrown) {
-            console.error('Error fetching notifications:', textStatus, errorThrown);
-        },
-        complete: function() {
-            loading = false;
+        if (!session_encoded) {
+            console.error('session_encoded is not defined');
+            return;
         }
-    });
+        if (loading || !hasMore) return;
+
+        loading = true;
+
+        $.ajax({
+            url: '/action/user/'+ session_encoded +'/notifications?offset=' + offset + '&limit=' + limit,
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data !== null) {
+                    if (data.length > 0) {
+                        console.log(data);
+                        appendNotifications(data);
+                        hasMore = data.hasMore;
+                        offset += limit;
+                    } else {
+                        hasMore = false;
+                    }
+                }
+            },
+            error: function(textStatus, errorThrown) {
+                console.error('Error fetching notifications:', textStatus, errorThrown);
+            },
+            complete: function() {
+                loading = false;
+            }
+        });
     }
 
     // Function to append notifications to the container
@@ -343,19 +343,102 @@ export function makeFollowRequestNotif(notification) {
     });
     
     refuseRequestButton.addEventListener('click', function() {
-    $.ajax({
-        url: '/action/user/' + session_encoded + '/unfollow' + (fromUser ? '?requester=' + encodeURIComponent(fromUser) : ''),
-        method: 'DELETE',
-        success: function() {
-            location.reload();
-        },
-        error: function(err) {
-            console.error("Error:", err);
+        $.ajax({
+            url: '/action/user/' + session_encoded + '/unfollow' + (fromUser ? '?requester=' + encodeURIComponent(fromUser) : ''),
+            method: 'DELETE',
+            success: function() {
+                location.reload();
+            },
+            error: function(err) {
+                console.error("Error:", err);
+            }
+        });
+    });
+
+    return notif;
+}
+
+// Search
+$(document).ready(function() {
+    let timeout;
+
+    const search_button = $('#search-button');
+    const search_input = $('#search-input')
+    search_button.on('click', function() {
+        if (search_input.is(':visible')) {
+            search_input.hide();
+        } else {
+            search_input.show();
         }
     });
+
+    search_input.on('input', function() {
+        clearTimeout(timeout);
+        const query = $(this).val();
+
+        timeout = setTimeout(() => {
+            if (query.length > 0) {
+                sendRequest(query);
+                $('.search-container').addClass('show');  // Show the dropdown
+            } else {
+                clearResults();
+                $('.search-container').removeClass('show');  // Hide the dropdown if no query
+            }
+        }, 750);
+
+    });
+
+    function sendRequest(query) {
+        $.ajax({
+            url: '/action/search/user?username=' + query,
+            method: 'GET',
+            success: function(data) {
+                updateResults(data);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    function updateResults(data) {
+        clearResults();
+
+        if (Array.isArray(data)) {
+            $.each(data, function(index, item) {
+                const $resultItem = makeSearchResult(item);
+                $('#search-body').append($resultItem);
+            });
+        } else {
+            console.error('Expected an array but received:', data);
+        }
+    }
+
+    function clearResults() {
+        $('#search-body').empty();
+    }
 });
 
+function makeSearchResult(user) {
+    const result = document.createElement('div');
+    result.classList.add('search-item');
+    const authorInline = document.createElement('div');
+    authorInline.classList.add('author-info-inline');
+    const profilePic = document.createElement('img');
+    profilePic.classList.add('profile-pic-mini');
+    if (user.profile_pic === '') {
+        profilePic.src = '/static/img/no-profile-pic.jpg';
+    } else {
+        profilePic.src = '/action/profile-pic?user-encoded=' + user.encoded
+    }
+    const username = document.createElement('div');
+    username.innerHTML = '<strong>' + user.username + '</strong>';
+    authorInline.append(profilePic);
+    authorInline.append(username);
+    result.append(authorInline);
 
-    
-    return notif;
+    result.addEventListener('click', function() {
+        window.location.href = '/user/' +  user.encoded;
+    });
+    return result;
 }
