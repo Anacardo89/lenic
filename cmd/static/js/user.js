@@ -57,13 +57,27 @@ function unfollowUser() {
     return false;
 }
 
+
+let profilePicInput = $('#cprofile-pic-input');
+if (profilePicInput !== null) {
+    profilePicInput.on('change', function() {
+        checkFileSelected();
+    })
+}
+
+let confirm_button = $('#profile-pic-confirm-button');
+if (confirm_button !== null) {
+    confirm_button.on('click', function() {
+        addProfilePic();
+    })
+}
+
 function checkFileSelected() {
-    var fileInput = $('#profile-pic-input')[0];
-    var confirmButton = $('#confirm-button');
+    let fileInput = $('#profile-pic-input');
     if (fileInput.files.length > 0) {
-        confirmButton.css('display', 'inline-block');
+        confirm_button.show();
     } else {
-        confirmButton.hide();
+        confirm_button.hide();
     }
 }
 

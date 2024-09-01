@@ -86,13 +86,13 @@ function editPost(el) {
     let form = $(el.currentTarget);
     let edited_title = form.find('#edit-post-title').val();
     let edited_post = form.find('#edit-post').val();
-    let edited_visibility = form.find('input[name="visibility"]:checked').val();
+    let edited_visibility = form.find('input[name="post-visibility"]:checked').val();
     $.ajax({
         url: '/action/post/' + guid,
         method: 'PUT',
         data: ({
             title: edited_title,
-            post: edited_post,
+            content: edited_post,
             visibility: edited_visibility
         }),
         success: function(res) {

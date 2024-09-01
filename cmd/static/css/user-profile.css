@@ -55,7 +55,7 @@ img {
     flex-direction: row;
 }
 
-.profile-pic button {
+#profile-pic-confirm-button {
     display: none;
     margin-left: 20px;
 }
