@@ -9,14 +9,14 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/pkg/db"
 )
 
-func (da *DataAccess) CreateComment(c *database.Comment) error {
-	_, err := da.Db.Exec(query.InsertComment,
+func (da *DataAccess) CreateComment(c *database.Comment) (sql.Result, error) {
+	result, err := da.Db.Exec(query.InsertComment,
 		c.PostGUID,
 		c.AuthorId,
 		c.Content,
 		c.Rating,
 		c.Active)
-	return err
+	return result, err
 }
 
 func (da *DataAccess) GetCommentById(id int) (*database.Comment, error) {
