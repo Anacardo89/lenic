@@ -1,8 +1,8 @@
 package wsoc
 
 import (
+	"encoding/base64"
 	"encoding/json"
-	"strconv"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
@@ -11,20 +11,18 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/pkg/wsocket"
 )
 
-func handleCommentRate(msg wsocket.Message) {
-	comment_id, err := strconv.Atoi(msg.ResourceId)
+func handleFollowRequest(msg wsocket.Message) {
+
+	bytes, err := base64.URLEncoding.DecodeString(msg.ResourceId)
 	if err != nil {
-		logger.Error.Printf("Could not convert %s to int: %s\n", msg.ResourceId, err)
+		logger.Error.Printf("Could not decode user %s: %s\n", msg.ResourceId, err)
 		return
 	}
-	c, err := orm.Da.GetCommentById(comment_id)
+	userName := string(bytes)
+
+	dbuser, err := orm.Da.GetUserByName(userName)
 	if err != nil {
-		logger.Error.Println("Could not get comment: ", err)
-		return
-	}
-	dbuser, err := orm.Da.GetUserByID(c.AuthorId)
-	if err != nil {
-		logger.Error.Println("Could not get user: ", err)
+		logger.Error.Println("Could not get post: ", err)
 		return
 	}
 	u := mapper.UserNotif(dbuser)
@@ -37,12 +35,12 @@ func handleCommentRate(msg wsocket.Message) {
 	from_u := mapper.UserNotif(fromuser)
 
 	n := &database.Notification{
-		UserID:     c.AuthorId,
+		UserID:     u.Id,
 		FromUserId: fromuser.Id,
 		NotifType:  msg.Type,
 		NotifMsg:   msg.Msg,
 		ResourceId: msg.ResourceId,
-		ParentId:   msg.ParentId,
+		ParentId:   "",
 	}
 
 	res, err := orm.Da.CreateNotification(n)
@@ -62,7 +60,7 @@ func handleCommentRate(msg wsocket.Message) {
 		return
 	}
 	notif := mapper.Notification(dbnotif, *u, *from_u)
-	notif.ParentId = c.PostGUID
+	notif.ParentId = ""
 
 	data, err := json.Marshal(notif)
 	if err != nil {
@@ -73,16 +71,18 @@ func handleCommentRate(msg wsocket.Message) {
 	wsocket.WSConnMan.SendMessage(u.UserName, data)
 }
 
-func handlePostRate(msg wsocket.Message) {
+func handleFollowAccept(msg wsocket.Message) {
 
-	p, err := orm.Da.GetPostByGUID(msg.ResourceId)
+	bytes, err := base64.URLEncoding.DecodeString(msg.ResourceId)
 	if err != nil {
-		logger.Error.Println("Could not get post: ", err)
+		logger.Error.Printf("Could not decode user %s: %s\n", msg.ResourceId, err)
 		return
 	}
-	dbuser, err := orm.Da.GetUserByID(p.AuthorId)
+	userName := string(bytes)
+
+	dbuser, err := orm.Da.GetUserByName(userName)
 	if err != nil {
-		logger.Error.Println("Could not get user: ", err)
+		logger.Error.Println("Could not get post: ", err)
 		return
 	}
 	u := mapper.UserNotif(dbuser)
@@ -95,7 +95,7 @@ func handlePostRate(msg wsocket.Message) {
 	from_u := mapper.UserNotif(fromuser)
 
 	n := &database.Notification{
-		UserID:     p.AuthorId,
+		UserID:     u.Id,
 		FromUserId: fromuser.Id,
 		NotifType:  msg.Type,
 		NotifMsg:   msg.Msg,

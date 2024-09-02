@@ -165,6 +165,12 @@ $(document).ready(function() {
                     notifButton.css('--notif-display', 'block');
                 }
                 break;
+            case wsoc.TYPE_FOLLOW_ACCEPT:
+                notif = notifs.makeFollowAcceptNotif(notification);
+                if (!notification.is_read) {
+                    notifButton.css('--notif-display', 'block');
+                }
+                break;
             case wsoc.TYPE_FOLLOW_REQUEST:
                 notif = notifs.makeFollowRequestNotif(notification);
                 if (!notification.is_read) {
