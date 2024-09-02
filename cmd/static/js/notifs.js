@@ -92,6 +92,51 @@ export function makePostRateNotif(notification) {
     return notif;
 }
 
+export function makeCommentOnPostNotif(notification) {
+    const postGuid = notification.parent_id;
+    const notif = document.createElement('div');
+    notif.classList.add('notif-item');
+    if (!notification.is_read) {
+        notif.classList.add('notif-item-unread');
+    }
+    const authorInline = document.createElement('div');
+    authorInline.classList.add('author-info-inline');
+    const profilePic = document.createElement('img');
+    profilePic.classList.add('profile-pic-mini');
+    if (notification.fromuser.profile_pic === '') {
+        profilePic.src = '/static/img/no-profile-pic.jpg';
+    } else {
+        profilePic.src = '/action/profile-pic?user-encoded=' + notification.fromuser.encoded
+    }
+    const notifMsg = document.createElement('div');
+    notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    const idHidden = document.createElement('input');
+    idHidden.type = 'hidden';
+    idHidden.value = notification.id;
+    const readHidden = document.createElement('input');
+    readHidden.type = 'hidden';
+    readHidden.value = notification.is_read;
+    authorInline.append(profilePic);
+    authorInline.append(notifMsg);
+    authorInline.append(idHidden);
+    authorInline.append(readHidden);
+    notif.append(authorInline);
+
+    notif.addEventListener('click', function() {
+        $.ajax({
+            url: '/action/user/' + session_encoded + '/notifications/' + idHidden.value + '/read',
+            method: 'PUT',
+            success: function() {
+                window.location.href = '/post/' +  postGuid;
+            },
+            error: function(err) {
+                console.error("Error:", err);
+            }
+        });
+    });
+    return notif;
+}
+
 export function makeFollowAcceptNotif(notification) {
     const notif = document.createElement('div');
     notif.classList.add('notif-item');

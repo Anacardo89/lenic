@@ -104,6 +104,15 @@ function addComment() {
         method: 'POST',
         data: formData,
         success: function(response) {
+            console.log(response);
+            const message = {
+                from_username: session_username,
+                type: wsoc.TYPE_COMMENT_ON_POST,
+                msg: wsoc.MSG_COMMENT_ON_POST,
+                resource_id: response.data,
+                parent_id: guid
+            };
+            wsoc.sendWSmsg(message);
             location.reload();
         },
         error: function(err) {

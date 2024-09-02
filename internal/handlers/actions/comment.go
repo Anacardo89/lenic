@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -12,6 +12,10 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/mux"
 )
+
+type Response struct {
+	Data string `json:"data"`
+}
 
 func AddComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -27,14 +31,33 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 		Active:   1,
 	}
 
-	err := orm.Da.CreateComment(&c)
+	res, err := orm.Da.CreateComment(&c)
 	if err != nil {
 		logger.Error.Printf("POST /action/post/%s/comment - Could not create comment: %s\n", postGUID, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
+
+	lastInsertID, err := res.LastInsertId()
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/comment - Could not get notification Id: %s\n", postGUID, err)
+		return
+	}
+	idstring := strconv.Itoa(int(lastInsertID))
+	resp := Response{
+		Data: idstring,
+	}
+
+	data, err := json.Marshal(&resp)
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/comment - Could not marshal JSON: %s\n", postGUID, err)
+		return
+	}
+
 	logger.Info.Printf("OK - POST /action/post/%s/comment %s\n", postGUID, r.RemoteAddr)
-	http.Redirect(w, r, fmt.Sprintf("/post/%s", postGUID), http.StatusSeeOther)
+	w.Header().Set("Content-Type", "application/json")
+	logger.Debug.Println(string(data))
+	w.Write(data)
 }
 
 func EditComment(w http.ResponseWriter, r *http.Request) {

@@ -4,11 +4,13 @@ export let ws = null;
 
 export const MSG_COMMENT_RATE = ' has rated your comment.';
 export const MSG_POST_RATE = ' has rated your post.';
+export const MSG_COMMENT_ON_POST = ' has commented on your post';
 export const MSG_FOLLOW_ACCEPT = ' has accepted your follow request.';
 export const MSG_FOLLOW_REQUEST = ' has requested to follow you.';
 
 export const TYPE_COMMENT_RATE = 'rate_comment';
 export const TYPE_POST_RATE = 'rate_post';
+export const TYPE_COMMENT_ON_POST = 'comment_on_post';
 export const TYPE_FOLLOW_ACCEPT = 'follow_accept';
 export const TYPE_FOLLOW_REQUEST = 'follow_request';
 
@@ -40,6 +42,12 @@ export function connectWS(user_name) {
                 break;
             case TYPE_POST_RATE:
                 handleRatePost(message);
+                if (!message.is_read) {
+                    notifButton.css('--notif-display', 'block');
+                }
+                break;
+            case TYPE_COMMENT_ON_POST:
+                handleCommentOnPost(message);
                 if (!message.is_read) {
                     notifButton.css('--notif-display', 'block');
                 }
@@ -101,6 +109,12 @@ function handleRateComment(notification) {
 function handleRatePost(notification) {
     const notifContainer = $('.notif-body');
     const notif = notifs.makePostRateNotif(notification);
+    notifContainer.prepend(notif);
+}
+
+function handleCommentOnPost(notification) {
+    const notifContainer = $('.notif-body');
+    const notif = notifs.makeCommentOnPostNotif(notification);
     notifContainer.prepend(notif);
 }
 

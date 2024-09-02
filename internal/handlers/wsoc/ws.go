@@ -55,6 +55,8 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 			handleCommentRate(msg)
 		case "rate_post":
 			handlePostRate(msg)
+		case "comment_on_post":
+			handleCommentOnPost(msg)
 		case "follow_accept":
 			handleFollowAccept(msg)
 		case "follow_request":

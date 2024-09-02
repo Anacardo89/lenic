@@ -14,10 +14,12 @@ $(document).ready(function() {
     }
 });
 
-window.addEventListener('beforeunload', function() {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        wsoc.ws.close(1000, "Page unload");
-    }
+$(document).ready(function() {
+    window.addEventListener('beforeunload', function() {
+        if (wsoc.ws && wsoc.ws.readyState === WebSocket.OPEN) {
+            wsoc.ws.close(1000, "Page unload");
+        }
+    });
 });
 
 
@@ -161,6 +163,12 @@ $(document).ready(function() {
                 break;
             case wsoc.TYPE_POST_RATE:
                 notif = notifs.makePostRateNotif(notification);
+                if (!notification.is_read) {
+                    notifButton.css('--notif-display', 'block');
+                }
+                break;
+            case wsoc.TYPE_COMMENT_ON_POST:
+                notif = notifs.makeCommentOnPostNotif(notification);
                 if (!notification.is_read) {
                     notifButton.css('--notif-display', 'block');
                 }
