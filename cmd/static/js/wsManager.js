@@ -4,10 +4,12 @@ export let ws = null;
 
 export const MSG_COMMENT_RATE = ' has rated your comment.';
 export const MSG_POST_RATE = ' has rated your post.';
+export const MSG_FOLLOW_ACCEPT = ' has accepted your follow request.';
 export const MSG_FOLLOW_REQUEST = ' has requested to follow you.';
 
 export const TYPE_COMMENT_RATE = 'rate_comment';
 export const TYPE_POST_RATE = 'rate_post';
+export const TYPE_FOLLOW_ACCEPT = 'follow_accept';
 export const TYPE_FOLLOW_REQUEST = 'follow_request';
 
 // WebSocket connection
@@ -38,6 +40,12 @@ export function connectWS(user_name) {
                 break;
             case TYPE_POST_RATE:
                 handleRatePost(message);
+                if (!message.is_read) {
+                    notifButton.css('--notif-display', 'block');
+                }
+                break;
+            case TYPE_FOLLOW_ACCEPT:
+                handleFollowAccept(message);
                 if (!message.is_read) {
                     notifButton.css('--notif-display', 'block');
                 }
@@ -99,5 +107,11 @@ function handleRatePost(notification) {
 function handleFollowRequest(notification) {
     const notifContainer = $('.notif-body');
     const notif = notifs.makeFollowRequestNotif(notification);
+    notifContainer.prepend(notif);
+}
+
+function handleFollowAccept(notification) {
+    const notifContainer = $('.notif-body');
+    const notif = notifs.makeFollowAcceptNotif(notification);
     notifContainer.prepend(notif);
 }
