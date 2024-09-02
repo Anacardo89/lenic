@@ -1,4 +1,4 @@
-import { makeCommentRateNotif, makeFollowRequestNotif, makePostRateNotif } from './auth.js';
+import * as notifs from './notifs.js';
 
 export let ws = null;
 
@@ -86,18 +86,18 @@ export function closeWS() {
 
 function handleRateComment(notification) {
     const notifContainer = $('.notif-body');
-    const notif = makeCommentRateNotif(notification);
+    const notif = notifs.makeCommentRateNotif(notification);
     notifContainer.prepend(notif);
 }
 
 function handleRatePost(notification) {
     const notifContainer = $('.notif-body');
-    const notif = makePostRateNotif(notification);
+    const notif = notifs.makePostRateNotif(notification);
     notifContainer.prepend(notif);
 }
 
 function handleFollowRequest(notification) {
     const notifContainer = $('.notif-body');
-    const notif = makeFollowRequestNotif(notification);
+    const notif = notifs.makeFollowRequestNotif(notification);
     notifContainer.prepend(notif);
 }
