@@ -196,6 +196,9 @@ export function makeCommentRateNotif(notification) {
     const postGuid = notification.parent_id;
     const notif = document.createElement('div');
     notif.classList.add('notif-item');
+    if (!notification.is_read) {
+        notif.classList.add('notif-item-unread');
+    }
     const authorInline = document.createElement('div');
     authorInline.classList.add('author-info-inline');
     const profilePic = document.createElement('img');
@@ -238,6 +241,9 @@ export function makePostRateNotif(notification) {
     const postGuid = notification.resource_id;
     const notif = document.createElement('div');
     notif.classList.add('notif-item');
+    if (!notification.is_read) {
+        notif.classList.add('notif-item-unread');
+    }
     const authorInline = document.createElement('div');
     authorInline.classList.add('author-info-inline');
     const profilePic = document.createElement('img');
