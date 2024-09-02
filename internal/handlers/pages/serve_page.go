@@ -23,7 +23,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/home ", r.RemoteAddr)
 	feed := HomePage{}
 	feed.Session = auth.ValidateSession(w, r)
-	t, err := template.ParseFiles("templates/authorized/home.html")
+	t, err := template.ParseFiles("templates/home.html")
 	if err != nil {
 		logger.Error.Println("/home - Could not parse template: ", err)
 		redirect.RedirectToError(w, r, err.Error())

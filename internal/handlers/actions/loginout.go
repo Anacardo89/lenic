@@ -85,5 +85,5 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Info.Println("OK - /action/logout ", r.RemoteAddr)
-	w.WriteHeader(http.StatusOK)
+	redirect.RedirIndex(w, r)
 }
