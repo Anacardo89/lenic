@@ -17,7 +17,7 @@ const (
 	SelectFeed = `
 	SELECT p.* FROM posts p
 	LEFT JOIN follows f ON p.author_id = f.followed_id AND f.follower_id=?
-	WHERE p.is_public = TRUE OR (f.follower_id=? AND f.follow_status = 1) OR p.author_id=?
+	WHERE (p.is_public = TRUE AND p.active=1) OR (f.follower_id=? AND f.follow_status = 1 AND p.active=1) OR (p.author_id=? AND p.active=1)
 	ORDER BY 
 		CASE 
 			WHEN p.created_at >= NOW() - INTERVAL 24 HOUR THEN 1 

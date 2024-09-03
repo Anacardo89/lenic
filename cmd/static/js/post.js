@@ -36,7 +36,7 @@ if (modalPostCancelBtn !== null) {
 let modalPostDeleteBtn = $('#delete-post-sure-yes');
 if (modalPostDeleteBtn !== null) {
     modalPostDeleteBtn.on('click', function() {
-        deletePost(document);
+        deletePost();
         postModal.hide();
     });
 }
@@ -110,7 +110,7 @@ function deletePost() {
     $.ajax({
         url: '/action/post/' + guid,
         method: 'DELETE',
-        success: function(res) {
+        success: function() {
             window.location.href = '/user/' + session_encoded + '/feed'
         },
         error: function(err) {

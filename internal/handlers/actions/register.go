@@ -45,11 +45,13 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// Check if UserName or Email in use
 	_, err = orm.Da.GetUserByName(u.UserName)
 	if err != sql.ErrNoRows {
+		logger.Error.Println("/action/register - Could not get user by name: ", err)
 		redirect.RedirectToError(w, r, "User already exists")
 		return
 	}
 	_, err = orm.Da.GetUserByEmail(u.Email)
 	if err != sql.ErrNoRows {
+		logger.Error.Println("/action/register - Could not get user by mail: ", err)
 		redirect.RedirectToError(w, r, "Email already exists")
 		return
 	}
