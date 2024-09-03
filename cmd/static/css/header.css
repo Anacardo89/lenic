@@ -17,16 +17,19 @@ header {
 
 /*  Logo Left */
 .logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     align-self: center;
 }
 
 .home-link {
     cursor: pointer;
-    margin: 0 0 -10px 0;
 }
 
 .logo-bottom {
-    margin: -10px 0 0 0;
+    align-self: center;
+    margin: -5px 0 0 0;
 }
 
 /* Login Buttons div */
