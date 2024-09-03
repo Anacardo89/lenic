@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
-	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
@@ -25,7 +24,7 @@ func SearchUsers(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err != sql.ErrNoRows {
 			logger.Error.Printf("GET /action/search/user %s - Could not get users: %s\n", username, err)
-			redirect.RedirectToError(w, r, err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
@@ -42,7 +41,7 @@ func SearchUsers(w http.ResponseWriter, r *http.Request) {
 	data, err := json.Marshal(users)
 	if err != nil {
 		logger.Error.Printf("GET /action/search/user %s - Could not marshal users: %s\n", username, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -59,7 +58,7 @@ func RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
 		logger.Error.Printf("POST /action/user/%s/follow - Could not decode user: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	userName := string(bytes)
@@ -68,7 +67,7 @@ func RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 	dbuser, err := orm.Da.GetUserByName(userName)
 	if err != nil {
 		logger.Error.Printf("POST /action/user/%s/follow - Could not get user: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -77,7 +76,7 @@ func RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 	err = orm.Da.FollowUser(session.User.Id, dbuser.Id)
 	if err != nil {
 		logger.Error.Printf("POST /action/user/%s/follow - Could not follow: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	logger.Info.Printf("OK - POST /action/user/%s/follow %s\n", encoded, r.RemoteAddr)
@@ -92,7 +91,7 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
 		logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not decode user: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	userName := string(bytes)
@@ -101,7 +100,7 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	dbuser, err := orm.Da.GetUserByName(userName)
 	if err != nil {
 		logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not get user: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -111,28 +110,28 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	dbrequester, err := orm.Da.GetUserByName(requesterName)
 	if err != nil {
 		logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not get dbrequester: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = orm.Da.UnfollowUser(dbrequester.Id, dbuser.Id)
 	if err != nil {
 		logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not unfollow: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	dbnotif, err := orm.Da.GetFollowNotification(dbuser.Id, dbrequester.Id)
 	if err != nil {
 		logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not get notif: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = orm.Da.DeleteNotificationByID(dbnotif.Id)
 	if err != nil {
 		logger.Error.Printf("DELETE /action/user/%s/unfollow - Could not delete notif: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -149,7 +148,7 @@ func AcceptFollowRequest(w http.ResponseWriter, r *http.Request) {
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
 		logger.Error.Printf("PUT /action/user/%s/accept - Could not decode user: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	userName := string(bytes)
@@ -158,7 +157,7 @@ func AcceptFollowRequest(w http.ResponseWriter, r *http.Request) {
 	err = r.ParseForm()
 	if err != nil {
 		logger.Error.Printf("PUT /action/user/%s/accept - Could not parse form: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	requesterName := r.FormValue("requester")
@@ -166,35 +165,35 @@ func AcceptFollowRequest(w http.ResponseWriter, r *http.Request) {
 	dbuser, err := orm.Da.GetUserByName(userName)
 	if err != nil {
 		logger.Error.Printf("PUT /action/user/%s/accept - Could not decode user: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	dbrequester, err := orm.Da.GetUserByName(requesterName)
 	if err != nil {
 		logger.Error.Printf("PUT /action/user/%s/accept - Could not decode user: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = orm.Da.AcceptFollow(dbrequester.Id, dbuser.Id)
 	if err != nil {
 		logger.Error.Printf("PUT /action/user/%s/accept - Could not accept follow: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	dbnotif, err := orm.Da.GetFollowNotification(dbuser.Id, dbrequester.Id)
 	if err != nil {
 		logger.Error.Printf("PUT /action/user/%s/accept - Could not get notif: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = orm.Da.DeleteNotificationByID(dbnotif.Id)
 	if err != nil {
 		logger.Error.Printf("PUT /action/user/%s/accept - Could not delete notif: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

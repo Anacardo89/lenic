@@ -28,13 +28,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		logger.Error.Println("/action/login - Error reading body:", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = json.Unmarshal(body, &loginReq)
 	if err != nil {
 		logger.Error.Println("/action/login - Could not decode JSON: ", err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
@@ -43,21 +44,21 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	dbuser, err := orm.Da.GetUserByName(loginReq.UserName)
 	if err == sql.ErrNoRows {
-		redirect.RedirectToError(w, r, "User does not exist")
+		http.Error(w, "User does not exist", http.StatusBadRequest)
 		return
 	}
 	u := mapper.User(dbuser)
 	if u.Active != 1 {
 		if u.Active == 2 {
-			redirect.RedirectToError(w, r, "User is blocked, contact the admin")
+			http.Error(w, "User is blocked, contact the admin", http.StatusBadRequest)
 			return
 		}
-		redirect.RedirectToError(w, r, "User is not active, check your mail")
+		http.Error(w, "User is not active, check your mail", http.StatusBadRequest)
 		return
 	}
 	u.Pass = loginReq.UserPassword
 	if !auth.CheckPasswordHash(u.Pass, u.HashPass) {
-		redirect.RedirectToError(w, r, "Password does not match")
+		http.Error(w, "Password does not match", http.StatusBadRequest)
 		return
 	}
 	usrSession := auth.CreateSession(w, r)
@@ -72,7 +73,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	session, err := auth.SessionStore.Get(r, "tpsi25blog")
 	if err != nil {
 		logger.Error.Println("/action/logout - Could not get session: ", err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -80,7 +81,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	err = session.Save(r, w)
 	if err != nil {
 		logger.Error.Println("/action/logout - Could not save session: ", err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

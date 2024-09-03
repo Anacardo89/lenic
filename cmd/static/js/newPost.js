@@ -17,8 +17,9 @@ function addPost() {
         success: function(res) {
             window.location.href = '/user/' + session_encoded + '/feed'
         },
-        error: function(err) {
-            console.error("Error:", err);
+        error: function(xhr) {
+            const errorMessage = xhr.responseText;
+            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
         }
     })
     return false;

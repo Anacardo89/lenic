@@ -18,13 +18,14 @@ function login(el) {
             user_name: userName,
             user_password: userPassword
         }),
-        success: function() {
+        success: function(xhr) {
             localStorage.setItem('user_name', userName);
             connectWS(localStorage.getItem('user_name'));
             window.location.href = '/user/' + encoded + '/feed';
         },
-        error: function() {
-            console.error('Login failed');
+        error: function(xhr) {
+            const errorMessage = xhr.responseText;
+            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
         }
     });
     return false;

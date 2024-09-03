@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
-	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
@@ -22,7 +21,6 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/notifications - Could not decode user: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	userName := string(bytes)
@@ -31,7 +29,6 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 	dbuser, err := orm.Da.GetUserByName(userName)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/notifications - Could not get user: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	u := mapper.UserNotif(dbuser)
@@ -41,7 +38,6 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 	offsetint, err := strconv.Atoi(offset)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/notifications - Could not parse offset to int: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 
@@ -49,14 +45,12 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 	limitint, err := strconv.Atoi(limit)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/notifications - Could not parse limit to int: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 
 	dbnotifs, err := orm.Da.GetNotificationsByUser(dbuser.Id, limitint, offsetint)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/notifications - Could not get notifs: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 
@@ -65,7 +59,6 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 		dbfromuser, err := orm.Da.GetUserByID(dbnotif.FromUserId)
 		if err != nil {
 			logger.Error.Printf("GET /action/user/%s/notifications - Could not get user: %s\n", encoded, err)
-			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
 		from_u := mapper.UserNotif(dbfromuser)
@@ -76,7 +69,6 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 	data, err := json.Marshal(notifs)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/notifications - Could not marshal notifs: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 
@@ -93,7 +85,6 @@ func UpdateNotif(w http.ResponseWriter, r *http.Request) {
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
 		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not decode user: %s\n", encoded, notif_id, err)
-		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 	userName := string(bytes)
@@ -102,14 +93,12 @@ func UpdateNotif(w http.ResponseWriter, r *http.Request) {
 	notif_id_int, err := strconv.Atoi(notif_id)
 	if err != nil {
 		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not parse notif_id to int: %s\n", encoded, notif_id, err)
-		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 
 	err = orm.Da.UpdateNotificationRead(notif_id_int)
 	if err != nil {
 		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not update notif: %s\n", encoded, notif_id, err)
-		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 }
