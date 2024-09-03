@@ -73,7 +73,7 @@
         <div class="main-container">
             <div class="content">
                 {{if .Post.Image}}
-                    <img src="/action/image?guid={{.Post.GUID}}" alt="Post Image">
+                    <img class="post-image" src="/action/image?guid={{.Post.GUID}}" alt="Post Image">
                 {{end}}
                 <h1>{{.Post.Title}}</h1>
                 <div class="post-content">
@@ -177,6 +177,14 @@
                         {{end}}
                     </div>
                 {{end}}
+            </div>
+        </div>
+        <div id="modal-post-image">
+            <div class="modal-border">
+                <div class="image-modal-content">
+                    <img id="post-image-big" src="/action/image?guid={{.Post.GUID}}" alt="Post Image">
+                    <button id="close-image-modal">Close</button>
+                </div>
             </div>
         </div>
         <div id="modal-container-post">

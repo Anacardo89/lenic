@@ -19,6 +19,30 @@ $(document).ready(function() {
     });
 });
 
+// Image modal behaviour
+const imgModal = $('#modal-post-image');
+let postImage = $('.post-image');
+postImage.on('click', function() {
+    console.log("Event trigered");
+    imgModal.show();
+});
+
+let modalImageCloseBtn = $('#close-image-modal');
+if (modalImageCloseBtn !== null) {
+    modalImageCloseBtn.on('click', function() {
+        imgModal.hide();
+    });
+}
+$(window).on('click', function(event) {
+    if (event.target === imgModal.get(0)) {
+        imgModal.hide();
+    }
+});
+const bigImg = $('#post-image-big');
+bigImg.on('click', function() {
+    bigImg.toggleClass('zoomed');
+});
+
 // Delete post modal behaviour
 const postModal = $('#modal-container-post');
 let  deletePostBtn = $('#post-deleter-button')
@@ -40,10 +64,9 @@ if (modalPostDeleteBtn !== null) {
         postModal.hide();
     });
 }
-
 $(window).on('click', function(event) {
-    if ($(event.target).is('#postModal')) { // Use jQuery to compare the event target
-        $('#postModal').hide(); // Hide the modal
+    if (event.target === postModal.get(0)) {
+        postModal.hide();
     }
 });
 
@@ -167,3 +190,4 @@ function ratePostDown() {
     })
     return false;
 }
+
