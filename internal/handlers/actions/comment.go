@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
-	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
@@ -34,13 +33,14 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 	res, err := orm.Da.CreateComment(&c)
 	if err != nil {
 		logger.Error.Printf("POST /action/post/%s/comment - Could not create comment: %s\n", postGUID, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	lastInsertID, err := res.LastInsertId()
 	if err != nil {
 		logger.Error.Printf("POST /action/post/%s/comment - Could not get notification Id: %s\n", postGUID, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	idstring := strconv.Itoa(int(lastInsertID))
@@ -51,6 +51,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 	data, err := json.Marshal(&resp)
 	if err != nil {
 		logger.Error.Printf("POST /action/post/%s/comment - Could not marshal JSON: %s\n", postGUID, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -69,13 +70,13 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 	idint, err := strconv.Atoi(id)
 	if err != nil {
 		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not convert id to string: %s\n", postGUID, id, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	err = r.ParseForm()
 	if err != nil {
 		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not parse form: %s\n", postGUID, id, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	c := database.Comment{
@@ -83,14 +84,14 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 		Content: r.FormValue("comment"),
 	}
 	if c.Content == "" {
-		redirect.RedirectToError(w, r, "All form fields must be filled out")
+		http.Error(w, "All form fields must be filled out", http.StatusBadRequest)
 		return
 	}
 
 	err = orm.Da.UpdateCommentText(c.Id, c.Content)
 	if err != nil {
 		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not update comment: %s\n", postGUID, id, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	logger.Info.Printf("OK - PUT /action/post/%s/comment/%s %s\n", postGUID, id, r.RemoteAddr)
@@ -106,14 +107,14 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	idint, err := strconv.Atoi(id)
 	if err != nil {
 		logger.Error.Printf("DELETE /action/post/%s/comment/%s - Could not convert id to string: %s\n", postGUID, id, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = orm.Da.DisableComment(idint)
 	if err != nil {
 		logger.Error.Printf("DELETE /action/post/%s/comment/%s - Could not update comment: %s\n", postGUID, id, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	logger.Info.Printf("OK - DELETE /action/post/%s/comment/%s %s\n", postGUID, id, r.RemoteAddr)
@@ -128,7 +129,7 @@ func RateCommentUp(w http.ResponseWriter, r *http.Request) {
 	comment_id, err := strconv.Atoi(id)
 	if err != nil {
 		logger.Error.Printf("POST /action/post/%s/comment/%s/up - Could not convert id to string: %s\n", postGUID, id, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -136,7 +137,7 @@ func RateCommentUp(w http.ResponseWriter, r *http.Request) {
 	err = orm.Da.RateCommentUp(comment_id, session.User.Id)
 	if err != nil {
 		logger.Error.Printf("POST /action/post/%s/comment/%s/up - Could not update comment rating: %s\n", postGUID, id, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	logger.Info.Printf("OK - POST /action/post/%s/comment/%s/up %s\n", postGUID, id, r.RemoteAddr)
@@ -151,7 +152,7 @@ func RateCommentDown(w http.ResponseWriter, r *http.Request) {
 	comment_id, err := strconv.Atoi(id)
 	if err != nil {
 		logger.Error.Printf("POST /action/post/%s/comment/%s/down - Could not convert id to string: %s\n", postGUID, id, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -159,7 +160,7 @@ func RateCommentDown(w http.ResponseWriter, r *http.Request) {
 	err = orm.Da.RateCommentDown(comment_id, session.User.Id)
 	if err != nil {
 		logger.Error.Printf("POST /action/post/%s/comment/%s/down - Could not update comment rating: %s\n", postGUID, id, err)
-		redirect.RedirectToError(w, r, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	logger.Info.Printf("OK - POST /action/post/%s/comment/%s/down %s\n", postGUID, id, r.RemoteAddr)

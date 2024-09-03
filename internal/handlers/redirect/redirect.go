@@ -32,5 +32,5 @@ func RedirectToError(w http.ResponseWriter, r *http.Request, err string) {
 		Path:     "/",
 	}
 	http.SetCookie(w, &cookie)
-	http.Redirect(w, r, "/error", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/error", http.StatusFound)
 }

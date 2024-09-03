@@ -39,8 +39,9 @@ export function makeCommentRateNotif(notification) {
             success: function() {
                 window.location.href = '/post/' +  postGuid;
             },
-            error: function(err) {
-                console.error("Error:", err);
+            error: function(xhr) {
+                const errorMessage = xhr.responseText;
+                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
             }
         });
     });
@@ -84,8 +85,9 @@ export function makePostRateNotif(notification) {
             success: function() {
                 window.location.href = '/post/' +  postGuid;
             },
-            error: function(err) {
-                console.error("Error:", err);
+            error: function(xhr) {
+                const errorMessage = xhr.responseText;
+                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
             }
         });
     });
@@ -129,8 +131,9 @@ export function makeCommentOnPostNotif(notification) {
             success: function() {
                 window.location.href = '/post/' +  postGuid;
             },
-            error: function(err) {
-                console.error("Error:", err);
+            error: function(xhr) {
+                const errorMessage = xhr.responseText;
+                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
             }
         });
     });
@@ -173,8 +176,9 @@ export function makeFollowAcceptNotif(notification) {
             success: function() {
                 window.location.href = '/user/' +  notification.fromuser.encoded;
             },
-            error: function(err) {
-                console.error("Error:", err);
+            error: function(xhr) {
+                const errorMessage = xhr.responseText;
+                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
             }
         });
     });
@@ -248,8 +252,9 @@ export function makeFollowRequestNotif(notification) {
                 wsoc.sendWSmsg(message);
                 location.reload();
             },
-            error: function(err) {
-                console.error("Error:", err);
+            error: function(xhr) {
+                const errorMessage = xhr.responseText;
+                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
             }
         });
     });
@@ -261,8 +266,9 @@ export function makeFollowRequestNotif(notification) {
             success: function() {
                 location.reload();
             },
-            error: function(err) {
-                console.error("Error:", err);
+            error: function(xhr) {
+                const errorMessage = xhr.responseText;
+                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
             }
         });
     });

@@ -38,11 +38,11 @@ function logout() {
             wsoc.closeWS();
             window.location.href = '/home';
         },
-        error: function(status, error) {
-            console.error('Logout failed:', status, error);
+        error: function(xhr) {
             localStorage.removeItem('user_name');
             wsoc.closeWS();
-            window.location.href = '/home';
+            const errorMessage = xhr.responseText;
+            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
         }
     });
     return false;

@@ -52,8 +52,9 @@ function followUser() {
             wsoc.sendWSmsg(message);
             location.reload()
         },
-        error: function(err) {
-            console.error("Error:", err);
+        error: function(xhr) {
+            const errorMessage = xhr.responseText;
+            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
         }
     })
     return false;
@@ -66,8 +67,9 @@ function unfollowUser() {
         success: function() {
             location.reload();
         },
-        error: function(err) {
-            console.error("Error:", err);
+        error: function(xhr) {
+            const errorMessage = xhr.responseText;
+            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
         }
     });
     return false;
@@ -85,8 +87,9 @@ function addProfilePic() {
         success: function(res) {
             location.reload()
         },
-        error: function(err) {
-            console.error("Error:", err);
+        error: function(xhr) {
+            const errorMessage = xhr.responseText;
+            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
         }
     })
     return false;

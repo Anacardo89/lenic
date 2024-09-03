@@ -98,8 +98,9 @@ function editPost(el) {
         success: function(res) {
             location.reload()
         },
-        error: function(err) {
-            console.error("Error:", err);
+        error: function(xhr) {
+            const errorMessage = xhr.responseText;
+            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
         }
     })
     return false;
@@ -113,8 +114,9 @@ function deletePost() {
         success: function(res) {
             window.location.href = '/user/' + session_encoded + '/feed'
         },
-        error: function(err) {
-            console.error("Error:", err);
+        error: function(xhr) {
+            const errorMessage = xhr.responseText;
+            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
         }
     })
     return false;
@@ -135,8 +137,9 @@ function ratePostUp() {
             wsoc.sendWSmsg(message);
             location.reload()
         },
-        error: function(err) {
-            console.error("Error:", err);
+        error: function(xhr) {
+            const errorMessage = xhr.responseText;
+            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
         }
     })
     return false;
@@ -157,8 +160,9 @@ function ratePostDown() {
             wsoc.sendWSmsg(message);
             location.reload()
         },
-        error: function(err) {
-            console.error("Error:", err);
+        error: function(xhr) {
+            const errorMessage = xhr.responseText;
+            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
         }
     })
     return false;
