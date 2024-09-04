@@ -89,20 +89,22 @@
                     </div>
                     <br>
                     <div id="post-text"><p>{{.Post.Content}}</p></div>
-                    <div id="post-edit-container">
-                        <form id="post-edit-form">
-                            <input type="text" id="edit-post-title" name="post-title" value="{{.Post.Title}}">
-                            <textarea id="edit-post" name="post-content">{{.Post.Content}}</textarea>
-                            <div class="visibility-container">
-                                <p>Select Post Visibility:</p>
-                                <div class="visibility-buttons">
-                                    <label><input type="radio" name="post-visibility" value="1">  Public</label>
-                                    <label><input type="radio" name="post-visibility" value="0">  Private</label>
+                    {{if eq .Post.Author.UserName .Session.User.UserName}}
+                        <div id="post-edit-container">
+                            <form id="post-edit-form">
+                                <input type="text" id="edit-post-title" name="post-title" value="{{.Post.Title}}">
+                                <textarea id="edit-post" name="post-content">{{.Post.Content}}</textarea>
+                                <div class="visibility-container">
+                                    <p>Select Post Visibility:</p>
+                                    <div class="visibility-buttons">
+                                        <label><input type="radio" name="post-visibility" value="1">  Public</label>
+                                        <label><input type="radio" name="post-visibility" value="0">  Private</label>
+                                    </div>
                                 </div>
-                            </div>
-                            <button class="post-edit-button" type="submit">Confirm</button>
-                        </form>
-                    </div>
+                                <button class="post-edit-button" type="submit">Confirm</button>
+                            </form>
+                        </div>
+                    {{end}}
                     <br>
                     <div class="rating-container">
                         <div class="rating">Rating <strong>{{.Post.Rating}}</strong></div>
@@ -150,13 +152,15 @@
                                 <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.UserName}}</strong></a>   -   <strong>{{.Date}}</strong></div>
                             </div>
                             <div class="comment-text" id="comment-text-{{.Id}}"><p>{{.Content}}</p></div>
-                            <div class="comment-edit-container" id="comment-editor-{{.Id}}">
-                                <form class="comment-edit-form">
-                                    <input type="hidden" class="comment_id" value="{{.Id}}" />
-                                    <textarea type="textarea" class="edit_comment" name="comment"> {{.Content}}</textarea>
-                                    <input type="submit" value="Confirm" />
-                                </form>
-                            </div>
+                            {{if eq .Author.UserName $.Session.User.UserName}}
+                                <div class="comment-edit-container" id="comment-editor-{{.Id}}">
+                                    <form class="comment-edit-form">
+                                        <input type="hidden" class="comment_id" value="{{.Id}}" />
+                                        <textarea type="textarea" class="edit_comment" name="comment"> {{.Content}}</textarea>
+                                        <input type="submit" value="Confirm" />
+                                    </form>
+                                </div>
+                            {{end}}
                             <br>
                             <div class="comment-rating-container">
                                 <div class="comment-rating">Rating <strong>{{.Rating}}</strong></div>
