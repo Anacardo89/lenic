@@ -211,3 +211,28 @@ function rateCommentDown(el) {
     })
     return false;
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const fragment = window.location.hash;
+    if (fragment) {
+        const commentId = fragment.substring(1);
+        setTimeout(function() {
+            highlightComment(commentId);
+        }, 500);
+    }
+});
+
+function highlightComment(commentId) {
+    console.log('Highlighting comment:', commentId);
+    var commentElement = document.getElementById(commentId);
+    
+    if (commentElement) {
+        commentElement.classList.add('blink');
+        setTimeout(function() {
+            commentElement.classList.remove('blink');
+            commentElement.style.backgroundColor = 'white';
+        }, 3000);
+    } else {
+        console.log('Element not found:', commentId);
+    }
+}

@@ -91,3 +91,13 @@ button:active {
     display: block;
     margin: 0 auto;
 }
+
+@keyframes blink {
+    0% { background-color: rgb(254 186 109 / 75%); }
+    50% { background-color: azure; }
+    100% { background-color: rgb(254 186 109 / 75%); }
+}
+
+.blink {
+    animation: blink 1s step-end infinite;
+}
