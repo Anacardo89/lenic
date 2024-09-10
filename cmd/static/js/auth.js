@@ -22,6 +22,35 @@ $(document).ready(function() {
     });
 });
 
+$(document).ready(function() {
+    $('.notif-readAll').on('click', readAllNotifs);
+});
+
+function readAllNotifs() {
+    let notifs = $('.notif-item');
+    notifs.each(function() {
+        let notif = $(this);
+        let idHidden = notif.find('input[type="hidden"]').eq(0);
+        let notifId = idHidden.val();
+        $.ajax({
+            url: '/action/user/' + session_encoded + '/notifications/' + notifId + '/read',
+            method: 'PUT',
+            success: function() {
+                console.log('Notification marked as read.');
+            },
+            error: function(xhr) {
+                localStorage.removeItem('user_name');
+                wsoc.closeWS();
+                const errorMessage = xhr.responseText;
+                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+            }
+        });
+    });
+    setTimeout(function() {
+        location.reload();
+    }, 1000);
+}
+
 
 // Logout
 $(document).ready(function() {

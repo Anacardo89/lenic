@@ -112,13 +112,24 @@ header {
     color: #333;
     box-shadow: 5px 5px #857456;
     width: 500px;
-    max-height: 300px;
     overflow-y: auto;
+    max-height: 300px;
     z-index: 1000;
 }
 
 .notif-body {
-    padding: 10px;
+    position: relative;
+    height: 100%;
+    padding-top: 50px;
+}
+
+.notif-readAll {
+    position: absolute;
+    top: 5px;
+    left: 0;
+    width: calc(100% - 20px);
+    margin: 0 10px;
+    z-index: 1001;
 }
 
 .notif-item {
