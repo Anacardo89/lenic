@@ -27,10 +27,7 @@ let rate_comment_up_buttons = $('.comment-rate-up-button');
 rate_comment_up_buttons.each(function() {
     $(this).on('click', function() {
         const id = $(this).data('id');
-        let commentElement = $('.comment-container[data-id="' + id + '"]');
-        if (commentElement.length) {
-            rateCommentUp(commentElement);
-        }
+        rateCommentUp(id);
     });
 });
 
@@ -38,10 +35,7 @@ let rate_comment_down_buttons = $('.comment-rate-down-button');
 rate_comment_down_buttons.each(function() {
     $(this).on('click', function() {
         const id = $(this).data('id');
-        let commentElement = $('.comment-container[data-id="' + id + '"]');
-        if (commentElement.length) {
-            rateCommentDown(commentElement);
-        }
+        rateCommentDown(id);
     });
 });
 
@@ -165,8 +159,7 @@ function deleteComment(commentElement) {
 }
 
 // Rate comment Up
-function rateCommentUp(el) {
-    let id = $(el).find('.comment_id').val();
+function rateCommentUp(id) {
     $.ajax({
         url: '/action/post/' + guid + '/comment/' + id + '/up',
         method: 'POST',
@@ -175,7 +168,7 @@ function rateCommentUp(el) {
                 from_username: session_username,
                 type: wsoc.TYPE_COMMENT_RATE,
                 msg: wsoc.MSG_COMMENT_RATE,
-                resource_id: id,
+                resource_id: String(id),
                 parent_id: guid
             };
             wsoc.sendWSmsg(message);
@@ -189,8 +182,7 @@ function rateCommentUp(el) {
 }
 
 // Rate comment Down
-function rateCommentDown(el) {
-    let id = $(el).find('.comment_id').val();
+function rateCommentDown(id) {
     $.ajax({
         url: '/action/post/' + guid + '/comment/' + id + '/down',
         method: 'POST',
@@ -199,7 +191,7 @@ function rateCommentDown(el) {
                 from_username: session_username,
                 type: wsoc.TYPE_COMMENT_RATE,
                 msg: wsoc.MSG_COMMENT_RATE,
-                resource_id: id,
+                resource_id: String(id),
                 parent_id: guid
             };
             wsoc.sendWSmsg(message);
