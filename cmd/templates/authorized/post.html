@@ -137,7 +137,7 @@
             {{end}}
             <div class="comments">
                 {{range .Post.Comments}}
-                    <div class="comment-container" data-id="{{.Id}}">
+                    <div class="comment-container" id="comment-{{.Id}}" data-id="{{.Id}}">
                         <div class="comment-content">
                             <div class="author-info-inline">
                                 <a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();">

@@ -4,6 +4,7 @@ import * as wsoc from './wsManager.js';
 
 export function makeCommentRateNotif(notification) {
     const postGuid = notification.parent_id;
+    const comment_id = notification.resource_id;
     const notif = document.createElement('div');
     notif.classList.add('notif-item');
     if (!notification.is_read) {
@@ -37,7 +38,7 @@ export function makeCommentRateNotif(notification) {
             url: '/action/user/' + session_encoded + '/notifications/' + idHidden.value + '/read',
             method: 'PUT',
             success: function() {
-                window.location.href = '/post/' +  postGuid;
+                window.location.href = '/post/' +  postGuid + "#comment-" + comment_id;
             },
             error: function(xhr) {
                 const errorMessage = xhr.responseText;
@@ -96,6 +97,7 @@ export function makePostRateNotif(notification) {
 
 export function makeCommentOnPostNotif(notification) {
     const postGuid = notification.parent_id;
+    const comment_id = notification.resource_id;
     const notif = document.createElement('div');
     notif.classList.add('notif-item');
     if (!notification.is_read) {
@@ -129,7 +131,7 @@ export function makeCommentOnPostNotif(notification) {
             url: '/action/user/' + session_encoded + '/notifications/' + idHidden.value + '/read',
             method: 'PUT',
             success: function() {
-                window.location.href = '/post/' +  postGuid;
+                window.location.href = '/post/' +  postGuid + "#comment-" + comment_id;
             },
             error: function(xhr) {
                 const errorMessage = xhr.responseText;
