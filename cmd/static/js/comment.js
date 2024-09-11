@@ -1,3 +1,4 @@
+import {positionSuggestionBox, insertAtCaret} from './tag.js';
 import { session_username } from './auth.js';
 import { guid } from './post.js';
 import  * as wsoc from './wsManager.js';
@@ -227,4 +228,158 @@ function highlightComment(commentId) {
     } else {
         console.log('Element not found:', commentId);
     }
+}
+
+// Tag User New Comment
+$(document).ready(function() {
+
+    const addComment_textArea = $('#newComment-textarea');
+    const suggestionBox = $('#suggestionBox-newComment');
+    addComment_textArea.on('keyup', function(event) {
+        const cursorPosition = event.target.selectionStart;
+        const textBeforeCursor = event.target.value.slice(0, cursorPosition)
+        const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+        if (mentionMatch) {
+            const searchText = mentionMatch[1];
+            if (searchText.length > 0) {
+                fetchUserSuggestions(searchText);
+                positionSuggestionBox(addComment_textArea, suggestionBox);
+            }
+        } else {
+            suggestionBox.css('display', 'none');
+        }
+    });
+
+    function fetchUserSuggestions(query) {
+        $.ajax({
+            url: '/action/search/user?username=' + encodeURIComponent(query),
+            method: 'GET',
+            success: function(data) {
+                console.log('making request')
+                updateResults(data);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    function updateResults(data) {
+        clearResults();
+
+        if (Array.isArray(data)) {
+            $.each(data, function(index, item) {
+                const $resultItem = makeSuggestionResultNewComment(item);
+                suggestionBox.append($resultItem);
+            });
+        } else {
+            console.error('Expected an array but received:', data);
+        }
+    }
+
+    function clearResults() {
+        suggestionBox.empty();
+    }
+});
+
+function makeSuggestionResultNewComment(user) {
+    const result = document.createElement('div');
+    result.classList.add('suggestion-item');
+    const authorInline = document.createElement('div');
+    authorInline.classList.add('author-info-inline');
+    const profilePic = document.createElement('img');
+    profilePic.classList.add('profile-pic-mini');
+    if (user.profile_pic === '') {
+        profilePic.src = '/static/img/no-profile-pic.jpg';
+    } else {
+        profilePic.src = '/action/profile-pic?user-encoded=' + user.encoded
+    }
+    const username = document.createElement('div');
+    username.innerHTML = '<strong>' + user.username + '</strong>';
+    authorInline.append(profilePic);
+    authorInline.append(username);
+    result.append(authorInline);
+
+    result.addEventListener('click', function(event) {
+        if (event.currentTarget === result || event.currentTarget.contains(event.target)) {
+            let usernameElement = result.querySelector('.author-info-inline strong');
+            if (usernameElement) {
+                let selectedUser = usernameElement.textContent;
+                insertAtCaret('newComment-textarea', '@' + selectedUser);
+            }
+        }
+        result.parentElement.style.display = 'none';
+    });
+    return result;
+}
+
+// Tag User Edit Comment
+$(document).ready(function() {
+
+    $('.edit_comment').on('keyup', function(event) {
+        const textarea = $(this);
+        const commentId = textarea.attr('id').split('-')[2];
+        const suggestionBox = $('#suggestionBox-editComment-' + commentId);
+
+        const cursorPosition = textarea[0].selectionStart;
+        const textBeforeCursor = textarea.val().slice(0, cursorPosition);
+        const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+
+        if (mentionMatch) {
+            const searchText = mentionMatch[1];
+            if (searchText.length > 0) {
+                fetchUserSuggestions(searchText, commentId);
+                positionSuggestionBox(textarea, suggestionBox);
+            }
+        } else {
+            suggestionBox.hide();
+        }
+    });
+
+    function fetchUserSuggestions(query, commentId) {
+        $.ajax({
+            url: '/action/search/user?username=' + query,
+            method: 'GET',
+            success: function(data) {
+                updateResults(data, commentId);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    function updateResults(users, commentId) {
+        const suggestionBox = $('#suggestionBox-editComment-' + commentId);
+        suggestionBox.empty();
+        
+        users.forEach(user => {
+            const suggestionItem = makeSuggestionResultEditComment(user, commentId);
+            suggestionBox.append(suggestionItem);
+        });
+    }
+});
+
+function makeSuggestionResultEditComment(user, commentId) {
+    const result = $('<div>').addClass('suggestion-item');
+        const authorInline = $('<div>').addClass('author-info-inline');
+        const profilePic = $('<img>').addClass('profile-pic-mini');
+        
+        if (user.profile_pic === '') {
+            profilePic.attr('src', '/static/img/no-profile-pic.jpg');
+        } else {
+            profilePic.attr('src', '/action/profile-pic?user-encoded=' + user.encoded);
+        }
+
+        const username = $('<div>').html('<strong>' + user.username + '</strong>');
+        authorInline.append(profilePic).append(username);
+        result.append(authorInline);
+
+        result.on('click', function() {
+            let selectedUser = username.text();
+            insertAtCaret('edit-comment-' + commentId, '@' + selectedUser);
+            $('#suggestionBox-editComment-' + commentId).hide();
+        });
+
+        return result;
 }

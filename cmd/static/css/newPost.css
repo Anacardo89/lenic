@@ -40,6 +40,10 @@ input[type="text"] {
     border-radius: 5px;
 }
 
+form [enctype="multipart/form-data"] {
+    position: relative;
+}
+
 textarea {
    height: 200px;
    width: 100%;
@@ -47,6 +51,32 @@ textarea {
    padding: 3px;
    border: 1px solid;
    border-radius: 5px; 
+}
+
+.suggestion-box {
+    position: absolute;
+    display: none;
+    background-color: rgb(254 186 109 / 75%);
+    color: #333;
+    box-shadow: 5px 5px #857456;
+    width: 500px;
+    overflow-y: auto;
+    max-height: 300px;
+    z-index: 1000;
+}
+
+.suggestion-item {
+    display: flex;
+    flex-direction: column;
+    background-color: azure;
+    color: #333;
+    cursor: pointer;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.suggestion-item:hover {
+    background-color: white;
 }
 
 label {

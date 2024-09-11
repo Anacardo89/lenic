@@ -95,6 +95,7 @@
                             <form id="post-edit-form">
                                 <input type="text" id="edit-post-title" name="post-title" value="{{.Post.Title}}">
                                 <textarea id="edit-post" name="post-content">{{.Post.Content}}</textarea>
+                                <div id="suggestionBox-post" class="suggestion-box"></div>
                                 <div class="visibility-container">
                                     <p>Select Post Visibility:</p>
                                     <div class="visibility-buttons">
@@ -132,7 +133,8 @@
                     <div><p><strong>Add a comment:</strong></p></div>
                     <div class="comment-form">
                         <form id="add-comment-form">
-                            <div><textarea name="comment_text" placeholder="Your Comments"></textarea></div>
+                            <div><textarea id="newComment-textarea" name="comment_text" placeholder="Your Comments"></textarea></div>
+                            <div id="suggestionBox-newComment" class="suggestion-box"></div>
                             <button id="add-comment-button" type="submit">Add Comment</button>
                         </form>
                     </div>
@@ -157,7 +159,8 @@
                                 <div class="comment-edit-container" id="comment-editor-{{.Id}}">
                                     <form class="comment-edit-form">
                                         <input type="hidden" class="comment_id" value="{{.Id}}" />
-                                        <textarea type="textarea" class="edit_comment" name="comment"> {{.Content}}</textarea>
+                                        <textarea id="edit-comment-{{.Id}}" type="textarea" class="edit_comment" name="comment"> {{.Content}}</textarea>
+                                        <div id="suggestionBox-editComment-{{.Id}}" class="suggestion-box"></div>
                                         <input type="submit" value="Confirm" />
                                     </form>
                                 </div>
