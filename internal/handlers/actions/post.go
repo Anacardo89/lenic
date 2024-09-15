@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"database/sql"
 	"encoding/base64"
 	"io"
 	"math/rand/v2"
@@ -10,10 +11,13 @@ import (
 	"strings"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/wsoc"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/fsops"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
+	"github.com/Anacardo89/tpsi25_blog/pkg/parse"
+	"github.com/Anacardo89/tpsi25_blog/pkg/wsocket"
 	"github.com/gorilla/mux"
 )
 
@@ -62,6 +66,66 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
+		dbP, err := orm.Da.GetPostByGUID(dbpost.GUID)
+		if err != nil {
+			logger.Error.Println("/action/post - Could not get post: ", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		dbUser, err := orm.Da.GetUserByID(dbP.AuthorId)
+		if err != nil {
+			logger.Error.Printf("PUT /action/post/%s/comment - Could not get user: %s\n", dbP.GUID, err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		mentions := parse.ParseAtString(dbP.Content)
+		if len(mentions) > 0 {
+			for _, mention := range mentions {
+				mention = strings.TrimLeft(mention, "@")
+				dbTag, err := orm.Da.GetTagByName(mention)
+				if err == sql.ErrNoRows {
+					t := &database.Tag{
+						TagName: mention,
+						TagType: "user",
+					}
+					err := orm.Da.CreateTag(t)
+					if err != nil {
+						logger.Error.Printf("PUT /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
+						http.Error(w, err.Error(), http.StatusBadRequest)
+						return
+					}
+				} else if err != nil {
+					logger.Error.Printf("PUT /action/post/%s/comment - Could not get tag By Id: %s\n", dbP.GUID, err)
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+				ut := &database.UserTag{
+					TagId:     dbTag.Id,
+					PostId:    dbP.Id,
+					CommentId: -1,
+					TagPlace:  "post",
+				}
+				err = orm.Da.CreateUserTag(ut)
+				if err != nil {
+					logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", dbP.GUID, err)
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+				wsMsg := wsocket.Message{
+					FromUserName: dbUser.UserName,
+					Type:         "post_tag",
+					Msg:          " has tagged you in their post",
+					ResourceId:   dbP.GUID,
+					ParentId:     "",
+				}
+
+				wsoc.HandlePostTag(wsMsg, mention)
+			}
+		}
+
 		w.WriteHeader(http.StatusCreated)
 		return
 	}
@@ -84,6 +148,65 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println("/action/post - Could not not create post: ", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	dbP, err := orm.Da.GetPostByGUID(dbpost.GUID)
+	if err != nil {
+		logger.Error.Println("/action/post - Could not get post: ", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	dbUser, err := orm.Da.GetUserByID(dbP.AuthorId)
+	if err != nil {
+		logger.Error.Printf("PUT /action/post/%s/comment - Could not get user: %s\n", dbP.GUID, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	mentions := parse.ParseAtString(dbP.Content)
+	if len(mentions) > 0 {
+		for _, mention := range mentions {
+			mention = strings.TrimLeft(mention, "@")
+			dbTag, err := orm.Da.GetTagByName(mention)
+			if err == sql.ErrNoRows {
+				t := &database.Tag{
+					TagName: mention,
+					TagType: "user",
+				}
+				err := orm.Da.CreateTag(t)
+				if err != nil {
+					logger.Error.Printf("PUT /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+			} else if err != nil {
+				logger.Error.Printf("PUT /action/post/%s/comment - Could not get tag By Id: %s\n", dbP.GUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			ut := &database.UserTag{
+				TagId:     dbTag.Id,
+				PostId:    dbP.Id,
+				CommentId: -1,
+				TagPlace:  "post",
+			}
+			err = orm.Da.CreateUserTag(ut)
+			if err != nil {
+				logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", dbP.GUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			wsMsg := wsocket.Message{
+				FromUserName: dbUser.UserName,
+				Type:         "post_tag",
+				Msg:          " has tagged you in their post",
+				ResourceId:   dbP.GUID,
+				ParentId:     "",
+			}
+
+			wsoc.HandlePostTag(wsMsg, mention)
+		}
 	}
 
 	logger.Info.Println("OK - /action/post ", r.RemoteAddr)
@@ -132,6 +255,65 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Printf("PUT /action/post/%s - Could not update post: %s\n", postGUID, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	dbP, err := orm.Da.GetPostByGUID(p.GUID)
+	if err != nil {
+		logger.Error.Println("/action/post - Could not get post: ", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	dbUser, err := orm.Da.GetUserByID(dbP.AuthorId)
+	if err != nil {
+		logger.Error.Printf("PUT /action/post/%s/comment - Could not get user: %s\n", dbP.GUID, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	mentions := parse.ParseAtString(dbP.Content)
+	if len(mentions) > 0 {
+		for _, mention := range mentions {
+			mention = strings.TrimLeft(mention, "@")
+			dbTag, err := orm.Da.GetTagByName(mention)
+			if err == sql.ErrNoRows {
+				t := &database.Tag{
+					TagName: mention,
+					TagType: "user",
+				}
+				err := orm.Da.CreateTag(t)
+				if err != nil {
+					logger.Error.Printf("PUT /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+			} else if err != nil {
+				logger.Error.Printf("PUT /action/post/%s/comment - Could not get tag By Id: %s\n", dbP.GUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			ut := &database.UserTag{
+				TagId:     dbTag.Id,
+				PostId:    dbP.Id,
+				CommentId: -1,
+				TagPlace:  "post",
+			}
+			err = orm.Da.CreateUserTag(ut)
+			if err != nil {
+				logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", dbP.GUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			wsMsg := wsocket.Message{
+				FromUserName: dbUser.UserName,
+				Type:         "post_tag",
+				Msg:          " has tagged you in their post",
+				ResourceId:   dbP.GUID,
+				ParentId:     "",
+			}
+
+			wsoc.HandlePostTag(wsMsg, mention)
+		}
 	}
 
 	logger.Info.Printf("OK - PUT /action/post/%s %s\n", postGUID, r.RemoteAddr)

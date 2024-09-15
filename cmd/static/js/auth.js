@@ -196,6 +196,18 @@ $(document).ready(function() {
                     notifButton.css('--notif-display', 'block');
                 }
                 break;
+            case wsoc.TYPE_COMMENT_TAG:
+                notif = notifs.makeCommentTagNotif(notification);
+                if (!notification.is_read) {
+                    notifButton.css('--notif-display', 'block');
+                }
+                break;
+            case wsoc.TYPE_POST_TAG:
+                notif = notifs.makePostTagNotif(notification);
+                if (!notification.is_read) {
+                    notifButton.css('--notif-display', 'block');
+                }
+                break;
             case wsoc.TYPE_COMMENT_ON_POST:
                 notif = notifs.makeCommentOnPostNotif(notification);
                 if (!notification.is_read) {
