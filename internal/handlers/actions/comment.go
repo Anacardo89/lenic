@@ -1,14 +1,19 @@
 package actions
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
+	"github.com/Anacardo89/tpsi25_blog/internal/handlers/wsoc"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
+	"github.com/Anacardo89/tpsi25_blog/pkg/parse"
+	"github.com/Anacardo89/tpsi25_blog/pkg/wsocket"
 	"github.com/gorilla/mux"
 )
 
@@ -29,7 +34,6 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 		Rating:   0,
 		Active:   1,
 	}
-
 	res, err := orm.Da.CreateComment(&c)
 	if err != nil {
 		logger.Error.Printf("POST /action/post/%s/comment - Could not create comment: %s\n", postGUID, err)
@@ -43,11 +47,70 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	dbComment, err := orm.Da.GetCommentById(int(lastInsertID))
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/comment - Could not get comment Id: %s\n", postGUID, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	mentions := parse.ParseAtString(c.Content)
+	if len(mentions) > 0 {
+		for _, mention := range mentions {
+			mention = strings.TrimLeft(mention, "@")
+			dbTag, err := orm.Da.GetTagByName(mention)
+			if err == sql.ErrNoRows {
+				t := &database.Tag{
+					TagName: mention,
+					TagType: "user",
+				}
+				err := orm.Da.CreateTag(t)
+				if err != nil {
+					logger.Error.Printf("POST /action/post/%s/comment - Could not get create Tag: %s\n", postGUID, err)
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+			} else if err != nil {
+				logger.Error.Printf("POST /action/post/%s/comment - Could not get tag By Id: %s\n", postGUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			dbPost, err := orm.Da.GetPostByGUID(dbComment.PostGUID)
+			if err != nil {
+				logger.Error.Printf("POST /action/post/%s/comment - Could not get Post by Id: %s\n", postGUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			ut := &database.UserTag{
+				TagId:     dbTag.Id,
+				PostId:    dbPost.Id,
+				CommentId: dbComment.Id,
+				TagPlace:  "comment",
+			}
+			err = orm.Da.CreateUserTag(ut)
+			if err != nil {
+				logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", postGUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			idString := strconv.Itoa(dbComment.Id)
+			wsMsg := wsocket.Message{
+				FromUserName: session.User.UserName,
+				Type:         "comment_tag",
+				Msg:          " has tagged you in their comment",
+				ResourceId:   idString,
+				ParentId:     dbPost.GUID,
+			}
+
+			wsoc.HandleCommentTag(wsMsg, mention)
+		}
+	}
+
 	idstring := strconv.Itoa(int(lastInsertID))
 	resp := Response{
 		Data: idstring,
 	}
-
 	data, err := json.Marshal(&resp)
 	if err != nil {
 		logger.Error.Printf("POST /action/post/%s/comment - Could not marshal JSON: %s\n", postGUID, err)
@@ -94,6 +157,73 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	dbComment, err := orm.Da.GetCommentById(c.Id)
+	if err != nil {
+		logger.Error.Printf("PUT /action/post/%s/comment - Could not get comment Id: %s\n", postGUID, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	dbUser, err := orm.Da.GetUserByID(dbComment.AuthorId)
+	if err != nil {
+		logger.Error.Printf("PUT /action/post/%s/comment - Could not get user: %s\n", postGUID, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	mentions := parse.ParseAtString(c.Content)
+	if len(mentions) > 0 {
+		for _, mention := range mentions {
+			mention = strings.TrimLeft(mention, "@")
+			dbTag, err := orm.Da.GetTagByName(mention)
+			if err == sql.ErrNoRows {
+				t := &database.Tag{
+					TagName: mention,
+					TagType: "user",
+				}
+				err := orm.Da.CreateTag(t)
+				if err != nil {
+					logger.Error.Printf("PUT /action/post/%s/comment - Could not get create Tag: %s\n", postGUID, err)
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+			} else if err != nil {
+				logger.Error.Printf("PUT /action/post/%s/comment - Could not get tag By Id: %s\n", postGUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			dbPost, err := orm.Da.GetPostByGUID(dbComment.PostGUID)
+			if err != nil {
+				logger.Error.Printf("PUT /action/post/%s/comment - Could not get Post by Id: %s\n", postGUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			ut := &database.UserTag{
+				TagId:     dbTag.Id,
+				PostId:    dbPost.Id,
+				CommentId: dbComment.Id,
+				TagPlace:  "comment",
+			}
+			err = orm.Da.CreateUserTag(ut)
+			if err != nil {
+				logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", postGUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			idString := strconv.Itoa(dbComment.Id)
+			wsMsg := wsocket.Message{
+				FromUserName: dbUser.UserName,
+				Type:         "comment_tag",
+				Msg:          " has tagged you in their comment",
+				ResourceId:   idString,
+				ParentId:     dbPost.GUID,
+			}
+
+			wsoc.HandleCommentTag(wsMsg, mention)
+		}
+	}
+
 	logger.Info.Printf("OK - PUT /action/post/%s/comment/%s %s\n", postGUID, id, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
