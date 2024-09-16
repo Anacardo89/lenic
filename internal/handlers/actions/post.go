@@ -332,6 +332,33 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dbP, err := orm.Da.GetPostByGUID(postGUID)
+	if err != nil {
+		logger.Error.Printf("DELETE /action/post/%s - Could not get comment: %s\n", postGUID, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	mentions := parse.ParseAtString(dbP.Content)
+	if len(mentions) > 0 {
+		for _, mention := range mentions {
+			mention = strings.TrimLeft(mention, "@")
+			dbTag, err := orm.Da.GetTagByName(mention)
+			if err != nil {
+				logger.Error.Printf("DELETE /action/post/%s - Could not get tag By Id: %s\n", postGUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			err = orm.Da.DeleteUserTagByID(dbTag.Id)
+			if err != nil {
+				logger.Error.Printf("DELETE /action/post/%s - Could not delete tag By Id: %s\n", postGUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+	}
+
 	logger.Info.Printf("OK - DELETE /action/post/%s %s\n", postGUID, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
