@@ -25,6 +25,16 @@ const (
 		WHERE tag_id=?
 	;`
 
+	SelectUserTagsByPostId = `
+	SELECT * FROM user_tags
+		WHERE post_id=?
+	;`
+
+	SelectUserTagsByCommentId = `
+	SELECT * FROM user_tags
+		WHERE comment_id=?
+	;`
+
 	DeleteUserTagById = `
 	DELETE FROM user_tags
 		WHERE id=?
