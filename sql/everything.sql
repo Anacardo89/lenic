@@ -132,6 +132,24 @@ CREATE TABLE reference_tags (
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE conversations (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user1_id INT REFERENCES users(id),
+    user2_id INT REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (id),
+	UNIQUE KEY users (user1_id, user2_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE messages (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    conversation_id INT REFERENCES conversations(id),
+    sender_id INT REFERENCES users(id),
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 DELIMITER $$
 
 CREATE TRIGGER after_follow_update
