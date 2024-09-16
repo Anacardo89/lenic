@@ -91,3 +91,26 @@ func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	t.Execute(w, dbuser)
 }
+
+func ChangePassword(w http.ResponseWriter, r *http.Request) {
+	logger.Info.Println("/change-password ", r.RemoteAddr)
+	vars := mux.Vars(r)
+	encoded := vars["encoded_user_name"]
+	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	if err != nil {
+		logger.Error.Println("/change-password - Could not decode user: ", err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	userName := string(bytes)
+	logger.Info.Printf("/change-password %s %s", r.RemoteAddr, userName)
+
+	session := auth.ValidateSession(w, r)
+	t, err := template.ParseFiles("templates/authorized/change-password.html")
+	if err != nil {
+		logger.Error.Println("/recover-password - Could not parse template: ", err)
+		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+	t.Execute(w, session)
+}

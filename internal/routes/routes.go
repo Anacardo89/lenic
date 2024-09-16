@@ -22,6 +22,7 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/user/{encoded_user_name}/following", pages.UserFollowing).Schemes("https")
 	r.HandleFunc("/forgot-password", pages.ForgotPassword).Schemes("https")
 	r.HandleFunc("/recover-password/{encoded_user_name}", pages.RecoverPassword).Schemes("https")
+	r.HandleFunc("/change-password/{encoded_user_name}", pages.ChangePassword).Schemes("https")
 
 	r.HandleFunc("/action/register", actions.RegisterUser).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/activate/{encoded_user_name}", actions.ActivateUser).Schemes("https")
@@ -46,6 +47,7 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/action/post/{post_guid}/comment/{comment_id}/down", actions.RateCommentDown).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/forgot-password", actions.ForgotPassword).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/recover-password", actions.RecoverPassword).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/change-password", actions.ChangePassword).Methods("POST").Schemes("https")
 
 	r.HandleFunc("/ws", wsoc.HandleWebSocket)
 
