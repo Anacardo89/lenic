@@ -9,6 +9,7 @@ import (
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
@@ -65,6 +66,11 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(body))
 }
 
+type RecoverPasswdPage struct {
+	User  presentation.User
+	Token string
+}
+
 func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/recover-password ", r.RemoteAddr)
 	vars := mux.Vars(r)
@@ -77,11 +83,22 @@ func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	userName := string(bytes)
 	logger.Info.Printf("/recover-password %s %s", r.RemoteAddr, userName)
+
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		logger.Error.Println("/recover-password - No token", err)
+		return
+	}
 	dbuser, err := orm.Da.GetUserByName(userName)
 	if err != nil {
 		logger.Error.Println("/recover-password - Could not get user: ", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
+	}
+	u := mapper.User(dbuser)
+	page := RecoverPasswdPage{
+		User:  *u,
+		Token: token,
 	}
 	t, err := template.ParseFiles("templates/recover-password.html")
 	if err != nil {
@@ -89,7 +106,7 @@ func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	t.Execute(w, dbuser)
+	t.Execute(w, page)
 }
 
 func ChangePassword(w http.ResponseWriter, r *http.Request) {
