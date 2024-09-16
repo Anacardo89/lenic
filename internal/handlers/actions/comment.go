@@ -76,6 +76,12 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
+			dbTag, err = orm.Da.GetTagByName(mention)
+			if err != nil {
+				logger.Error.Printf("POST /action/post/%s/comment - Could not get create Tag: %s\n", postGUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
 			dbPost, err := orm.Da.GetPostByGUID(dbComment.PostGUID)
 			if err != nil {
 				logger.Error.Printf("POST /action/post/%s/comment - Could not get Post by Id: %s\n", postGUID, err)
@@ -190,6 +196,12 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 				}
 			} else if err != nil {
 				logger.Error.Printf("PUT /action/post/%s/comment - Could not get tag By Id: %s\n", postGUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			dbTag, err = orm.Da.GetTagByName(mention)
+			if err != nil {
+				logger.Error.Printf("POST /action/post/%s/comment - Could not get create Tag: %s\n", postGUID, err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}

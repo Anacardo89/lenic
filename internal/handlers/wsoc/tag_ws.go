@@ -70,7 +70,9 @@ func HandleCommentTag(msg wsocket.Message, tagged_user string) {
 		return
 	}
 
-	wsocket.WSConnMan.SendMessage(u.UserName, data)
+	if wsocket.WSConnMan.IsConnected(dbuser.UserName) {
+		wsocket.WSConnMan.SendMessage(u.UserName, data)
+	}
 }
 
 func HandlePostTag(msg wsocket.Message, tagged_user string) {
@@ -123,5 +125,7 @@ func HandlePostTag(msg wsocket.Message, tagged_user string) {
 		return
 	}
 
-	wsocket.WSConnMan.SendMessage(u.UserName, data)
+	if wsocket.WSConnMan.IsConnected(dbuser.UserName) {
+		wsocket.WSConnMan.SendMessage(u.UserName, data)
+	}
 }

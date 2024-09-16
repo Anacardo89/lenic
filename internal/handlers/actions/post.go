@@ -102,6 +102,12 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
+				dbTag, err = orm.Da.GetTagByName(mention)
+				if err != nil {
+					logger.Error.Printf("POST /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
 				ut := &database.UserTag{
 					TagId:     dbTag.Id,
 					PostId:    dbP.Id,
@@ -182,6 +188,12 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 				}
 			} else if err != nil {
 				logger.Error.Printf("PUT /action/post/%s/comment - Could not get tag By Id: %s\n", dbP.GUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			dbTag, err = orm.Da.GetTagByName(mention)
+			if err != nil {
+				logger.Error.Printf("POST /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
@@ -289,6 +301,12 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 				}
 			} else if err != nil {
 				logger.Error.Printf("PUT /action/post/%s/comment - Could not get tag By Id: %s\n", dbP.GUID, err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			dbTag, err = orm.Da.GetTagByName(mention)
+			if err != nil {
+				logger.Error.Printf("POST /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
