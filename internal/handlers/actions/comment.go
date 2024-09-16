@@ -59,7 +59,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 	if len(mentions) > 0 {
 		for _, mention := range mentions {
 			mention = strings.TrimLeft(mention, "@")
-			dbTag, err := orm.Da.GetTagByName(mention)
+			_, err := orm.Da.GetTagByName(mention)
 			if err == sql.ErrNoRows {
 				t := &database.Tag{
 					TagName: mention,
@@ -76,7 +76,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			dbTag, err = orm.Da.GetTagByName(mention)
+			dbTag, err := orm.Da.GetTagByName(mention)
 			if err != nil {
 				logger.Error.Printf("POST /action/post/%s/comment - Could not get create Tag: %s\n", postGUID, err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
@@ -182,7 +182,7 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 	if len(mentions) > 0 {
 		for _, mention := range mentions {
 			mention = strings.TrimLeft(mention, "@")
-			dbTag, err := orm.Da.GetTagByName(mention)
+			_, err := orm.Da.GetTagByName(mention)
 			if err == sql.ErrNoRows {
 				t := &database.Tag{
 					TagName: mention,
@@ -199,7 +199,7 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			dbTag, err = orm.Da.GetTagByName(mention)
+			dbTag, err := orm.Da.GetTagByName(mention)
 			if err != nil {
 				logger.Error.Printf("POST /action/post/%s/comment - Could not get create Tag: %s\n", postGUID, err)
 				http.Error(w, err.Error(), http.StatusBadRequest)

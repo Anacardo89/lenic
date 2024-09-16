@@ -1,7 +1,9 @@
 package actions
 
 import (
+	"database/sql"
 	"net/http"
+	"time"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
@@ -18,8 +20,39 @@ func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := r.FormValue("user_name")
+	token := r.FormValue("token")
 	password := r.FormValue("password")
 	password2 := r.FormValue("password2")
+
+	dbuser, err := orm.Da.GetUserByName(userName)
+	if err != nil {
+		logger.Error.Println("/action/recover-password - Could not get db user: ", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	dbToken, err := orm.Da.GetTokenByUserId(dbuser.Id)
+	if err == sql.ErrNoRows {
+		logger.Error.Println("/action/recover-password - No Token")
+		http.Error(w, "No token", http.StatusBadRequest)
+		return
+	} else if err != nil {
+		logger.Error.Println("/action/recover-password - Could not get db token: ", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if time.Now().After(dbToken.UpdatedAt.Add(time.Duration(1) * time.Hour)) {
+		logger.Error.Println("/action/recover-password - Token Expired")
+		http.Error(w, "Token Expired", http.StatusBadRequest)
+		return
+	}
+
+	if dbToken.Token != token {
+		logger.Error.Println("/action/recover-password - Token doesn't match")
+		http.Error(w, "Token doesn't match", http.StatusBadRequest)
+		return
+	}
 
 	if password != password2 {
 		http.Error(w, "Password strings don't match", http.StatusBadRequest)
@@ -39,6 +72,14 @@ func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	err = orm.Da.DeleteTokenByUserId(dbuser.Id)
+	if err != nil {
+		logger.Error.Println("/action/recover-password - Could not delete token: ", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	logger.Info.Println("OK - /action/recover-password ", r.RemoteAddr)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }

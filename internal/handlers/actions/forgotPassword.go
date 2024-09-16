@@ -8,9 +8,11 @@ import (
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mqmodel"
 	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
 	"github.com/Anacardo89/tpsi25_blog/internal/server"
+	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
 )
@@ -33,10 +35,29 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token, err := auth.GenerateToken(64)
+	if err != nil {
+		logger.Error.Println("/action/forgot-password - Could not generate token: ", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	t := &database.Token{
+		Token:  token,
+		UserId: dbuser.Id,
+	}
+
+	err = orm.Da.CreateToken(t)
+	if err != nil {
+		logger.Error.Println("/action/forgot-password - Could not create db token: ", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	msg := mqmodel.PasswordRecover{
 		Email: dbuser.Email,
 		User:  dbuser.UserName,
-		Link:  makePasswordRecoverMail(dbuser.UserName),
+		Link:  makePasswordRecoverMail(dbuser.UserName, token),
 	}
 	data, err := json.Marshal(msg)
 	if err != nil {
@@ -55,7 +76,7 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
-func makePasswordRecoverMail(user string) string {
+func makePasswordRecoverMail(user string, token string) string {
 	encoded := base64.URLEncoding.EncodeToString([]byte(user))
-	return fmt.Sprintf("https://%s:%s/recover-password/%s", server.Server.Host, server.Server.HttpsPORT, encoded)
+	return fmt.Sprintf("https://%s:%s/recover-password/%s?token=%s", server.Server.Host, server.Server.HttpsPORT, encoded, token)
 }
