@@ -95,3 +95,24 @@ func Notification(n *database.Notification, u presentation.UserNotif, from_u pre
 		IsRead:     n.IsRead,
 	}
 }
+
+func Convesation(c *database.Conversation, u1 presentation.User, u2 presentation.User, dms []presentation.DMessage) *presentation.Conversation {
+	return &presentation.Conversation{
+		Id:        c.Id,
+		User1:     u1,
+		User2:     u2,
+		CreatedAt: c.CreatedAt,
+		UpdatedAt: c.UpdatedAt,
+		Messages:  dms,
+	}
+}
+
+func DMessage(m *database.DMessage, u presentation.User) *presentation.DMessage {
+	return &presentation.DMessage{
+		Id:             m.Id,
+		ConversationId: m.ConversationId,
+		Sender:         u,
+		Content:        m.Content,
+		CreatedAt:      m.CreatedAt,
+	}
+}

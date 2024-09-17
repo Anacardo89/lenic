@@ -137,11 +137,12 @@ CREATE TABLE conversations (
     user1_id INT REFERENCES users(id),
     user2_id INT REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
-	UNIQUE KEY users (user1_id, user2_id)
+	UNIQUE KEY user_pair (user1_id, user2_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE messages (
+CREATE TABLE dmessages (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     conversation_id INT REFERENCES conversations(id),
     sender_id INT REFERENCES users(id),
@@ -242,6 +243,22 @@ BEGIN
     UPDATE posts
     SET rating = rating - OLD.rating_value + NEW.rating_value
     WHERE id = NEW.post_id;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER enforce_user_order
+BEFORE INSERT ON conversations
+FOR EACH ROW
+BEGIN
+    IF NEW.user1_id > NEW.user2_id THEN
+        -- Swap the user IDs to ensure user1_id is always less than user2_id
+        SET @temp = NEW.user1_id;
+        SET NEW.user1_id = NEW.user2_id;
+        SET NEW.user2_id = @temp;
+    END IF;
 END$$
 
 DELIMITER ;
