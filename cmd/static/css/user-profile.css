@@ -46,6 +46,25 @@ img {
     flex-direction: row;
 }
 
+.dm-button {
+    height: 50px;
+    font-weight: bold;
+    background-color: orange;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.dm-button:hover {
+    background-color: rgb(255, 198, 66);
+}
+
+.dm-button:active {
+    background-color: rgb(209, 136, 0);
+}
+
 .profile-pic {
     padding-right: 20px;
 }
