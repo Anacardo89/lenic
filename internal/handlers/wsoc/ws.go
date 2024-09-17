@@ -61,6 +61,8 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 			handleFollowAccept(msg)
 		case "follow_request":
 			handleFollowRequest(msg)
+		case "dm":
+			handleDM(msg)
 		default:
 			logger.Warn.Printf("/ws - Unknown message type: %s\n", msg.Type)
 		}
