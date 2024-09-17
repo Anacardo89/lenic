@@ -46,7 +46,7 @@ img {
     flex-direction: row;
 }
 
-.dm-button {
+.start-dm-button {
     height: 50px;
     font-weight: bold;
     background-color: orange;
@@ -57,11 +57,11 @@ img {
     font-size: 1em;
 }
 
-.dm-button:hover {
+.start-dm-button:hover {
     background-color: rgb(255, 198, 66);
 }
 
-.dm-button:active {
+.start-dm-button:active {
     background-color: rgb(209, 136, 0);
 }
 

@@ -14,11 +14,21 @@ const (
 			content=?
 	;`
 
+	SelectConversationByUserIds = `
+	SELECT * FROM conversations
+		WHERE user1_id=? AND user2_id=?
+	;`
+
 	SelectConversationsByUserId = `
 	SELECT * FROM conversations
 		WHERE user1_id=? OR user2_id=?
 			ORDER BY updated_at DESC
 			LIMIT ? OFFSET ?
+	;`
+
+	SelectDMById = `
+	SELECT * FROM dmessages
+		WHERE id=?
 	;`
 
 	SelectDMsByConversationId = `

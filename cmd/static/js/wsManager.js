@@ -17,6 +17,7 @@ export const TYPE_POST_TAG = 'post_tag';
 export const TYPE_COMMENT_ON_POST = 'comment_on_post';
 export const TYPE_FOLLOW_ACCEPT = 'follow_accept';
 export const TYPE_FOLLOW_REQUEST = 'follow_request';
+export const TYPE_DM = 'dm';
 
 
 // WebSocket connection
@@ -81,7 +82,8 @@ export function connectWS(user_name) {
                     notifButton.css('--notif-display', 'block');
                 }
                 break;
-
+            case TYPE_DM:
+                handleDM(message);
             default:
                 console.warn('Unknown message type:', message.type);
         }
