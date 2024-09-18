@@ -5,12 +5,11 @@ import (
 )
 
 type Conversation struct {
-	Id        int        `json:"id"`
-	User1     User       `json:"user1"`
-	User2     User       `json:"user2"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	Messages  []DMessage `json:"messages"`
+	Id        int       `json:"id"`
+	User1     User      `json:"user1"`
+	User2     User      `json:"user2"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type DMessage struct {

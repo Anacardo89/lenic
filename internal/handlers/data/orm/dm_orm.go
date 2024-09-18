@@ -26,6 +26,35 @@ func (da *DataAccess) CreateDMessage(d *database.DMessage) (sql.Result, error) {
 	return result, err
 }
 
+func (da *DataAccess) GetConversationById(id int) (*database.Conversation, error) {
+	var (
+		createdAt []byte
+		updatedAt []byte
+	)
+	c := database.Conversation{}
+	row := da.Db.QueryRow(query.SelectConversationById, id)
+	err := row.Scan(
+		&c.Id,
+		&c.User1Id,
+		&c.User2Id,
+		&createdAt,
+		&updatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	c.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+	if err != nil {
+		return nil, err
+	}
+	c.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
+	if err != nil {
+		return nil, err
+	}
+
+	return &c, nil
+}
+
 func (da *DataAccess) GetConversationByUserIds(user1_id int, user2_id int) (*database.Conversation, error) {
 	min := user1_id
 	max := user2_id

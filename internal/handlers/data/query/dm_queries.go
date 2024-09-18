@@ -14,6 +14,11 @@ const (
 			content=?
 	;`
 
+	SelectConversationById = `
+	SELECT * FROM conversations
+		WHERE id=?
+	;`
+
 	SelectConversationByUserIds = `
 	SELECT * FROM conversations
 		WHERE user1_id=? AND user2_id=?
