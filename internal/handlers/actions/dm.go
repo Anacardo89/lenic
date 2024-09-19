@@ -7,11 +7,84 @@ import (
 	"strconv"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/gorilla/mux"
 )
+
+type JSON_Convo struct {
+	User string `json:"to_user"`
+}
+
+func StartConversation(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	encoded := vars["encoded_user_name"]
+	logger.Info.Printf("POST /action/user/%s/conversations %s\n", encoded, r.RemoteAddr)
+
+	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations - Could not decode user: %s\n", encoded, err)
+		return
+	}
+	userName := string(bytes)
+	logger.Info.Printf("POST /action/user/%s/conversations %s %s\n", encoded, r.RemoteAddr, userName)
+
+	var msg JSON_Convo
+	err = json.NewDecoder(r.Body).Decode(&msg)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations - Could not parse Json Data: %s\n", encoded, err)
+		return
+	}
+
+	dbuser, err := orm.Da.GetUserByName(userName)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations - Could not get user: %s\n", encoded, err)
+		return
+	}
+	u := mapper.UserNotif(dbuser)
+
+	dbfromuser, err := orm.Da.GetUserByName(msg.User)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations - Could not get from user: %s\n", encoded, err)
+		return
+	}
+	from_u := mapper.UserNotif(dbuser)
+
+	c := database.Conversation{
+		User1Id: dbuser.Id,
+		User2Id: dbfromuser.Id,
+	}
+
+	res, err := orm.Da.CreateConversation(&c)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations - Could not get conversations: %s\n", encoded, err)
+		return
+	}
+
+	lastInsertID, err := res.LastInsertId()
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations - Could not get conversation id: %s\n", encoded, err)
+		return
+	}
+
+	dbconvo, err := orm.Da.GetConversationById(int(lastInsertID))
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations - Could not get conversation: %s\n", encoded, err)
+		return
+	}
+	convo := mapper.Convesation(dbconvo, *u, *from_u)
+
+	data, err := json.Marshal(convo)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations - Could not marshal conversations: %s\n", encoded, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
+}
 
 func GetConversations(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -31,7 +104,7 @@ func GetConversations(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Printf("GET /action/user/%s/conversations - Could not get user: %s\n", encoded, err)
 		return
 	}
-	u := mapper.User(dbuser)
+	u := mapper.UserNotif(dbuser)
 
 	queryParams := r.URL.Query()
 	offset := queryParams.Get("offset")
@@ -65,7 +138,7 @@ func GetConversations(w http.ResponseWriter, r *http.Request) {
 			logger.Error.Printf("GET /action/user/%s/conversations - Could not get user: %s\n", encoded, err)
 			return
 		}
-		from_u := mapper.User(dbfromuser)
+		from_u := mapper.UserNotif(dbfromuser)
 		c := mapper.Convesation(dbconvo, *u, *from_u)
 		convos = append(convos, c)
 	}
@@ -133,7 +206,7 @@ func GetDMs(w http.ResponseWriter, r *http.Request) {
 			logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not get sender: %s\n", encoded, conversation_id, err)
 			return
 		}
-		dm_sender := mapper.User(dbdm_sender)
+		dm_sender := mapper.UserNotif(dbdm_sender)
 		dm := mapper.DMessage(dbdm, *dm_sender)
 		dms = append(dms, dm)
 	}
@@ -146,4 +219,68 @@ func GetDMs(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
+}
+
+type JSON_DM struct {
+	Msg string `json:"text"`
+}
+
+func SendDM(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	encoded := vars["encoded_user_name"]
+	conversation_id := vars["conversation_id"]
+	logger.Info.Printf("POST /action/user/%s/conversations/%s/dms %s\n", encoded, conversation_id, r.RemoteAddr)
+
+	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not decode user: %s\n", encoded, conversation_id, err)
+		return
+	}
+	userName := string(bytes)
+	logger.Info.Printf("POST /action/user/%s/conversations/%s/dms %s %s\n", encoded, conversation_id, r.RemoteAddr, userName)
+
+	convoid_int, err := strconv.Atoi(conversation_id)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not parse conversation_id to int: %s\n", encoded, conversation_id, err)
+		return
+	}
+
+	var msg JSON_DM
+	err = json.NewDecoder(r.Body).Decode(&msg)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not parse Json Data: %s\n", encoded, conversation_id, err)
+		return
+	}
+
+	dbconvo, err := orm.Da.GetConversationById(convoid_int)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not get db conversation: %s\n", encoded, conversation_id, err)
+		return
+	}
+
+	dbuser, err := orm.Da.GetUserByName(userName)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not get db user: %s\n", encoded, conversation_id, err)
+		return
+	}
+
+	sender_id := dbconvo.User1Id
+	if dbconvo.User1Id == dbuser.Id {
+		sender_id = dbconvo.User2Id
+	}
+
+	m := &database.DMessage{
+		ConversationId: convoid_int,
+		SenderId:       sender_id,
+		Content:        msg.Msg,
+	}
+
+	_, err = orm.Da.CreateDMessage(m)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not get db user: %s\n", encoded, conversation_id, err)
+		return
+	}
+
+	logger.Info.Printf("OK - POST /action/user/%s/conversations/%s/dms\n", encoded, conversation_id)
+	w.WriteHeader(http.StatusOK)
 }

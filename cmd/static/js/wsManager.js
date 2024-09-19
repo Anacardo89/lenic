@@ -1,4 +1,5 @@
 import * as notifs from './notifs.js';
+import DMModule from './auth.js'; 
 
 export let ws = null;
 
@@ -159,4 +160,8 @@ function handleFollowAccept(notification) {
     const notifContainer = $('.notif-body');
     const notif = notifs.makeFollowAcceptNotif(notification);
     notifContainer.prepend(notif);
+}
+
+function handleDM() {
+    DMModule.clearAndFetchConversations()
 }

@@ -230,6 +230,25 @@ header {
     border-bottom: 1px solid #333;
 }
 
+.open-dm-button {
+    height: 50px;
+    font-weight: bold;
+    background-color: orange;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.open-dm-button:hover {
+    background-color: rgb(255, 198, 66);
+}
+
+.open-dm-button:active {
+    background-color: rgb(209, 136, 0);
+}
+
 .dm-item:last-child {
     border-bottom: none;
 }
@@ -325,7 +344,7 @@ header {
     display: block;
 }
 
-/* DMs */
+/* DMs - Chat Window */
 #dm-window {
     position: fixed;
     bottom: 20px;
@@ -359,12 +378,25 @@ header {
     cursor: pointer;
 }
 
-.dm-content {
-    flex: 1;
-    padding: 10px;
-    overflow-y: auto;
-    border-top: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
+.message-sent {
+    text-align: right;
+    background-color: rgb(254 186 109);
+    padding: 5px;
+    margin: 5px;
+    border-radius: 5px;
+    max-width: 70%;
+    float: right;
+    clear: both;
+}
+.message-received {
+    text-align: left;
+    background-color: azure;
+    padding: 5px;
+    margin: 5px;
+    border-radius: 5px;
+    max-width: 70%;
+    float: left;
+    clear: both;
 }
 
 .dm-input {

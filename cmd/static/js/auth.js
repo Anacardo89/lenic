@@ -1,5 +1,6 @@
 import * as wsoc from './wsManager.js';
 import * as notifs from './notifs.js';
+import * as dms from './dms.js';
 
 
 export const session_username = $('#session-username').val();
@@ -105,32 +106,6 @@ $(document).ready(function() {
     }
 });
 
-// DMs
-$(document).ready(function() {
-    const $dmButton = $('.dm-button');
-    const $dmDropdown = $('.dm-dropdown');
-
-    // Toggle dropdown visibility on button click
-    $dmButton.on('click', function(event) {
-        event.stopPropagation();
-        $dmDropdown.toggle();
-    });
-
-    $(document).on('click', function(event) {
-    if (!$dmButton.is(event.target) && $dmButton.has(event.target).length === 0 &&
-        !$dmDropdown.is(event.target) && $dmDropdown.has(event.target).length === 0) {
-        $dmDropdown.hide();
-    }
-    });
-
-    // Example condition to show the dot (replace with your actual condition)
-    const hasUnreadDMs = true; // Example condition
-    if (hasUnreadDMs) {
-        $dmButton.addClass('show-dot');
-    } else {
-        $dmButton.removeClass('show-dot');
-    }
-});
 
 
 // Fetch notifications
@@ -226,6 +201,8 @@ $(document).ready(function() {
                     notifButton.css('--notif-display', 'block');
                 }
                 break;
+            default:
+                console.warn('Unknown message type:', message.type);
             }
             notifContainer.append(notif);
         });
@@ -246,6 +223,217 @@ $(document).ready(function() {
     $container.on('scroll', handleScroll);
 
     fetchNotifications();
+});
+
+// DM Module
+const DMModule = (function() {
+    const $container = $('.dm-body');
+    let offset = 0;
+    const limit = 50;
+    let loading = false;
+    let hasMore = true;
+
+    // Function to fetch conversations
+    function fetchConversations() {
+        if (!session_encoded) {
+            console.error('session_encoded is not defined');
+            return;
+        }
+        if (loading || !hasMore) return;
+
+        loading = true;
+
+        $.ajax({
+            url: '/action/user/' + session_encoded + '/conversations?offset=' + offset + '&limit=' + limit,
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data !== null) {
+                    if (data.length > 0) {
+                        console.log(data);
+                        appendConversations(data);
+                        hasMore = data.hasMore;
+                        offset += limit;
+                    } else {
+                        hasMore = false;
+                    }
+                }
+            },
+            error: function(textStatus, errorThrown) {
+                console.error('Error fetching conversations:', textStatus, errorThrown);
+            },
+            complete: function() {
+                loading = false;
+            }
+        });
+    }
+
+    // Function to append conversations to the container
+    function appendConversations(conversations) {
+        conversations.forEach(function(conversation) {
+            let convo = null;
+            switch (conversation.type) {
+                case wsoc.TYPE_DM:
+                    convo = dms.makeConversation(conversation);
+                    break;
+                default:
+                    console.warn('Unknown message type:', conversation.type);
+            }
+            if (convo) {
+                $container.append(convo);
+            }
+        });
+    }
+
+    // Function to clear and fetch new conversations
+    function clearAndFetchConversations() {
+        offset = 0; // Reset offset
+        hasMore = true; // Reset hasMore
+        $container.empty(); // Clear current conversations
+        fetchConversations(); // Fetch new conversations
+    }
+
+    // Scroll event handler
+    function handleScroll() {
+        const scrollHeight = $container[0].scrollHeight;
+        const scrollTop = $container.scrollTop();
+        const clientHeight = $container.height();
+
+        if (scrollHeight - scrollTop === clientHeight) {
+            fetchConversations();
+        }
+    }
+
+    // Attach scroll event listener
+    $container.on('scroll', handleScroll);
+
+    // Initial fetch of conversations
+    fetchConversations();
+
+    // Expose the clearAndFetchConversations method
+    return {
+        clearAndFetchConversations: clearAndFetchConversations
+    };
+})();
+export default DMModule;
+
+// Open DM buttons and DM Window populate
+$(document).ready(function() {
+    const $dmWindow = $('#dm-window');
+    const $dmTitle = $('#dm-title');
+    const $dmContent = $('#dm-content');
+    const $sendButton = $('#send-message-btn');
+    const $inputField = $('#dm-input-field');
+
+    $('.open-dm-button').on('click', function() {
+        const conversationId = $(this).data('conversation-id');
+        const fromuser = $(this).data('from');
+        $dmWindow.data('conversation-id', conversationId);
+        $dmWindow.data('from', fromuser);
+        $dmTitle.text(fromuser);
+        $dmWindow.removeClass('hidden');
+        
+
+        fetchConversation(conversationId);
+    });
+
+
+    function fetchConversation(conversationId) {
+        $.ajax({
+            url: '/action/user/' + session_encoded + '/conversations/' + conversationId + '/dms',
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                $dmContent.empty();
+
+                data.forEach(function(message) {
+                    if (message.sender.username === session_username) {
+                        appendMessage(message.text, 'sent');
+                    } else {
+                        appendMessage(message.text, 'received');
+                    }
+                });
+
+                $dmContent.scrollTop($dmContent[0].scrollHeight);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error fetching conversation:', textStatus, errorThrown);
+            }
+        });
+    }
+
+    // Function to append a message to the DM content
+    function appendMessage(message, type) {
+        const messageClass = type === 'sent' ? 'message-sent' : 'message-received';
+        const $messageElement = $('<div></div>').addClass(messageClass).text(message);
+        $dmContent.append($messageElement);
+    }
+
+    // Send message on button click
+    $sendButton.on('click', function() {
+        const message = $inputField.val().trim();
+        const conversationId = $dmWindow.data('conversation-id');
+
+        if (message) {
+            sendMessage(conversationId, message);
+        }
+    });
+
+    // Function to send a message
+    function sendMessage(conversationId, message) {
+        $.ajax({
+            url: '/action/user/' + session_encoded + '/conversations/' + conversationId + '/dms',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ text: message }),
+            success: function(response) {
+                appendMessage(message, 'sent');
+                $inputField.val('');
+                $dmContent.scrollTop($dmContent[0].scrollHeight);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error sending message:', textStatus, errorThrown);
+            }
+        });
+    }
+
+    const $dmStart = $('.start-dm-button');
+    $dmStart.on('click', function() {
+        const toUser = $(this).data('$dmStart')
+        createConversation(toUser);
+    });
+
+    // Function to create a new conversation
+    function createConversation(toUser) {
+        $.ajax({
+            url: '/action/user/' + session_encoded + '/conversations',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ to_user: toUser }),
+            success: function(conversation) {
+                const newConversationId = conversation.id;
+                const fromuser = conversation.user2;
+                
+                // Open the DM window with the new conversation
+                $dmWindow.data('conversation-id', newConversationId);
+                $dmWindow.data('from', fromuser);
+                $dmTitle.text(fromuser);
+                $dmWindow.removeClass('hidden');
+                
+                // Fetch the new conversation
+                fetchConversation(newConversationId);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error creating conversation:', textStatus, errorThrown);
+            }
+        });
+    }
+
+    // Optional: Close DM window
+    $('#close-dm-btn').on('click', function() {
+        $dmWindow.addClass('hidden');
+        $dmContent.empty(); // Clear the conversation content
+    });
 });
 
 

@@ -25,22 +25,25 @@ func handleDM(msg wsocket.Message) {
 		logger.Error.Println("Could not get from user: ", err)
 		return
 	}
-	present_u := mapper.User(fromuser)
 	from_u := mapper.UserNotif(fromuser)
 
-	dbConvo, err := orm.Da.GetConversationByUserIds(u.Id, from_u.Id)
+	_, err = orm.Da.GetConversationByUserIds(u.Id, from_u.Id)
 	if err == sql.ErrNoRows {
 		convo := &database.Conversation{
 			User1Id: u.Id,
 			User2Id: from_u.Id,
 		}
 		_, err = orm.Da.CreateConversation(convo)
+		if err != nil {
+			logger.Error.Println("Could not create conversation: ", err)
+			return
+		}
 	} else if err != nil {
 		logger.Error.Println("Could not get conversation: ", err)
 		return
 	}
 
-	dbConvo, err = orm.Da.GetConversationByUserIds(u.Id, from_u.Id)
+	dbConvo, err := orm.Da.GetConversationByUserIds(u.Id, from_u.Id)
 	if err != nil {
 		logger.Error.Println("Could not get conversation: ", err)
 		return
@@ -67,7 +70,7 @@ func handleDM(msg wsocket.Message) {
 		logger.Error.Println("Could not get dm by Id: ", err)
 		return
 	}
-	dm := mapper.DMessage(dbM, *present_u)
+	dm := mapper.DMessage(dbM, *from_u)
 
 	err = orm.Da.UpdateConversationById(dbConvo.Id)
 	if err != nil {

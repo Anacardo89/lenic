@@ -96,7 +96,7 @@ func Notification(n *database.Notification, u presentation.UserNotif, from_u pre
 	}
 }
 
-func Convesation(c *database.Conversation, u1 presentation.User, u2 presentation.User) *presentation.Conversation {
+func Convesation(c *database.Conversation, u1 presentation.UserNotif, u2 presentation.UserNotif) *presentation.Conversation {
 	return &presentation.Conversation{
 		Id:        c.Id,
 		User1:     u1,
@@ -106,7 +106,7 @@ func Convesation(c *database.Conversation, u1 presentation.User, u2 presentation
 	}
 }
 
-func DMessage(m *database.DMessage, u presentation.User) *presentation.DMessage {
+func DMessage(m *database.DMessage, u presentation.UserNotif) *presentation.DMessage {
 	return &presentation.DMessage{
 		Id:             m.Id,
 		ConversationId: m.ConversationId,
