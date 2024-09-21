@@ -39,7 +39,7 @@ const (
 	SelectDMsByConversationId = `
 	SELECT * FROM dmessages
 		WHERE conversation_id=?
-			ORDER BY created_at DESC
+			ORDER BY created_at
 			LIMIT ? OFFSET ?
 	;`
 

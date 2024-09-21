@@ -339,18 +339,20 @@ $(document).ready(function() {
     let offset = 0;
     const limit = 50;
 
-    $('.open-dm-button').on('click', function() {
+    $(document).on('click', '.open-dm-button', function() {
+        console.log('Open DM button clicked');
         const conversationId = $(this).data('conversation-id');
-        const fromuser = $(this).data('from');
-        $dmWindow.data('conversation-id', conversationId);
-        $dmWindow.data('from', fromuser);
-        $dmTitle.text(fromuser);
-        $dmWindow.removeClass('hidden');
+        const fromUser = $(this).data('from');
         
+        // Update DM window details
+        $dmWindow.data('conversation-id', conversationId);
+        $dmWindow.data('from', fromUser);
+        $dmTitle.text(fromUser);
+        $dmWindow.removeClass('hidden');
 
+        // Fetch conversation messages
         fetchConversation(conversationId);
     });
-
 
     function fetchConversation(conversationId) {
         $.ajax({
@@ -358,16 +360,16 @@ $(document).ready(function() {
             method: 'GET',
             dataType: 'json',
             success: function(data) {
+                console.log('Fetched conversation data:', data); // Log the data
                 $dmContent.empty();
 
                 data.forEach(function(message) {
                     if (message.sender.username === session_username) {
-                        appendMessage(message.text, 'sent');
+                        appendMessage(message.content, 'received');
                     } else {
-                        appendMessage(message.text, 'received');
+                        appendMessage(message.content, 'sent');
                     }
                 });
-
                 $dmContent.scrollTop($dmContent[0].scrollHeight);
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -380,7 +382,7 @@ $(document).ready(function() {
     function appendMessage(message, type) {
         const messageClass = type === 'sent' ? 'message-sent' : 'message-received';
         const $messageElement = $('<div></div>').addClass(messageClass).text(message);
-        $dmContent.append($messageElement);
+        $dmContent.append($messageElement); // Append to the chat window
     }
 
     // Send message on button click
