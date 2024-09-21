@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
@@ -50,28 +51,32 @@ func StartConversation(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Printf("POST /action/user/%s/conversations - Could not get from user: %s\n", encoded, err)
 		return
 	}
-	from_u := mapper.UserNotif(dbuser)
+	from_u := mapper.UserNotif(dbfromuser)
 
-	c := database.Conversation{
-		User1Id: dbuser.Id,
-		User2Id: dbfromuser.Id,
-	}
-
-	res, err := orm.Da.CreateConversation(&c)
-	if err != nil {
-		logger.Error.Printf("POST /action/user/%s/conversations - Could not get conversations: %s\n", encoded, err)
-		return
-	}
-
-	lastInsertID, err := res.LastInsertId()
-	if err != nil {
-		logger.Error.Printf("POST /action/user/%s/conversations - Could not get conversation id: %s\n", encoded, err)
-		return
-	}
-
-	dbconvo, err := orm.Da.GetConversationById(int(lastInsertID))
-	if err != nil {
-		logger.Error.Printf("POST /action/user/%s/conversations - Could not get conversation: %s\n", encoded, err)
+	var dbconvo *database.Conversation
+	dbconvo, err = orm.Da.GetConversationByUserIds(u.Id, from_u.Id)
+	if err == sql.ErrNoRows {
+		convo := &database.Conversation{
+			User1Id: u.Id,
+			User2Id: from_u.Id,
+		}
+		res, err := orm.Da.CreateConversation(convo)
+		if err != nil {
+			logger.Error.Println("Could not create conversation: ", err)
+			return
+		}
+		lastInsertID, err := res.LastInsertId()
+		if err != nil {
+			logger.Error.Printf("POST /action/user/%s/conversations - Could not get conversation id: %s\n", encoded, err)
+			return
+		}
+		dbconvo, err = orm.Da.GetConversationById(int(lastInsertID))
+		if err != nil {
+			logger.Error.Printf("POST /action/user/%s/conversations - Could not get conversation: %s\n", encoded, err)
+			return
+		}
+	} else if err != nil {
+		logger.Error.Println("Could not get conversation: ", err)
 		return
 	}
 	convo := mapper.Convesation(dbconvo, *u, *from_u)

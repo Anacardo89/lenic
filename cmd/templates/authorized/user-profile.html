@@ -89,6 +89,7 @@
                     <div class="profile-info">
                         <input type="hidden" id="encoded-user" value="{{.User.EncodedName}}" />
                         <div><p><strong>User: {{.User.UserName}}</strong></p></div>
+                        <input type="hidden" id="profile-username" value="{{.User.UserName}}">
                         <br>
                         {{if eq .User.UserName .Session.User.UserName}}
                             <p>{{.User.Email}}</p>

@@ -225,6 +225,9 @@ header {
 }
 
 .dm-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background-color: azure;
     padding: 10px;
     border-bottom: 1px solid #333;

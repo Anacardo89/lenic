@@ -225,9 +225,28 @@ $(document).ready(function() {
     fetchNotifications();
 });
 
+// DMs
+$(document).ready(function() {
+    const $dmButton = $('.dm-button');
+    const $dmDropdown = $('.dm-dropdown');
+
+    // Toggle dropdown visibility on button click
+    $dmButton.on('click', function(event) {
+        event.stopPropagation(); // Prevent the click event from propagating to the document
+        $dmDropdown.toggle();
+    });
+
+    $(document).on('click', function(event) {
+    if (!$dmButton.is(event.target) && $dmButton.has(event.target).length === 0 &&
+        !$dmDropdown.is(event.target) && $dmDropdown.has(event.target).length === 0) {
+        $dmDropdown.hide();
+    }
+    });
+});
+
 // DM Module
 const DMModule = (function() {
-    const $container = $('.dm-body');
+    const $dmcontainer = $('.dm-body');
     let offset = 0;
     const limit = 50;
     let loading = false;
@@ -248,15 +267,13 @@ const DMModule = (function() {
             method: 'GET',
             dataType: 'json',
             success: function(data) {
-                if (data !== null) {
-                    if (data.length > 0) {
-                        console.log(data);
-                        appendConversations(data);
-                        hasMore = data.hasMore;
-                        offset += limit;
-                    } else {
-                        hasMore = false;
-                    }
+                if (data !== null && data.length > 0) {
+                    console.log(data);
+                    appendConversations(data);
+                    hasMore = data.hasMore;
+                    offset += limit;
+                } else {
+                    hasMore = false;
                 }
             },
             error: function(textStatus, errorThrown) {
@@ -270,34 +287,29 @@ const DMModule = (function() {
 
     // Function to append conversations to the container
     function appendConversations(conversations) {
-        conversations.forEach(function(conversation) {
-            let convo = null;
-            switch (conversation.type) {
-                case wsoc.TYPE_DM:
-                    convo = dms.makeConversation(conversation);
-                    break;
-                default:
-                    console.warn('Unknown message type:', conversation.type);
-            }
-            if (convo) {
-                $container.append(convo);
-            }
-        });
+            conversations.forEach(function(conversation) {
+                let convo = dms.makeConversation(conversation);
+                if (convo) {
+                    $dmcontainer.append(convo);
+                } else {
+                    console.warn('Failed to create conversation element for:', conversation);
+                }
+            });
     }
 
     // Function to clear and fetch new conversations
     function clearAndFetchConversations() {
         offset = 0; // Reset offset
         hasMore = true; // Reset hasMore
-        $container.empty(); // Clear current conversations
+        $dmcontainer.empty(); // Clear current conversations
         fetchConversations(); // Fetch new conversations
     }
 
     // Scroll event handler
     function handleScroll() {
-        const scrollHeight = $container[0].scrollHeight;
-        const scrollTop = $container.scrollTop();
-        const clientHeight = $container.height();
+        const scrollHeight = $dmcontainer[0].scrollHeight;
+        const scrollTop = $dmcontainer.scrollTop();
+        const clientHeight = $dmcontainer.height();
 
         if (scrollHeight - scrollTop === clientHeight) {
             fetchConversations();
@@ -305,7 +317,7 @@ const DMModule = (function() {
     }
 
     // Attach scroll event listener
-    $container.on('scroll', handleScroll);
+    $dmcontainer.on('scroll', handleScroll);
 
     // Initial fetch of conversations
     fetchConversations();
@@ -324,6 +336,8 @@ $(document).ready(function() {
     const $dmContent = $('#dm-content');
     const $sendButton = $('#send-message-btn');
     const $inputField = $('#dm-input-field');
+    let offset = 0;
+    const limit = 50;
 
     $('.open-dm-button').on('click', function() {
         const conversationId = $(this).data('conversation-id');
@@ -340,7 +354,7 @@ $(document).ready(function() {
 
     function fetchConversation(conversationId) {
         $.ajax({
-            url: '/action/user/' + session_encoded + '/conversations/' + conversationId + '/dms',
+            url: '/action/user/' + session_encoded + '/conversations/' + conversationId + '/dms?offset=' + offset + '&limit=' + limit,
             method: 'GET',
             dataType: 'json',
             success: function(data) {
@@ -399,7 +413,8 @@ $(document).ready(function() {
 
     const $dmStart = $('.start-dm-button');
     $dmStart.on('click', function() {
-        const toUser = $(this).data('$dmStart')
+        const toUser = $('#profile-username').val();
+        
         createConversation(toUser);
     });
 
@@ -412,12 +427,11 @@ $(document).ready(function() {
             data: JSON.stringify({ to_user: toUser }),
             success: function(conversation) {
                 const newConversationId = conversation.id;
-                const fromuser = conversation.user2;
                 
                 // Open the DM window with the new conversation
                 $dmWindow.data('conversation-id', newConversationId);
-                $dmWindow.data('from', fromuser);
-                $dmTitle.text(fromuser);
+                $dmWindow.data('from', toUser);
+                $dmTitle.text(toUser);
                 $dmWindow.removeClass('hidden');
                 
                 // Fetch the new conversation
