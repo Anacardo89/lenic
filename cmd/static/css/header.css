@@ -381,9 +381,15 @@ header {
     cursor: pointer;
 }
 
+.dm-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
 .message-sent {
     text-align: right;
-    background-color: rgb(254 186 109);
+    background-color: lightblue;
     padding: 5px;
     margin: 5px;
     border-radius: 5px;
@@ -393,7 +399,7 @@ header {
 }
 .message-received {
     text-align: left;
-    background-color: azure;
+    background-color: rgb(254 186 109);
     padding: 5px;
     margin: 5px;
     border-radius: 5px;
