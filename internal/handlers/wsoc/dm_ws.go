@@ -1,7 +1,6 @@
 package wsoc
 
 import (
-	"database/sql"
 	"encoding/json"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
@@ -26,22 +25,6 @@ func handleDM(msg wsocket.Message) {
 		return
 	}
 	from_u := mapper.UserNotif(fromuser)
-
-	_, err = orm.Da.GetConversationByUserIds(u.Id, from_u.Id)
-	if err == sql.ErrNoRows {
-		convo := &database.Conversation{
-			User1Id: u.Id,
-			User2Id: from_u.Id,
-		}
-		_, err = orm.Da.CreateConversation(convo)
-		if err != nil {
-			logger.Error.Println("Could not create conversation: ", err)
-			return
-		}
-	} else if err != nil {
-		logger.Error.Println("Could not get conversation: ", err)
-		return
-	}
 
 	dbConvo, err := orm.Da.GetConversationByUserIds(u.Id, from_u.Id)
 	if err != nil {
