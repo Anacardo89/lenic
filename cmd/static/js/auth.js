@@ -362,7 +362,6 @@ $(document).ready(function() {
             success: function(data) {
                 console.log('Fetched conversation data:', data); // Log the data
                 $dmContent.empty();
-
                 data.forEach(function(message) {
                     if (message.sender.username === session_username) {
                         appendMessage(message.content, 'received');
@@ -406,6 +405,14 @@ $(document).ready(function() {
                 appendMessage(message, 'sent');
                 $inputField.val('');
                 $dmContent.scrollTop($dmContent[0].scrollHeight);
+                const notif = {
+                    from_username: session_username,
+                    type: wsoc.TYPE_DM,
+                    msg: message.content,
+                    resource_id: $dmTitle.text(),
+                    parent_id: ""
+                };
+                wsoc.sendWSmsg(notif);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error sending message:', textStatus, errorThrown);
