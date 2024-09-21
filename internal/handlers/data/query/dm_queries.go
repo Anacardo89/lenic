@@ -36,6 +36,12 @@ const (
 		WHERE id=?
 	;`
 
+	SelectLastDMBySenderInConversation = `
+	SELECT * FROM dmessages
+		WHERE conversation_id = ? AND sender_id = ?
+		ORDER BY created_at DESC
+		LIMIT 1;`
+
 	SelectDMsByConversationId = `
 	SELECT * FROM dmessages
 		WHERE conversation_id=?
@@ -44,8 +50,8 @@ const (
 	;`
 
 	UpdateConversationById = `
-	UPDATE conversation
-		SET updated_at=CURRENT_TIMESTAMP,
+	UPDATE conversations
+		SET updated_at=CURRENT_TIMESTAMP
 		WHERE id=?
 	;`
 )

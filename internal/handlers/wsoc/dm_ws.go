@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
-	"github.com/Anacardo89/tpsi25_blog/internal/model/database"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/Anacardo89/tpsi25_blog/pkg/wsocket"
@@ -32,28 +31,12 @@ func handleDM(msg wsocket.Message) {
 		return
 	}
 
-	m := &database.DMessage{
-		ConversationId: dbConvo.Id,
-		SenderId:       from_u.Id,
-		Content:        msg.Msg,
-	}
-	res, err := orm.Da.CreateDMessage(m)
+	dbm, err := orm.Da.GetLastDMBySenderInConversation(dbConvo.Id, from_u.Id)
 	if err != nil {
-		logger.Error.Println("Could not create message: ", err)
+		logger.Error.Println("Could not get dm: ", err)
 		return
 	}
-	lastInsertID, err := res.LastInsertId()
-	if err != nil {
-		logger.Error.Println("Could not get dm Id: ", err)
-		return
-	}
-
-	dbM, err := orm.Da.GetDMById(int(lastInsertID))
-	if err != nil {
-		logger.Error.Println("Could not get dm by Id: ", err)
-		return
-	}
-	dm := mapper.DMessage(dbM, *from_u)
+	dm := mapper.DMessage(dbm, *from_u)
 
 	err = orm.Da.UpdateConversationById(dbConvo.Id)
 	if err != nil {

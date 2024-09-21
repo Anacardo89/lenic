@@ -151,6 +151,28 @@ func (da *DataAccess) GetDMById(id int) (*database.DMessage, error) {
 	return &m, nil
 }
 
+func (da *DataAccess) GetLastDMBySenderInConversation(converrsation_id int, sender_id int) (*database.DMessage, error) {
+	var createdAt []byte
+	m := database.DMessage{}
+	row := da.Db.QueryRow(query.SelectLastDMBySenderInConversation, converrsation_id, sender_id)
+	err := row.Scan(
+		&m.Id,
+		&m.ConversationId,
+		&m.SenderId,
+		&m.Content,
+		&createdAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	m.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+	if err != nil {
+		return nil, err
+	}
+
+	return &m, nil
+}
+
 func (da *DataAccess) GetDMsByConversationId(conversation_id int, limit int, offset int) ([]*database.DMessage, error) {
 	dms := []*database.DMessage{}
 	rows, err := da.Db.Query(query.SelectDMsByConversationId, conversation_id, limit, offset)
