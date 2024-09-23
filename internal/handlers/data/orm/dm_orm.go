@@ -37,6 +37,7 @@ func (da *DataAccess) GetConversationById(id int) (*database.Conversation, error
 		&c.Id,
 		&c.User1Id,
 		&c.User2Id,
+		&c.IsRead,
 		&createdAt,
 		&updatedAt,
 	)
@@ -72,6 +73,7 @@ func (da *DataAccess) GetConversationByUserIds(user1_id int, user2_id int) (*dat
 		&c.Id,
 		&c.User1Id,
 		&c.User2Id,
+		&c.IsRead,
 		&createdAt,
 		&updatedAt,
 	)
@@ -110,6 +112,7 @@ func (da *DataAccess) GetConversationsByUserId(user_id int, limit int, offset in
 			&c.Id,
 			&c.User1Id,
 			&c.User2Id,
+			&c.IsRead,
 			&createdAt,
 			&updatedAt,
 		)
@@ -207,6 +210,14 @@ func (da *DataAccess) GetDMsByConversationId(conversation_id int, limit int, off
 
 func (da *DataAccess) UpdateConversationById(id int) error {
 	_, err := da.Db.Exec(query.UpdateConversationById, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (da *DataAccess) UpdateConversationReadById(id int) error {
+	_, err := da.Db.Exec(query.UpdateConversationReadById, id)
 	if err != nil {
 		return err
 	}

@@ -101,6 +101,7 @@ func Convesation(c *database.Conversation, u1 presentation.UserNotif, u2 present
 		Id:        c.Id,
 		User1:     u1,
 		User2:     u2,
+		IsRead:    c.IsRead,
 		CreatedAt: c.CreatedAt,
 		UpdatedAt: c.UpdatedAt,
 	}

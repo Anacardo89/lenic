@@ -1,5 +1,6 @@
 import * as notifs from './notifs.js';
-import DMModule from './auth.js'; 
+import { DMModule, DMChatModule } from './auth.js';
+import * as dms from './dms.js';
 
 export let ws = null;
 
@@ -38,6 +39,7 @@ export function connectWS(user_name) {
     ws.onmessage = function(event) {
         const message = JSON.parse(event.data);
         const notifButton = $('.notif-button');
+        const dmButton = $('.dm-button');
         console.log(message);
 
         switch (message.type) {
@@ -85,6 +87,10 @@ export function connectWS(user_name) {
                 break;
             case TYPE_DM:
                 handleDM(message);
+                if (!message.is_read) {
+                    dmButton.css('--dm-display', 'block');
+                }
+                break;
             default:
                 console.warn('Unknown message type:', message.type);
         }
@@ -162,6 +168,15 @@ function handleFollowAccept(notification) {
     notifContainer.prepend(notif);
 }
 
-function handleDM() {
-    DMModule.clearAndFetchConversations()
+function handleDM(message) {
+    const $dmWindow = $('#dm-window');
+    const $dmTitle = $('#dm-title');
+    if (!$dmWindow.hasClass('hidden')) {
+        if ($dmTitle.text() === message.from_username) {
+            DMChatModule.readConversation(message.resource_id);
+            DMChatModule.appendMessage(message.msg, 'received');
+        }    
+    } else {
+        DMModule.clearAndFetchConversations()
+    }
 }

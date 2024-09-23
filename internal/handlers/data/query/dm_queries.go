@@ -4,7 +4,8 @@ const (
 	InsertConversation = `
 	INSERT INTO conversations
 		SET user1_id=?,
-			user2_id=?
+			user2_id=?,
+			is_read=FALSE
 	;`
 
 	InsertDMessage = `
@@ -51,7 +52,14 @@ const (
 
 	UpdateConversationById = `
 	UPDATE conversations
-		SET updated_at=CURRENT_TIMESTAMP
+		SET updated_at=CURRENT_TIMESTAMP,
+			is_read=FALSE
+		WHERE id=?
+	;`
+
+	UpdateConversationReadById = `
+	UPDATE conversations
+		SET is_read=TRUE
 		WHERE id=?
 	;`
 )
