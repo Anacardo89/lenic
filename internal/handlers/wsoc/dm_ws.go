@@ -2,14 +2,18 @@ package wsoc
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
+	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/Anacardo89/tpsi25_blog/pkg/wsocket"
 )
 
 func handleDM(msg wsocket.Message) {
+	logger.Info.Println("/ws handling DM")
+	logger.Debug.Println(msg)
 
 	dbuser, err := orm.Da.GetUserByName(msg.ResourceId)
 	if err != nil {
@@ -31,20 +35,25 @@ func handleDM(msg wsocket.Message) {
 		return
 	}
 
-	dbm, err := orm.Da.GetLastDMBySenderInConversation(dbConvo.Id, from_u.Id)
-	if err != nil {
-		logger.Error.Println("Could not get dm: ", err)
-		return
-	}
-	dm := mapper.DMessage(dbm, *from_u)
-
 	err = orm.Da.UpdateConversationById(dbConvo.Id)
 	if err != nil {
 		logger.Error.Println("Could not update conversation: ", err)
 		return
 	}
 
-	data, err := json.Marshal(dm)
+	convo_id := strconv.Itoa(dbConvo.Id)
+
+	n := &presentation.Notification{
+		User:       *u,
+		FromUser:   *from_u,
+		NotifType:  msg.Type,
+		NotifMsg:   msg.Msg,
+		ResourceId: convo_id,
+		ParentId:   "",
+		IsRead:     false,
+	}
+
+	data, err := json.Marshal(n)
 	if err != nil {
 		logger.Error.Println("Could not marshal JSON: ", err)
 		return

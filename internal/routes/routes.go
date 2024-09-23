@@ -35,6 +35,7 @@ func DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/action/user/{encoded_user_name}/profile-pic", actions.PostProfilePic).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/conversations", actions.GetConversations).Methods("GET").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/conversations", actions.StartConversation).Methods("POST").Schemes("https")
+	r.HandleFunc("/action/user/{encoded_user_name}/conversations/{conversation_id}/read", actions.ReadConversation).Methods("PUT").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/conversations/{conversation_id}/dms", actions.GetDMs).Methods("GET").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/conversations/{conversation_id}/dms", actions.SendDM).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/notifications", actions.GetNotifs).Methods("GET").Schemes("https")

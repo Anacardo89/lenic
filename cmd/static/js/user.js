@@ -1,5 +1,6 @@
 import * as wsoc from './wsManager.js';
 import { session_username } from './auth.js';
+import * as dms from './dms.js';
 
 $(document).ready(function() {
     let follow_button = $('#follow-button');

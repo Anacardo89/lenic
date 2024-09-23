@@ -289,3 +289,32 @@ func SendDM(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Printf("OK - POST /action/user/%s/conversations/%s/dms\n", encoded, conversation_id)
 	w.WriteHeader(http.StatusOK)
 }
+
+func ReadConversation(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	encoded := vars["encoded_user_name"]
+	convo_id := vars["conversation_id"]
+	logger.Info.Printf("PUT /action/user/%s/conversations/%s/read %s\n", encoded, convo_id, r.RemoteAddr)
+
+	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not decode user: %s\n", encoded, convo_id, err)
+		return
+	}
+	userName := string(bytes)
+	logger.Info.Printf("PUT /action/user/%s/conversations/%s/read %s %s\n", encoded, convo_id, r.RemoteAddr, userName)
+
+	convo_id_int, err := strconv.Atoi(convo_id)
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not parse convo_id to int: %s\n", encoded, convo_id, err)
+		return
+	}
+
+	err = orm.Da.UpdateConversationReadById(convo_id_int)
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not update notif: %s\n", encoded, convo_id, err)
+		return
+	}
+	logger.Info.Printf("OK - PUT /action/user/%s/conversations/%s/read\n", encoded, convo_id)
+	w.WriteHeader(http.StatusOK)
+}

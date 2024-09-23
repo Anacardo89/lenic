@@ -242,6 +242,14 @@ $(document).ready(function() {
         $dmDropdown.hide();
     }
     });
+
+    // Example condition to show the dot (replace with your actual condition)
+    const hasUnreadMessage = true; // Example condition
+    if (hasUnreadMessage) {
+        $dmButton.addClass('show-dot');
+    } else {
+        $dmButton.removeClass('show-dot');
+    }
 });
 
 // DM Module
@@ -287,8 +295,12 @@ const DMModule = (function() {
 
     // Function to append conversations to the container
     function appendConversations(conversations) {
+            const $dmButton = $('.dm-button');
             conversations.forEach(function(conversation) {
                 let convo = dms.makeConversation(conversation);
+                if (!conversation.is_read) {
+                    $dmButton.css('--dm-display', 'block');
+                }
                 if (convo) {
                     $dmcontainer.append(convo);
                 } else {
@@ -327,81 +339,89 @@ const DMModule = (function() {
         clearAndFetchConversations: clearAndFetchConversations
     };
 })();
-export default DMModule;
 
 // Open DM buttons and DM Window populate
-$(document).ready(function() {
+const DMChatModule = (function () {
+    let offset = 0;
+    const limit = 50;
+    
     const $dmWindow = $('#dm-window');
     const $dmTitle = $('#dm-title');
     const $dmContent = $('#dm-content');
     const $sendButton = $('#send-message-btn');
     const $inputField = $('#dm-input-field');
-    let offset = 0;
-    const limit = 50;
-
-    $(document).on('click', '.open-dm-button', function() {
-        console.log('Open DM button clicked');
-        const conversationId = $(this).data('conversation-id');
-        const fromUser = $(this).data('from');
-        
-        // Update DM window details
+    
+    // Open DM window and fetch conversation
+    function openDM(conversationId, fromUser) {
         $dmWindow.data('conversation-id', conversationId);
         $dmWindow.data('from', fromUser);
         $dmTitle.text(fromUser);
         $dmWindow.removeClass('hidden');
-
-        // Fetch conversation messages
         fetchConversation(conversationId);
-    });
+        readConversation(conversationId);
+    }
 
+    // Close the DM window
+    function closeDM() {
+        $dmWindow.addClass('hidden');
+        $dmContent.empty();
+    }
+
+    // Mark conversation as read
+    function readConversation(conversationId) {
+        $.ajax({
+            url: '/action/user/' + session_encoded + '/conversations/' + conversationId + '/read',
+            method: 'PUT',
+            success: function () {
+                console.log('conversation.is_read updated');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('Error updating conversation.is_read:', textStatus, errorThrown);
+            }
+        });
+    }
+
+    // Fetch conversation history
     function fetchConversation(conversationId) {
         $.ajax({
             url: '/action/user/' + session_encoded + '/conversations/' + conversationId + '/dms?offset=' + offset + '&limit=' + limit,
             method: 'GET',
             dataType: 'json',
-            success: function(data) {
-                console.log('Fetched conversation data:', data); // Log the data
-                $dmContent.empty();
-                data.forEach(function(message) {
-                    if (message.sender.username === session_username) {
-                        appendMessage(message.content, 'received');
-                    } else {
-                        appendMessage(message.content, 'sent');
-                    }
-                });
-                $dmContent.scrollTop($dmContent[0].scrollHeight);
+            success: function (data) {
+                if (data !== null) {
+                    console.log('Fetched conversation data:', data);
+                    $dmContent.empty();
+                    data.forEach(function (message) {
+                        if (message.sender.username === session_username) {
+                            appendMessage(message.content, 'received');
+                        } else {
+                            appendMessage(message.content, 'sent');
+                        }
+                    });
+                    $dmContent.scrollTop($dmContent[0].scrollHeight);
+                }
             },
-            error: function(jqXHR, textStatus, errorThrown) {
+            error: function (jqXHR, textStatus, errorThrown) {
                 console.error('Error fetching conversation:', textStatus, errorThrown);
             }
         });
     }
 
-    // Function to append a message to the DM content
+    // Append message to DM window
     function appendMessage(message, type) {
         const messageClass = type === 'sent' ? 'message-sent' : 'message-received';
         const $messageElement = $('<div></div>').addClass(messageClass).text(message);
-        $dmContent.append($messageElement); // Append to the chat window
+        $dmContent.append($messageElement);
     }
 
-    // Send message on button click
-    $sendButton.on('click', function() {
-        const message = $inputField.val().trim();
-        const conversationId = $dmWindow.data('conversation-id');
-
-        if (message) {
-            sendMessage(conversationId, message);
-        }
-    });
-
-    // Function to send a message
+    // Send a message
     function sendMessage(conversationId, message) {
         $.ajax({
             url: '/action/user/' + session_encoded + '/conversations/' + conversationId + '/dms',
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ text: message }),
-            success: function(response) {
+            success: function (response) {
                 appendMessage(message, 'sent');
                 $inputField.val('');
                 $dmContent.scrollTop($dmContent[0].scrollHeight);
@@ -414,51 +434,70 @@ $(document).ready(function() {
                 };
                 wsoc.sendWSmsg(notif);
             },
-            error: function(jqXHR, textStatus, errorThrown) {
+            error: function (jqXHR, textStatus, errorThrown) {
                 console.error('Error sending message:', textStatus, errorThrown);
             }
         });
     }
 
-    const $dmStart = $('.start-dm-button');
-    $dmStart.on('click', function() {
-        const toUser = $('#profile-username').val();
-        
-        createConversation(toUser);
-    });
-
-    // Function to create a new conversation
-    function createConversation(toUser) {
+    // Start a new conversation
+    function startConversation(toUser) {
         $.ajax({
             url: '/action/user/' + session_encoded + '/conversations',
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ to_user: toUser }),
-            success: function(conversation) {
+            success: function (conversation) {
                 const newConversationId = conversation.id;
-                
-                // Open the DM window with the new conversation
-                $dmWindow.data('conversation-id', newConversationId);
-                $dmWindow.data('from', toUser);
-                $dmTitle.text(toUser);
-                $dmWindow.removeClass('hidden');
-                
-                // Fetch the new conversation
+                openDM(newConversationId, toUser);
                 fetchConversation(newConversationId);
             },
-            error: function(jqXHR, textStatus, errorThrown) {
+            error: function (jqXHR, textStatus, errorThrown) {
                 console.error('Error creating conversation:', textStatus, errorThrown);
             }
         });
     }
 
-    // Optional: Close DM window
-    $('#close-dm-btn').on('click', function() {
-        $dmWindow.addClass('hidden');
-        $dmContent.empty(); // Clear the conversation content
-    });
-});
+    // Bind events
+    function bindEvents() {
+        $(document).on('click', '.open-dm-button', function () {
+            const conversationId = $(this).data('conversation-id');
+            const fromUser = $(this).data('from');
+            openDM(conversationId, fromUser);
+        });
 
+        $sendButton.on('click', function () {
+            const message = $inputField.val().trim();
+            const conversationId = $dmWindow.data('conversation-id');
+            if (message) {
+                sendMessage(conversationId, message);
+            }
+        });
+
+        $('#close-dm-btn').on('click', closeDM);
+
+        $('.start-dm-button').on('click', function () {
+            const toUser = $('#profile-username').val();
+            startConversation(toUser);
+        });
+    }
+
+    // Public methods
+    return {
+        init: bindEvents,
+        openDM: openDM,
+        closeDM: closeDM,
+        appendMessage: appendMessage,
+        startConversation: startConversation,
+        readConversation: readConversation // Expose the readConversation method
+    };
+})();
+
+export { DMModule, DMChatModule };
+
+$(document).ready(function() {
+    DMChatModule.init(); 
+});
 
 // Search
 $(document).ready(function() {
