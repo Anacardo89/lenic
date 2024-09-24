@@ -18,5 +18,6 @@ type DMessage struct {
 	ConversationId int       `json:"conversation_id"`
 	Sender         UserNotif `json:"sender"`
 	Content        string    `json:"content"`
+	IsRead         bool      `json:"is_read"`
 	CreatedAt      time.Time `json:"created_at"`
 }

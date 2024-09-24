@@ -233,6 +233,26 @@ header {
     border-bottom: 1px solid #333;
 }
 
+.dm-item-unread {
+    background-color: rgb(254 186 109 / 75%);
+}
+
+.dm-item a {
+    color: #333;
+}
+
+.dm-item:hover {
+    background-color: white;
+}
+
+.dm-item:last-child {
+    border-bottom: none;
+}
+
+.dm-container.show .dm-dropdown {
+    display: block;
+}
+
 .open-dm-button {
     height: 50px;
     font-weight: bold;
