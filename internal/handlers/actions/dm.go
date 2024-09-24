@@ -79,7 +79,7 @@ func StartConversation(w http.ResponseWriter, r *http.Request) {
 		logger.Error.Println("Could not get conversation: ", err)
 		return
 	}
-	convo := mapper.Convesation(dbconvo, *u, *from_u)
+	convo := mapper.Convesation(dbconvo, *u, *from_u, false)
 
 	data, err := json.Marshal(convo)
 	if err != nil {
@@ -144,7 +144,19 @@ func GetConversations(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		from_u := mapper.UserNotif(dbfromuser)
-		c := mapper.Convesation(dbconvo, *u, *from_u)
+		dms, err := orm.Da.GetDMsByConversationId(dbconvo.Id, 1000, 0)
+		if err != nil {
+			logger.Error.Printf("GET /action/user/%s/conversations - Could not get dms: %s\n", encoded, err)
+			return
+		}
+		is_read := true
+		for _, dm := range dms {
+			if dm.SenderId == dbfromuser.Id && dm.IsRead == false {
+				is_read = false
+				break
+			}
+		}
+		c := mapper.Convesation(dbconvo, *u, *from_u, is_read)
 		convos = append(convos, c)
 	}
 
@@ -304,17 +316,34 @@ func ReadConversation(w http.ResponseWriter, r *http.Request) {
 	userName := string(bytes)
 	logger.Info.Printf("PUT /action/user/%s/conversations/%s/read %s %s\n", encoded, convo_id, r.RemoteAddr, userName)
 
+	dbuser, err := orm.Da.GetUserByName(userName)
+	if err != nil {
+		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could get user: %s\n", encoded, convo_id, err)
+		return
+	}
+
 	convo_id_int, err := strconv.Atoi(convo_id)
 	if err != nil {
 		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not parse convo_id to int: %s\n", encoded, convo_id, err)
 		return
 	}
 
-	err = orm.Da.UpdateConversationReadById(convo_id_int)
+	dms, err := orm.Da.GetDMsByConversationId(convo_id_int, 1000, 0)
 	if err != nil {
-		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not update notif: %s\n", encoded, convo_id, err)
+		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could get DMs: %s\n", encoded, convo_id, err)
 		return
 	}
+
+	for _, dm := range dms {
+		if dm.SenderId != dbuser.Id {
+			err = orm.Da.UpdateDMReadById(dm.Id)
+			if err != nil {
+				logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not update notif: %s\n", encoded, convo_id, err)
+				return
+			}
+		}
+	}
+
 	logger.Info.Printf("OK - PUT /action/user/%s/conversations/%s/read\n", encoded, convo_id)
 	w.WriteHeader(http.StatusOK)
 }

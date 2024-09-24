@@ -22,10 +22,14 @@ export function makeConversation(conversation) {
     openDMButton.classList.add('open-dm-button');
     openDMButton.setAttribute('data-conversation-id', conversation.id);
     openDMButton.setAttribute('data-from', fromUser);
+    const readHidden = document.createElement('input');
+    readHidden.type = 'hidden';
+    readHidden.value = conversation.is_read;
 
     authorInline.append(profilePic);
     authorInline.append(convoMsg);
     convo.append(authorInline);
+    convo.append(readHidden);
     convo.append(openDMButton);
 
     return convo;
