@@ -151,7 +151,7 @@ func GetConversations(w http.ResponseWriter, r *http.Request) {
 		}
 		is_read := true
 		for _, dm := range dms {
-			if dm.SenderId == dbfromuser.Id && dm.IsRead == false {
+			if dm.SenderId != dbuser.Id && !dm.IsRead {
 				is_read = false
 				break
 			}
@@ -282,7 +282,7 @@ func SendDM(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sender_id := dbconvo.User1Id
-	if dbconvo.User1Id == dbuser.Id {
+	if dbconvo.User1Id != dbuser.Id {
 		sender_id = dbconvo.User2Id
 	}
 

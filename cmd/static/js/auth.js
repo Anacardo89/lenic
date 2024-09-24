@@ -393,9 +393,9 @@ const DMChatModule = (function () {
                     $dmContent.empty();
                     data.forEach(function (message) {
                         if (message.sender.username === session_username) {
-                            appendMessage(message.content, 'received');
-                        } else {
                             appendMessage(message.content, 'sent');
+                        } else {
+                            appendMessage(message.content, 'received');
                         }
                     });
                     $dmContent.scrollTop($dmContent[0].scrollHeight);
