@@ -428,7 +428,7 @@ const DMChatModule = (function () {
                 const notif = {
                     from_username: session_username,
                     type: wsoc.TYPE_DM,
-                    msg: message.content,
+                    msg: message,
                     resource_id: $dmTitle.text(),
                     parent_id: ""
                 };

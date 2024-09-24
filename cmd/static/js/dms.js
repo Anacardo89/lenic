@@ -3,6 +3,9 @@ export function makeConversation(conversation) {
     const fromUser = conversation.user2.username;
     const convo = document.createElement('div');
     convo.classList.add('dm-item');
+    if (!conversation.is_read) {
+        convo.classList.add('dm-item-unread');
+    }
     
     const authorInline = document.createElement('div');
     authorInline.classList.add('author-info-inline');
