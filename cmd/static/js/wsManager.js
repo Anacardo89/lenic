@@ -86,8 +86,17 @@ export function connectWS(user_name) {
                 }
                 break;
             case TYPE_DM:
-                handleDM(message);
-                if (!message.is_read) {
+                const $dmWindow = $('#dm-window');
+                const $dmTitle = $('#dm-title');
+                const $dmContent = $('#dm-content');
+                if (!$dmWindow.hasClass('hidden')) {
+                    if ($dmTitle.text() === message.fromuser.username) {
+                        DMChatModule.appendMessage(message.msg, 'received');
+                        $dmContent.scrollTop($dmContent[0].scrollHeight);
+                        DMChatModule.readConversation(message.resource_id);
+                    }    
+                } else {
+                    DMModule.clearAndFetchConversations()
                     dmButton.css('--dm-display', 'block');
                 }
                 break;
@@ -166,17 +175,4 @@ function handleFollowAccept(notification) {
     const notifContainer = $('.notif-body');
     const notif = notifs.makeFollowAcceptNotif(notification);
     notifContainer.prepend(notif);
-}
-
-function handleDM(message) {
-    const $dmWindow = $('#dm-window');
-    const $dmTitle = $('#dm-title');
-    if (!$dmWindow.hasClass('hidden')) {
-        if ($dmTitle.text() === message.from_username) {
-            DMChatModule.readConversation(message.resource_id);
-            DMChatModule.appendMessage(message.msg, 'received');
-        }    
-    } else {
-        DMModule.clearAndFetchConversations()
-    }
 }
