@@ -2,12 +2,9 @@ package actions
 
 import (
 	"database/sql"
-	"encoding/base64"
 	"io"
-	"math/rand/v2"
 	"net/http"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
@@ -18,6 +15,7 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/Anacardo89/tpsi25_blog/pkg/parse"
 	"github.com/Anacardo89/tpsi25_blog/pkg/wsocket"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -38,7 +36,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dbpost := database.Post{
-		GUID:     createGUID(r.FormValue("post-title"), session.User.UserName),
+		GUID:     uuid.New().String(),
 		Title:    r.FormValue("post-title"),
 		Content:  r.FormValue("post-content"),
 		AuthorId: session.User.Id,
@@ -223,14 +221,6 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info.Println("OK - /action/post ", r.RemoteAddr)
 	w.WriteHeader(http.StatusCreated)
-}
-
-func createGUID(title string, user string) string {
-	var guid string
-	random := rand.IntN(999)
-	guid = strings.ReplaceAll(title, " ", "-")
-	guid = guid + strconv.Itoa(random) + user
-	return base64.URLEncoding.EncodeToString([]byte(guid))
 }
 
 func EditPost(w http.ResponseWriter, r *http.Request) {

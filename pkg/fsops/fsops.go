@@ -25,7 +25,6 @@ func MakePaths() *Certificate {
 		KeyPath:  "ssl/key.pem",
 	}
 	return cert
-
 }
 
 func LoadCertificates(cert *Certificate) (*tls.Config, error) {
