@@ -1,16 +1,4 @@
 
-main {
-    height: 90vh;
-    margin-top: 60px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
-.main-container {
-    width: 80%;
-}
-
 .home-container {
     font-size: 1.5rem;
     display: flex;
@@ -41,15 +29,6 @@ main {
     background-color: rgb(31, 146, 2);
 }
 
-.side-container {
-    width: 20%;
-    max-width: 250px;
-    background-color: #464646;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 .side-container p {
     margin: 0.25rem 0 0.25rem;
 }
@@ -65,7 +44,8 @@ main {
 .side-container a {
     margin-top: 0.75rem;
     font-size: 0.85rem;
-    color: blue;
+    font-weight: bold;
+    color: black;
 }
 
 .side-container a:hover{

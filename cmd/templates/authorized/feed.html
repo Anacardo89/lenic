@@ -72,16 +72,18 @@
     </header>
     <main>
         <div class="main-container">
-            {{if .Session.Authenticated}}
             <div class="add-post-container">
                 <div class="add-post-top-row">
                     <h2>POST SOMETHING</h2>
-                    <input type="file" id="file" class="file-input">
+                    <input type="file" id="post-image" class="file-input">
                     <label for="file" class="custom-file-label"><i class="fa-solid fa-2x fa-image"></i></label>
                     <button class="add-post-button"><a href="/newPost">POST</a></button>
                 </div>
+                <div class="add-post-content-container">
+                    <input id="post-title-input" type="text" name="post-title" placeholder="Post Title" />
+                    <textarea id="post-textarea" name="post-content" placeholder="The post"></textarea>
+                </div>
             </div>
-            {{end}}
             <div class="post-feed">
                 <div class="post-preview-container">
                     {{range .Posts}}
@@ -97,12 +99,16 @@
                                     </a>
                                     <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.UserName}}</strong></a>   -   <strong>{{.Date}}</strong></div>
                                 </div>
-                                {{if .Image}}
-                                    <img class="post-pic-mini" src="/action/image?guid={{.GUID}}" alt="Post Image">
-                                    <br>
-                                {{end}}
-                                <div><h2>{{.Title}}</h2></div>
-                                <div>{{.TruncatedText}}</div>
+                                <div class="post-content-image-container">
+                                    <div class="post-title-content">
+                                        <div><h2>{{.Title}}</h2></div>
+                                        <div>{{.TruncatedText}}</div>
+                                    </div>
+                                    {{if .Image}}
+                                        <img class="post-pic-mini" src="/action/image?guid={{.GUID}}" alt="Post Image">
+                                        <br>
+                                    {{end}}
+                                </div>
                                 <br>
                                 <div class="post-rating-container">
                                     <div class="post-rating">Rating <strong>{{.Rating}}</strong></div>
