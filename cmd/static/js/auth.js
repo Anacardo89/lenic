@@ -43,7 +43,7 @@ function readAllNotifs() {
                 localStorage.removeItem('user_name');
                 wsoc.closeWS();
                 const errorMessage = xhr.responseText;
-                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+                alert(errorMessage);
             }
         });
     });
@@ -72,7 +72,7 @@ function logout() {
             localStorage.removeItem('user_name');
             wsoc.closeWS();
             const errorMessage = xhr.responseText;
-            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+            alert(errorMessage);
         }
     });
     return false;

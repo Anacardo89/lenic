@@ -55,7 +55,7 @@ function followUser() {
         },
         error: function(xhr) {
             const errorMessage = xhr.responseText;
-            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+            alert(errorMessage);
         }
     })
     return false;
@@ -70,7 +70,7 @@ function unfollowUser() {
         },
         error: function(xhr) {
             const errorMessage = xhr.responseText;
-            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+            alert(errorMessage);
         }
     });
     return false;
@@ -90,7 +90,7 @@ function addProfilePic() {
         },
         error: function(xhr) {
             const errorMessage = xhr.responseText;
-            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+            alert(errorMessage);
         }
     })
     return false;

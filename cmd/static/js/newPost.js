@@ -20,7 +20,7 @@ function addPost() {
         },
         error: function(xhr) {
             const errorMessage = xhr.responseText;
-            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+            alert(errorMessage);
         }
     })
     return false;

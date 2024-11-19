@@ -7,31 +7,46 @@
     <link rel="stylesheet" href="/static/css/base.css">
     <link rel="stylesheet" href="/static/css/header.css">
     <link rel="stylesheet" href="/static/css/home.css">
+    <!-- Inter Font Link-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <!-- JQuery-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <!-- FontAwesome Link -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <header>
-        <input type="hidden" id="session-username" value="{{.Session.User.UserName}}">
-        <input type="hidden" id="session-encoded" value="{{.Session.User.EncodedName}}">
         <div class="logo">
             <h1 class="home-link"><a href="/home">L E N I C</a></h1>
             <p class="logo-bottom">Cinel do avesso</p>
         </div>
-        <div class="header-buttons">
-            <a href="/login"><button class="header-button">Login</button></a>
-            <a href="/register"><button class="header-button">Register</button></a>
-        </div>
     </header>
     <main>
-        <div class="home-container">
-            <h1>It started out with a blog</h1>
-            <br>
-            <h2>It was only a blog</h2>
-            <h2>It was only a blog</h2>
+        <div class="main-container">
+            <div class="home-container">
+                <h1>STARTED OUT AS A BLOG</h1>
+                <h1>IT WAS ONLY A BLOG</h1>
+                <h1>IT WAS ONLY A BLOG...</h1>
+            </div>
+            <div class="register-container">
+                <h4>DON'T HAVE AN ACCOUNT YET?</h4>
+                <a href="/register"><button>REGISTER</button></a>
+            </div>
+        </div>
+        <div class="side-container">
+            <h2>WELCOME BACK</h2>
+            <div class="login-container">
+                <p>USERNAME</p>
+                <input id="login-user" type="text" name="user_name" placeholder="Username" />
+                <p>PASSWORD</p>
+                <input id="login-password" type="password" name="user_password" placeholder="Password" />
+            </div>
+            <button id="login-button">LOGIN</button>
+            <a href="/forgot-password">FORGOT PASSWORD?</a>
         </div>
     </main>
-    <script type="module" src="/static/js/auth.js"></script>
+    <script type="module" src="/static/js/login.js"></script>
 </body>
 </html>

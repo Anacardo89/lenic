@@ -124,7 +124,7 @@ function editPost(el) {
         },
         error: function(xhr) {
             const errorMessage = xhr.responseText;
-            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+            alert(errorMessage);
         }
     })
     return false;
@@ -140,7 +140,7 @@ function deletePost() {
         },
         error: function(xhr) {
             const errorMessage = xhr.responseText;
-            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+            alert(errorMessage);
         }
     })
     return false;
@@ -163,7 +163,7 @@ function ratePostUp() {
         },
         error: function(xhr) {
             const errorMessage = xhr.responseText;
-            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+            alert(errorMessage);
         }
     })
     return false;
@@ -186,7 +186,7 @@ function ratePostDown() {
         },
         error: function(xhr) {
             const errorMessage = xhr.responseText;
-            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+            alert(errorMessage);
         }
     })
     return false;
