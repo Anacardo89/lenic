@@ -6,8 +6,8 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: stretch;
-    min-height: 60px;
-    height: 5vh;
+    max-height: 100px;
+    height: 8vh;
     padding: 0 0 0 10px;
     position: fixed;
     top: 0;
@@ -79,19 +79,22 @@ header {
 }
 
 .notif-button {
+    margin-left: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
+    height: 3rem;
     padding: 0 10px;
-    background-color: transparent;
+    background-color: #333;
+    border-radius: 50%;
     position: relative;
+
 }
 
 .notif-button::after {
     content: '';
     position: absolute;
-    top: 12px; 
+    top: 8px; 
     right: 10px; 
     width: 10px; 
     height: 10px; 
@@ -101,7 +104,7 @@ header {
 }
 
 .notif-button:hover {
-    background-color: lightblue;
+    background-color: #131313;
 }
 
 .notif-dropdown {
@@ -184,16 +187,18 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
+    height: 3rem;
     padding: 0 10px;
-    background-color: transparent;
+    background-color: #333;
     position: relative;
+    border-radius: 50%;
+    margin-left: 1rem;
 }
 
 .dm-button::after {
     content: '';
     position: absolute;
-    top: 12px; 
+    top: 8px; 
     right: 7px; 
     width: 10px; 
     height: 10px; 
@@ -203,7 +208,7 @@ header {
 }
 
 .dm-button:hover {
-    background-color: lightblue;
+    background-color: #131313;
 }
 
 .dm-dropdown {
@@ -312,14 +317,14 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
-    padding: 0 15px;
-    background-color: transparent;
+    height: 3rem;
+    background-color: #333;
     position: relative;
+    border-radius: 50%;
 }
 
 .search-button:hover {
-    background-color: lightblue;
+    background-color: #131313;
 }
 
 .search-dropdown {
@@ -327,9 +332,8 @@ header {
     position: absolute;
     top: 100%;
     right: 0px; 
-    background-color: rgb(254 186 109 / 75%);
+    background-color: #090909;
     color: #333;
-    box-shadow: 5px 5px #857456;
     width: 500px;
     max-height: 300px;
     overflow-y: auto;
@@ -343,19 +347,18 @@ header {
 .search-item {
     display: flex;
     flex-direction: column;
-    background-color: azure;
-    color: #333;
+    background-color: #333;
     cursor: pointer;
     padding: 10px;
     border-bottom: 1px solid #333;
 }
 
 .search-item a {
-    color: #333;
+    color: white;
 }
 
 .search-item:hover {
-    background-color: white;
+    background-color: #131313;
 }
 
 .search-item:last-child {

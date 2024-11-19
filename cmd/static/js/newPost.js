@@ -7,8 +7,18 @@ $(document).ready(function() {
 });
 
 function addPost() {
-    let form = $('.post-form form')[0];
-    let formData = new FormData(form)
+    let formData = new FormData();
+
+    const imageFile = $('#post-image')[0].files[0];
+    const postTitle = $('#post-title-input').val();
+    const postContent = $('#post-textarea').val();
+
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+    formData.append('title', postTitle);
+    formData.append('content', postContent);
+    
     $.ajax({
         url: '/action/post',
         method: 'POST',

@@ -1,20 +1,25 @@
 
 
 .add-post-container {
+    width: 75vw;
     padding-top: 1.5rem;
     margin-bottom: 20px;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .add-post-top-row {
+    width: 100%;
     display: flex;
     flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .add-post-top-row h2 {
-    margin-right: 1rem;;
+    margin-right: 1rem;
+    font-size: 2rem;
 }
 
 .file-input {
@@ -28,51 +33,83 @@
 }
 
 .add-post-button {
-    padding: 15px;
+    padding: 0.5rem 0.75rem;
     border: none;
     height: 100%;
     font-size: 1em;
     cursor: pointer;
 }
 
+.add-post-content-container {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.add-post-content-container input {
+    width: 100%;
+    background-color: #333;
+    color: white;
+    font-size: 1.5rem;
+    border: black 2px solid;
+    border-radius: 20px;
+    margin: 0.5rem 0;
+    padding: 0.25rem 0 0.25rem 0.5rem;
+}
+
+.add-post-content-container textarea {
+    width: 100%;
+    height: 8rem;
+    background-color: #333;
+    color: white;
+    font-size: 1.5rem;
+    border: black 2px solid;
+    border-radius: 20px;
+    padding-left: 0.5rem;
+}
+
 .post-preview-container {
-    margin: 0 auto;
+    margin: 0;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    max-width: 800px;
-    width: fit-content;
+    justify-content: flex-start;
+    width: 90%;
 }
 
 a .post-preview {
-    color: #333;
+    color: white;
 }
 
 .post-preview-content h2 {
-    text-align: center;
-    color: #333;
+    color: white;
 }
 
 .post-preview-content a {
-    color: #333;
+    color: white;
 }
 
 .post-preview {
     margin: 0;
-    background-color: rgb(254, 186, 109);
-    box-shadow: 5px 5px #857456;
-    padding: 4px 20px;
+    background-color: transparent;
     flex: 1;
 }
 
 .post-preview-content {
-    background-color: azure;
-    box-shadow: -3px -3px rgb(57, 97, 97);
+    background-color: #333;
     padding: 10px 20px;
+    margin: 0.5rem 0;
 }
 
 .post-preview-content:hover {
-    background-color: white;
+    background-color: #131313;
+}
+
+.post-content-image-container {
+    display: flex;
+    justify-content: space space-between;
 }
 
 .post-rating-container {
@@ -82,7 +119,7 @@ a .post-preview {
 
 .post-rating-container button {
     background-color: transparent;
-    color: #333;
+    color: white;
     padding: 0;
     margin: 0;
 }
