@@ -1,13 +1,12 @@
 
 /* Header */
 header {
-    background-color: #000000;
+    background-color: cornflowerblue;
     color: white;
     display: flex;
     justify-content: space-between;
     align-items: stretch;
     min-height: 60px;
-    height: 5vh;
     padding: 0 0 0 10px;
     position: fixed;
     top: 0;
@@ -95,7 +94,7 @@ header {
     right: 10px; 
     width: 10px; 
     height: 10px; 
-    background-color: blue; 
+    background-color: red; 
     border-radius: 50%;
     display: var(--notif-display, none);
 }
@@ -109,8 +108,9 @@ header {
     position: absolute;
     top: 100%;
     right: 0px; 
-    background-color: #090909;
-    color: white;
+    background-color: rgb(254 186 109 / 75%);
+    color: #333;
+    box-shadow: 5px 5px #857456;
     width: 500px;
     overflow-y: auto;
     max-height: 300px;
@@ -135,23 +135,23 @@ header {
 .notif-item {
     display: flex;
     flex-direction: column;
-    background-color: #333;
-    color: white;
+    background-color: azure;
+    color: #333;
     cursor: pointer;
     padding: 10px;
     border-bottom: 1px solid #333;
 }
 
 .notif-item-unread {
-    background-color: black;
+    background-color: rgb(254 186 109 / 75%);
 }
 
 .notif-item a {
-    color: white;
+    color: #333;
 }
 
 .notif-item:hover {
-    background-color: #131313;
+    background-color: white;
 }
 
 .notif-item:last-child {
@@ -197,7 +197,7 @@ header {
     right: 7px; 
     width: 10px; 
     height: 10px; 
-    background-color: blue; 
+    background-color: red; 
     border-radius: 50%;
     display: var(--dm-display, none);
 }
@@ -211,8 +211,9 @@ header {
     position: absolute;
     top: 100%;
     right: 0px; 
-    background-color: #090909;
+    background-color: rgb(254 186 109 / 75%);
     color: #333;
+    box-shadow: 5px 5px #857456;
     width: 500px;
     max-height: 300px;
     overflow-y: auto;
@@ -227,7 +228,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #333;
+    background-color: azure;
     padding: 10px;
     border-bottom: 1px solid #333;
 }
@@ -237,11 +238,11 @@ header {
 }
 
 .dm-item a {
-    color: white;
+    color: #333;
 }
 
 .dm-item:hover {
-    background-color: #131313;
+    background-color: white;
 }
 
 .dm-item:last-child {
@@ -255,7 +256,7 @@ header {
 .open-dm-button {
     height: 50px;
     font-weight: bold;
-    background-color: blue;
+    background-color: orange;
     color: white;
     padding: 10px;
     border: none;
@@ -264,11 +265,11 @@ header {
 }
 
 .open-dm-button:hover {
-    background-color: rgb(66, 148, 255);
+    background-color: rgb(255, 198, 66);
 }
 
 .open-dm-button:active {
-    background-color: rgb(0, 14, 209);
+    background-color: rgb(209, 136, 0);
 }
 
 .dm-item:last-child {

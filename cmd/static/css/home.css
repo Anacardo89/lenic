@@ -1,10 +1,109 @@
 
+main {
+    height: 90vh;
+    margin-top: 60px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.main-container {
+    width: 80%;
+}
 
 .home-container {
-    width: 100%;
-    height: 100vh;
+    font-size: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 7rem;
+    margin-left: 4rem;
+}
+
+.register-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 7rem;
+    margin-left: 4rem;
+}
+
+.register-container button {
+    margin-top: 0.5rem;
+    background-color: #00DB0F;
+}
+
+.register-container button:hover {
+    background-color: rgb(118, 255, 113);
+}
+
+.register-container button:active {
+    background-color: rgb(31, 146, 2);
+}
+
+.side-container {
+    width: 20%;
+    max-width: 250px;
+    background-color: #464646;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 250px;
+}
+
+.side-container p {
+    margin: 0.25rem 0 0.25rem;
+}
+
+.side-container h2 {
+    margin: 0.5rem 0;
+}
+
+.side-container h3 {
+    margin: 0.5rem 0;
+}
+
+.side-container a {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: blue;
+}
+
+.side-container a:hover{
+    color: white;
+}
+
+.login-container {
+    margin: 0.5rem 0;
+}
+
+.login-container input[type="text"] {
+    border: 0;
+    padding: 0.25rem;
+    background-color: black;
+    color: white;
+}
+
+.login-container input[type="password"] {
+    border: 0;
+    padding: 0.25rem;
+    background-color: black;
+    color: white;
+}
+
+.forgotPassword-container {
+    margin: 0.5rem 0;
+}
+
+.forgotPassword-container input[type="text"] {
+    border: 0;
+    padding: 0.25rem;
+    background-color: black;
+    color: white;
+}
+
+.forgotPassword-container input[type="password"] {
+    border: 0;
+    padding: 0.25rem;
+    background-color: black;
+    color: white;
 }

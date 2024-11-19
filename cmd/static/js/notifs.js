@@ -42,7 +42,7 @@ export function makeCommentRateNotif(notification) {
             },
             error: function(xhr) {
                 const errorMessage = xhr.responseText;
-                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+                alert(errorMessage);
             }
         });
     });
@@ -89,7 +89,7 @@ export function makeCommentTagNotif(notification) {
             },
             error: function(xhr) {
                 const errorMessage = xhr.responseText;
-                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+                alert(errorMessage);
             }
         });
     });
@@ -135,7 +135,7 @@ export function makePostRateNotif(notification) {
             },
             error: function(xhr) {
                 const errorMessage = xhr.responseText;
-                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+                alert(errorMessage);
             }
         });
     });
@@ -181,7 +181,7 @@ export function makePostTagNotif(notification) {
             },
             error: function(xhr) {
                 const errorMessage = xhr.responseText;
-                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+                alert(errorMessage);
             }
         });
     });
@@ -228,7 +228,7 @@ export function makeCommentOnPostNotif(notification) {
             },
             error: function(xhr) {
                 const errorMessage = xhr.responseText;
-                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+                alert(errorMessage);
             }
         });
     });
@@ -273,7 +273,7 @@ export function makeFollowAcceptNotif(notification) {
             },
             error: function(xhr) {
                 const errorMessage = xhr.responseText;
-                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+                alert(errorMessage);
             }
         });
     });
@@ -349,7 +349,7 @@ export function makeFollowRequestNotif(notification) {
             },
             error: function(xhr) {
                 const errorMessage = xhr.responseText;
-                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+                alert(errorMessage);
             }
         });
     });
@@ -363,7 +363,7 @@ export function makeFollowRequestNotif(notification) {
             },
             error: function(xhr) {
                 const errorMessage = xhr.responseText;
-                window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+                alert(errorMessage);
             }
         });
     });

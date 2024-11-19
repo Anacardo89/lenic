@@ -112,7 +112,7 @@ function addComment() {
         },
         error: function(xhr) {
             const errorMessage = xhr.responseText;
-            window.location.href = '/error?message=' + encodeURIComponent(errorMessage);
+            alert(errorMessage);
         }
     });
 }
