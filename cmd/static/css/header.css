@@ -83,12 +83,21 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 3rem;
     height: 3rem;
-    padding: 0 10px;
+    padding: 0;
     background-color: #333;
     border-radius: 50%;
     position: relative;
 
+}
+
+.notif-button:hover {
+    background-color: transparent;
+}
+
+.notif-button i {
+    background-color: #333;
 }
 
 .notif-button::after {
@@ -103,7 +112,7 @@ header {
     display: var(--notif-display, none);
 }
 
-.notif-button:hover {
+.notif-button i:hover {
     background-color: #131313;
 }
 
@@ -187,12 +196,21 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 3rem;
     height: 3rem;
-    padding: 0 10px;
+    padding: 0;
     background-color: #333;
     position: relative;
     border-radius: 50%;
     margin-left: 1rem;
+}
+
+.dm-button:hover {
+    background-color: transparent;
+}
+
+.dm-button i {
+    background-color: #333;
 }
 
 .dm-button::after {
@@ -207,7 +225,7 @@ header {
     display: var(--dm-display, none);
 }
 
-.dm-button:hover {
+.dm-button i:hover {
     background-color: #131313;
 }
 
@@ -317,13 +335,23 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 3rem;
     height: 3rem;
+    padding: 0;
     background-color: #333;
     position: relative;
     border-radius: 50%;
 }
 
 .search-button:hover {
+    background-color: transparent;
+}
+
+.search-button i {
+    background-color: #333;
+}
+
+.search-button i:hover {
     background-color: #131313;
 }
 
@@ -372,13 +400,11 @@ header {
 /* DMs - Chat Window */
 #dm-window {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 0px;
+    right: 10px;
     width: 300px;
     height: 400px;
-    background-color: azure;
-    border: 20px solid rgb(254 186 109 / 75%);
-    box-shadow: 5px 5px #857456;
+    background-color: #464646;
     display: flex;
     flex-direction: column;
     z-index: 1000;
@@ -392,15 +418,16 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: orange;
+    background-color: #333;
     color: white;
     font-size: 1.5rem;
     font-weight: bold;
-    padding: 10px;
+    padding: 0.25rem 1rem;
 }
 
 .dm-header button {
     cursor: pointer;
+    margin: -0.25rem -1rem;
 }
 
 .dm-content {
@@ -411,7 +438,8 @@ header {
 
 .message-sent {
     text-align: right;
-    background-color: lightblue;
+    background-color: white;
+    color: black;
     padding: 5px;
     margin: 5px;
     border-radius: 5px;
@@ -421,7 +449,8 @@ header {
 }
 .message-received {
     text-align: left;
-    background-color: rgb(254 186 109);
+    background-color: #333;
+    color: white;
     padding: 5px;
     margin: 5px;
     border-radius: 5px;
@@ -437,13 +466,15 @@ header {
 .dm-input input {
     flex: 1;
     padding: 10px;
+    background-color: #464646;
+    color: white;
     border: none;
     border-radius: 5px;
 }
 
 .dm-input button {
     padding: 10px;
-    background-color: orange;
+    background-color: blue;
     color: white;
     font-size: 1.5rem;
     font-weight: bold;

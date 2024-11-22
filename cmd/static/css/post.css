@@ -1,26 +1,6 @@
-
-
-button {
-    background-color: orange;
-    color: white;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-    font-size: 1em;
-}
-
-button:hover {
-    background-color: rgb(255, 198, 66);
-}
-
-button:active {
-    background-color: rgb(209, 136, 0);
-}
-
 /* Post */
 .content {
     margin-top: 30px;
-    background-color: azure;
     width: 90%;
     height: 80%;
     display: flex;
@@ -28,7 +8,6 @@ button:active {
     align-items: center;
     margin-bottom: 20px;
     padding: 20px;
-    box-shadow: -3px -3px rgb(57, 97, 97);
     overflow: visible;
 }
 
@@ -37,19 +16,24 @@ button:active {
     text-align: center;
 }
 .post-image {
-    margin-top: 20px;
-    max-width: 100%;
+    max-width: 30%;
     max-height: 350px;
     cursor: pointer;
 }
 
+.post-text-image {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: row;
+}
+
 .post-content a {
-    color: #333;
+    color: #fff;
 }
 
 #post-text {
     font-size: 1.1rem;
-    display: block;
+    margin-right: 1.5rem;
 }
 
 #post-edit-container {
@@ -59,9 +43,7 @@ button:active {
 .suggestion-box {
     position: absolute;
     display: none;
-    background-color: rgb(254 186 109 / 75%);
     color: #333;
-    box-shadow: 5px 5px #857456;
     width: 500px;
     overflow-y: auto;
     max-height: 300px;
@@ -71,8 +53,8 @@ button:active {
 .suggestion-item {
     display: flex;
     flex-direction: column;
-    background-color: azure;
-    color: #333;
+    background-color: #333;
+    color: white;
     cursor: pointer;
     padding: 10px;
     border-bottom: 1px solid #333;
@@ -89,6 +71,16 @@ label {
 .rating-container {
     display: flex;
     flex-direction: row;
+    align-items: center;
+}
+
+.rating-text {
+    margin-right: 2rem;
+}
+
+.rating {
+    font-size: 1.5rem;
+    margin-right: 1rem;
 }
 
 .post-buttons {
@@ -99,7 +91,7 @@ label {
 
 .rating-container button {
     background-color: transparent;
-    color: #333;
+    color: white;
     padding: 0;
     margin: 0;
 }
@@ -110,14 +102,11 @@ label {
 
 /* Comments */
 .comment-section {
-    background-color: rgb(254 186 109 / 75%);
-    margin: 40px auto;
+    margin: 40px 1rem;
     display: flex;
     flex-direction: column;
     padding: 20px;
-    max-width: 800px;
-    width: fit-content;
-    box-shadow: 5px 5px #857456;
+    width: 80%;
 }
 
 .comments {
@@ -128,8 +117,7 @@ label {
 }
 
 .comment-container {
-    background-color: azure;
-    box-shadow: -3px -3px rgb(57, 97, 97);
+    background-color: #464646;
     padding: 10px;
     display: flex;
     flex-direction: row;
@@ -137,16 +125,14 @@ label {
     margin: 4px 0;
 }
 
-.comment-content a {
-    color: #333;
+.comment-content {
+    width: 100%;
 }
 
-textarea {
-    width: 100%;
-    height: 3rem;
-    font-size: 1.2rem;
-    border-radius: 5px;
+.comment-content a {
+    color: white;
 }
+
 
 .comment-text {
     display: block;
@@ -156,9 +142,23 @@ textarea {
     display: none;
 }
 
+.comment-edit-container textarea{
+    width: 100%;
+}
+
 .comment-rating-container {
     display: flex;
     flex-direction: row;
+    align-items: center;
+}
+
+.comment-rating-text {
+    margin-right: 2rem;
+}
+
+.comment-rating {
+    font-size: 1.5rem;
+    margin-right: 1rem;
 }
 
 .comment-buttons {
@@ -169,7 +169,7 @@ textarea {
 
 .comment-rating-container button {
     background-color: transparent;
-    color: #333;
+    color: white;
     padding: 0;
     margin: 0;
 }
@@ -207,8 +207,6 @@ textarea {
 }
 
 .modal-border {
-    background-color: rgb(254, 186, 109);
-    box-shadow: 5px 5px #857456;
     padding: 15px;
     position: absolute;
     top: 50%;
@@ -220,8 +218,7 @@ textarea {
 }
 
 .modal-content {
-    background-color: azure;
-    box-shadow: -3px -3px rgb(57, 97, 97);
+    background-color: #333;
     padding: 10px 20px;
     display: flex;
     flex-direction: column;
@@ -254,9 +251,8 @@ textarea {
     height: 80vh;
     max-width: 1000px;
     max-height: 700px;
-    background-color: azure;
+    background-color: #333;
     padding: 20px;
-    box-shadow: -3px -3px rgb(57, 97, 97);
     animation: grow 0.5s forwards;
     overflow: hidden;
 }

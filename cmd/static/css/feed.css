@@ -22,16 +22,6 @@
     font-size: 2rem;
 }
 
-.file-input {
-    display: none;
-}
-  
-.custom-file-label {
-    display: inline-block;
-    cursor: pointer;
-    margin-right: 1rem;
-}
-
 .add-post-button {
     padding: 0.5rem 0.75rem;
     border: none;
@@ -85,6 +75,7 @@ a .post-preview {
 
 .post-preview-content h2 {
     color: white;
+    margin-bottom: 0.25rem;
 }
 
 .post-preview-content a {
@@ -109,7 +100,7 @@ a .post-preview {
 
 .post-content-image-container {
     display: flex;
-    justify-content: space space-between;
+    justify-content: space-between;
 }
 
 .post-rating-container {

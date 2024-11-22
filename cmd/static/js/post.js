@@ -89,11 +89,11 @@ let rate_post_hidden = $('#post-rating-hidden');
 if (rate_post_hidden !== null) {
 let postUserRating = rate_post_hidden.val();
     if (postUserRating > 0) {
-        let rate_up_button = rate_post_hidden.prev();
-        rate_up_button.css('color', 'orange');
+        let rate_up_button = rate_post_hidden.prev().find('i');
+        rate_up_button.css('background-color', 'green');
     } else if (postUserRating < 0) {
-        let rate_down_button = rate_post_hidden.next();
-        rate_down_button.css('color', 'orange');
+        let rate_down_button = rate_post_hidden.next().find('i');
+        rate_down_button.css('background-color', 'red');
     }
 }
 
