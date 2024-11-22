@@ -44,11 +44,11 @@ let rate_comment_hiddens = $('.comment-rating-hidden');
 rate_comment_hiddens.each(function() {
     let userRating = $(this).val();
     if (userRating > 0) {
-        let rate_up_button = $(this).prev();
-        rate_up_button.css('color', 'orange');
+        let rate_up_button = $(this).prev().find('i');
+        rate_up_button.css('background-color', 'green');
     } else if (userRating < 0) {
-        let rate_down_button = $(this).next();
-        rate_down_button.css('color', 'orange');
+        let rate_down_button = $(this).next().find('i');
+        rate_down_button.css('background-color', 'red');
     }
 });
 
