@@ -8,6 +8,10 @@
     margin-left: 4rem;
 }
 
+.side-container {
+    padding-top: 6.5rem;
+}
+
 .register-container {
     display: flex;
     flex-direction: column;

@@ -12,12 +12,14 @@ function addPost() {
     const imageFile = $('#post-image')[0].files[0];
     const postTitle = $('#post-title-input').val();
     const postContent = $('#post-textarea').val();
+    const visibility = $('input[name="post-visibility"]:checked').val();
 
     if (imageFile) {
-        formData.append('image', imageFile);
+        formData.append('post-image', imageFile);
     }
-    formData.append('title', postTitle);
-    formData.append('content', postContent);
+    formData.append('post-title', postTitle);
+    formData.append('post-content', postContent);
+    formData.append('post-visibility', visibility);
     
     $.ajax({
         url: '/action/post',

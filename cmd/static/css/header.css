@@ -49,10 +49,17 @@ header {
     position: relative;
 }
 
-.session-profile-pic {
+.vertical-bar {
+    width: 2px;
     height: 50px;
-    margin: 5px 5px 0 0;
+    background-color: white;
     align-self: center;
+    margin-left: 1rem;
+  }
+
+.user-profile-button {
+    align-self: center;
+    margin: 0 1rem;
 }
 
 .logout p {

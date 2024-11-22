@@ -105,6 +105,11 @@
   align-items: center;
 }
 
+.main-container h1 {
+  margin-top: 2rem;
+  font-size: 4rem;
+}
+
 .profile-grid {
     background-color: #464646;
     display: flex;
@@ -113,6 +118,7 @@
     gap: 1rem;
     padding: 1rem;
     padding-bottom: 2rem;
+    margin-top: 2.5rem;
 }
 
 .follow {
