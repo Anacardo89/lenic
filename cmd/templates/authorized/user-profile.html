@@ -55,11 +55,12 @@
                         </div>
                     </div>
                 </div>
-                <a href="/user/{{.Session.User.EncodedName}}">
+                <div class="vertical-bar"></div>
+                <a class="user-profile-button" href="/user/{{.Session.User.EncodedName}}">
                     {{if .Session.User.ProfilePic}}
-                        <img class="session-profile-pic" src="/action/profile-pic?user-encoded={{.Session.User.EncodedName}}" alt="Profile Pic" />
+                        <img class="profile-pic-mini" src="/action/profile-pic?user-encoded={{.Session.User.EncodedName}}" alt="Profile Pic" />
                     {{else}}
-                        <img class="session-profile-pic" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
+                        <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
                     {{end}}
                 </a>
             </div>
@@ -72,7 +73,12 @@
                     <h2>POST SOMETHING</h2>
                     <input type="file" id="post-image" class="file-input">
                     <label for="file" class="custom-file-label"><i class="fa-solid fa-2x fa-image"></i></label>
-                    <button class="add-post-button"><a href="/newPost">POST</a></button>
+                    <button id="post-button" class="add-post-button" onclick="event.stopPropagation();">POST</button>
+                </div>
+                <div id="suggestionBox" class="suggestion-box"></div>
+                <div class="visibility-buttons">
+                    <label><input type="radio" name="post-visibility" value="1">  Public</label>
+                    <label><input type="radio" name="post-visibility" value="0">  Private</label>
                 </div>
                 <div class="add-post-content-container">
                     <input id="post-title-input" type="text" name="post-title" placeholder="Post Title" />
@@ -188,5 +194,6 @@
     </footer>
     <script type="module" src="/static/js/auth.js"></script>
     <script type="module" src="/static/js/user.js"></script>
+    <script type="module" src="/static/js/newPost.js"></script>
 </body>
 </html>

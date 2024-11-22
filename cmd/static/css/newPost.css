@@ -56,9 +56,8 @@ textarea {
 .suggestion-box {
     position: absolute;
     display: none;
-    background-color: rgb(254 186 109 / 75%);
-    color: #333;
-    box-shadow: 5px 5px #857456;
+    background-color: #333;
+    color: white;
     width: 500px;
     overflow-y: auto;
     max-height: 300px;
@@ -68,15 +67,15 @@ textarea {
 .suggestion-item {
     display: flex;
     flex-direction: column;
-    background-color: azure;
-    color: #333;
+    background-color: #464646;
+    color: white;
     cursor: pointer;
     padding: 10px;
     border-bottom: 1px solid #333;
 }
 
 .suggestion-item:hover {
-    background-color: white;
+    background-color: #333;
 }
 
 label {
