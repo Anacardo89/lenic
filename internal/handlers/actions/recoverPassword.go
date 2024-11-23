@@ -87,14 +87,15 @@ func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 func ChangePassword(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/change-password ", r.RemoteAddr)
 	// Parse Form
-	err := r.ParseForm()
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		logger.Error.Println("/action/change-password - Could not parse Form: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		logger.Error.Println("/action/change-password - Could not parse form: ", err)
+		http.Error(w, "Unable to parse form", http.StatusBadRequest)
 		return
 	}
 	userName := r.FormValue("user_name")
-	old_password := r.FormValue("old-password")
+	logger.Debug.Println(userName)
+	old_password := r.FormValue("old_password")
 	password := r.FormValue("password")
 	password2 := r.FormValue("password2")
 

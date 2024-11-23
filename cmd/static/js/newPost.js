@@ -121,3 +121,15 @@ function makeSuggestionResult(user) {
     return result;
 }
 
+const fileInput = $('#post-image');
+const imageLabel = $('#post-image-label').find('i');
+
+fileInput.on('change', () => {
+    const rawInput = fileInput[0]; 
+
+    if (rawInput?.files && rawInput.files.length > 0) {
+        imageLabel.css('background-color', 'green');
+    } else {
+        imageLabel.css('background-color', '#333');
+    }
+});
