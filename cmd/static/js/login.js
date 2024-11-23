@@ -5,6 +5,7 @@ $(document).ready(function() {
     $('#register-button')?.on('click', register);
     $('#login-button')?.on('click', login);
     $('#forgotpasswd-button')?.on('click', forgotPasswd);
+    $('#changePasswd-button')?.on('click', changePasswd);
 });
 
 // Register
@@ -72,6 +73,39 @@ function forgotPasswd(el) {
         data: JSON.stringify({
             user_email: email
         }),
+        success: function(xhr) {
+            window.location.href = '/home';
+        },
+        error: function(xhr) {
+            const errorMessage = xhr.responseText;
+            alert(errorMessage);
+        }
+    });
+    return false;
+}
+
+// Change Passwd
+function changePasswd() {
+
+    let formData = new FormData();
+
+    const user = $('#session-username').val();
+    console.log(user);
+    const oldPasswd = $('#old-passwd').val();
+    const newPasswd = $('#new-passwd').val();
+    const newPasswd2 = $('#new-passwd2').val();
+
+    formData.append('user_name', user);
+    formData.append('old_password', oldPasswd);
+    formData.append('password', newPasswd);
+    formData.append('password2', newPasswd2);
+
+    $.ajax({
+        url: '/action/change-password',
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false, 
         success: function(xhr) {
             window.location.href = '/home';
         },
