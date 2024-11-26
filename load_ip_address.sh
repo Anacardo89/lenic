@@ -1,8 +1,8 @@
 #!/bin/bash
 
 db_name=mysql
-rabbit_name=some-rabbit
-network_name=bridge
+rabbit_name=rabbitmq
+network_name=tpsi25_blog_default
 db_file="./config/dbConfig.yaml"
 rabbit_file="./config/rabbitConfig.yaml"
 

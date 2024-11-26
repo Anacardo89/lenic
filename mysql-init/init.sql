@@ -1,9 +1,9 @@
 
 
 /*  Create DB */
-DROP DATABASE tpsi25_blog;
-CREATE DATABASE tpsi25_blog;
-USE tpsi25_blog;
+GRANT ALL PRIVILEGES ON lenic.* TO 'lenic_admin'@'%';
+
+USE lenic;
 
 CREATE TABLE users (
 	id INT UNSIGNED NOT NULL AUTO_INCREMENT,
