@@ -27,6 +27,7 @@ func ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mail := r.FormValue("user_email")
+	logger.Debug.Println(mail)
 	logger.Info.Printf("/action/forgot-password %s %s\n", r.RemoteAddr, mail)
 	// Get user from DB
 	dbuser, err := orm.Da.GetUserByEmail(mail)

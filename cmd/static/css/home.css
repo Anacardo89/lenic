@@ -92,18 +92,22 @@
     color: white;
 }
 
-.changePassword-container {
+.changePasswd-title {
+    text-align: center;
+}
+
+.changePasswd-container {
     margin: 0.5rem 0;
 }
 
-.changePassword-container input[type="text"] {
+.changePasswd-container input[type="text"] {
     border: 0;
     padding: 0.25rem;
     background-color: black;
     color: white;
 }
 
-.changePassword-container input[type="password"] {
+.changePasswd-container input[type="password"] {
     border: 0;
     padding: 0.25rem;
     background-color: black;

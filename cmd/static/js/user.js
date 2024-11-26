@@ -3,26 +3,10 @@ import { session_username } from './auth.js';
 import * as dms from './dms.js';
 
 $(document).ready(function() {
-    let follow_button = $('#follow-button');
-    let unfollow_button = $('#unfollow-button');
-    let profilePicInput = $('#profile-pic-input');
-    let confirmButton = $('#profile-pic-confirm-button');
-
-    follow_button.on('click', function() {
-        followUser();
-    })
-
-    unfollow_button.on('click', function() {
-        unfollowUser();
-    })
-
-    profilePicInput.on('change', function() {
-        checkFileSelected();
-    });
-
-    confirmButton.on('click', function() {
-        addProfilePic();
-    });
+    let follow_button = $('#follow-button')?.on('click', followUser);
+    let unfollow_button = $('#unfollow-button')?.on('click', unfollowUser);
+    let profilePicInput = $('#profile-pic-input')?.on('change', checkFileSelected);
+    let confirmButton = $('#profile-pic-confirm')?.on('click', addProfilePic);
 
     function checkFileSelected() {
         if (profilePicInput[0].files.length > 0) {
@@ -77,14 +61,20 @@ function unfollowUser() {
 }
 
 function addProfilePic() {
-    let form = $('#profile-pic-form')[0];
-    let formData = new FormData(form);
+    let formData = new FormData();
+
+    const imageFile = $('#profile-image')[0].files[0];
+
+    if (imageFile) {
+        formData.append('profile-image', imageFile);
+    }
+    
     $.ajax({
         url: '/action/user/' + encoded + '/profile-pic',
         method: 'POST',
         data: formData,
-        processData: false,  // Prevent jQuery from automatically transforming the data into a query string
-        contentType: false,  // Let the browser set the content type, including boundary
+        processData: false, 
+        contentType: false,  
         success: function(res) {
             location.reload()
         },
@@ -95,3 +85,19 @@ function addProfilePic() {
     })
     return false;
 }
+
+const fileInput = $('#profile-image');
+const imageLabel = $('#profile-image-label').find('i');
+const confirmButton = $('#profile-pic-confirm').find('button');
+
+fileInput.on('change', () => {
+    const rawInput = fileInput[0]; 
+
+    if (rawInput?.files && rawInput.files.length > 0) {
+        imageLabel.css('background-color', 'green');
+        confirmButton.css('display', 'block');
+    } else {
+        imageLabel.css('background-color', '#333');
+        confirmButton.css('display', 'none');
+    }
+});

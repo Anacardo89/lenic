@@ -19,6 +19,16 @@
     padding: 20px;
 }
 
+.profile-pic-confirm {
+    display: flex;
+    justify-content: center;
+    margin: 0 0 1rem;
+}
+
+.profile-pic-confirm button {
+    display: none;
+}
+
 .profile-container h1 {
     margin-top: 20px;
     text-align: center;

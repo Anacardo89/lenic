@@ -114,7 +114,7 @@ func PostProfilePic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, header, err := r.FormFile("image")
+	file, header, err := r.FormFile("profile-image")
 	if err != nil {
 		logger.Error.Printf("/action/user/%s/profile-pic - Could not get image: %s\n", encoded, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
