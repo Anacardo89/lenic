@@ -68,23 +68,25 @@
     </header>
     <main>
         <div class="main-container">
-            <div class="add-post-container">
-                <div class="add-post-top-row">
-                    <h2>POST SOMETHING</h2>
-                    <input type="file" id="post-image" class="file-input">
-                    <label for="post-image" id="post-image-label" class="custom-file-label"><i class="fa-solid fa-2x fa-image"></i></label>
-                    <button id="post-button" class="add-post-button" onclick="event.stopPropagation();">POST</button>
+            {{if eq .Session.User.UserName .User.UserName}}
+                <div class="add-post-container">
+                    <div class="add-post-top-row">
+                        <h2>POST SOMETHING</h2>
+                        <input type="file" id="post-image" class="file-input">
+                        <label for="post-image" id="post-image-label" class="custom-file-label"><i class="fa-solid fa-2x fa-image"></i></label>
+                        <button id="post-button" class="add-post-button" onclick="event.stopPropagation();">POST</button>
+                    </div>
+                    <div id="suggestionBox" class="suggestion-box"></div>
+                    <div class="visibility-buttons">
+                        <label><input type="radio" name="post-visibility" value="1">  Public</label>
+                        <label><input type="radio" name="post-visibility" value="0">  Private</label>
+                    </div>
+                    <div class="add-post-content-container">
+                        <input id="post-title-input" type="text" name="post-title" placeholder="Post Title" />
+                        <textarea id="post-textarea" name="post-content" placeholder="The post"></textarea>
+                    </div>
                 </div>
-                <div id="suggestionBox" class="suggestion-box"></div>
-                <div class="visibility-buttons">
-                    <label><input type="radio" name="post-visibility" value="1">  Public</label>
-                    <label><input type="radio" name="post-visibility" value="0">  Private</label>
-                </div>
-                <div class="add-post-content-container">
-                    <input id="post-title-input" type="text" name="post-title" placeholder="Post Title" />
-                    <textarea id="post-textarea" name="post-content" placeholder="The post"></textarea>
-                </div>
-            </div>
+            {{end}}
             <div class="user-posts">
                 <div class="post-preview-container">
                     {{range .Posts}}
