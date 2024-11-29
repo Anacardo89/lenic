@@ -125,11 +125,13 @@ textarea {
 
 .profile-pic-mini {
     height: 50px;
-    max-width: 50px;
+    width: 50px;
     margin: 5px 5px 0 0;
     margin-right: 0.5rem;
     border-radius: 50%;
-    align-self: center;
+    overflow: hidden;
+    background-position: center;
+    background-size: cover;
 }
 
 .post-pic-mini {
