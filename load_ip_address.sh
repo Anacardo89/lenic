@@ -2,7 +2,7 @@
 
 db_name=mysql
 rabbit_name=rabbitmq
-network_name=tpsi25_blog_default
+network_name=lenic_default
 db_file="./config/dbConfig.yaml"
 rabbit_file="./config/rabbitConfig.yaml"
 

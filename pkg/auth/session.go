@@ -25,7 +25,7 @@ var (
 
 func CreateSession(w http.ResponseWriter, r *http.Request) presentation.Session {
 	usrSession := presentation.Session{}
-	session, err := SessionStore.Get(r, "tpsi25blog")
+	session, err := SessionStore.Get(r, "lenic")
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -44,7 +44,7 @@ func ValidateSession(w http.ResponseWriter, r *http.Request) presentation.Sessio
 	usrSession := presentation.Session{
 		Authenticated: false,
 	}
-	session, err := SessionStore.Get(r, "tpsi25blog")
+	session, err := SessionStore.Get(r, "lenic")
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -57,18 +57,19 @@ func ValidateSession(w http.ResponseWriter, r *http.Request) presentation.Sessio
 		if time.Now().After(dbsession.UpdatedAt.Add(time.Duration(24) * time.Hour)) {
 			session.Options.MaxAge = -1
 			session.Save(r, w)
+			return usrSession
 		}
 		dbuser, err := orm.GetUserBySessionID(sid.(string))
-		if err == nil {
-			u := mapper.User(dbuser)
-			usrSession.User = *u
-			UpdateSession(sid.(string), usrSession.User.Id)
-			usrSession.SessionId = sid.(string)
-			usrSession.Authenticated = true
-		} else {
+		if err != nil {
 			session.Options.MaxAge = -1
 			session.Save(r, w)
+			return usrSession
 		}
+		u := mapper.User(dbuser)
+		usrSession.User = *u
+		UpdateSession(sid.(string), usrSession.User.Id)
+		usrSession.SessionId = sid.(string)
+		usrSession.Authenticated = true
 	}
 	return usrSession
 }
