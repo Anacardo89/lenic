@@ -18,10 +18,14 @@ You'll need:
 - Docker
 - The [mailer_sender](https://github.com/Anacardo89/mailer_sender) service
 
+
 ## Setup:
 
+Although no recommended you can leave the setup files as they are and the container will run correctly.
+- setup config files in `config` directory as wall as `docker-compose.yaml`
+- run `setup.sh`
+- test if the landing page loads `localhost:8082` on default configs
+- run [mailer_sender](https://github.com/Anacardo89/mailer_sender) service (or don't and activate users manually in DB)
+- have fun with your co-workers
 
-
-The whole thing is developed in Go with Gorilla and HTML templates, with minimal use of JS.
-DB is MySQL and it interacts with [mailer_sender](https://github.com/Anacardo89/mailer_sender) through RabbitMQ to send registration emails
-It's to show i can do backend :D
+There's also a [gRPC API]() that let's you interact with the app. Why you would want do that... Well, i don't know, i mostly made for learning points. :)
