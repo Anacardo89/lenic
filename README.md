@@ -22,6 +22,7 @@ You'll need:
 ## Setup:
 
 Although no recommended you can leave the setup files as they are and the container will run correctly.
+- install [docker](https://www.docker.com/)
 - setup config files in `config` directory as wall as `docker-compose.yaml`
 - run `setup.sh`
 - test if the landing page loads `localhost:8082` on default configs
