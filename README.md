@@ -21,7 +21,7 @@ You'll need:
 
 ## Setup:
 
-Although no recommended you can leave the setup files as they are and the container will run correctly.
+Although not recommended you can leave the setup files as they are and the container will run correctly.
 - install [docker](https://www.docker.com/)
 - setup config files in `config` directory as well as `docker-compose.yaml`
 - run `setup.sh`
