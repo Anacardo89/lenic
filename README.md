@@ -29,4 +29,4 @@ Although not recommended you can leave the setup files as they are and the conta
 - run [mailer_sender](https://github.com/Anacardo89/mailer_sender) service (or don't and activate users manually in DB)
 - have fun with your co-workers
 
-There's also a [gRPC API](https://github.com/Anacardo89/lenic_api) that let's you interact with the app. Why you would want do that... Well, i don't know, i mostly made for learning points. :)
+There's also a [gRPC API](https://github.com/Anacardo89/lenic_api) that let's you interact with the app. Why you would want do that... Well, i don't know, i mostly made it for learning points. :)
