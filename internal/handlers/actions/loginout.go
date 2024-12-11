@@ -70,7 +70,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func Logout(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/logout ", r.RemoteAddr)
-	session, err := auth.SessionStore.Get(r, "tpsi25blog")
+	session, err := auth.SessionStore.Get(r, "lenic")
 	if err != nil {
 		logger.Error.Println("/action/logout - Could not get session: ", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
