@@ -7,6 +7,7 @@ Lenic is a bonafide social network where users are able to:
 - comment on each others posts
 - add pictures to their user profile and posts for further personalization
 - search for users
+- tag other users in their posts/comments
 - receive notifications related to activity relevant to them
 - send and receive DMs
 
