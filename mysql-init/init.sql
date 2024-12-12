@@ -1,7 +1,11 @@
 
 
 /*  Create DB */
+
+CREATE USER 'lenic_admin'@'%' IDENTIFIED BY 'SUDO_LENIC_2025!';
+
 GRANT ALL PRIVILEGES ON lenic.* TO 'lenic_admin'@'%';
+FLUSH PRIVILEGES;
 
 USE lenic;
 
@@ -33,8 +37,8 @@ CREATE TABLE tokens (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE follows (
-	follower_id INT NOT NULL REFERENCES users(id),
-	followed_id INT NOT NULL REFERENCES users(id),
+	follower_id INT UNSIGNED NOT NULL REFERENCES users(id),
+	followed_id INT UNSIGNED NOT NULL REFERENCES users(id),
 	follow_status INT NOT NULL DEFAULT 0,
 	UNIQUE KEY follow_relation (follower_id, followed_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -42,7 +46,7 @@ CREATE TABLE follows (
 CREATE TABLE sessions (
 	id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	session_id VARCHAR(256) NOT NULL DEFAULT '',
-	user_id INT NOT NULL REFERENCES users(id),
+	user_id INT UNSIGNED NOT NULL REFERENCES users(id),
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	active TINYINT NOT NULL DEFAULT 0,
@@ -53,7 +57,7 @@ CREATE TABLE sessions (
 CREATE TABLE posts (
 	id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	post_guid VARCHAR(256) NOT NULL DEFAULT '',
-	author_id INT NOT NULL REFERENCES users(id),
+	author_id INT UNSIGNED NOT NULL REFERENCES users(id),
 	title VARCHAR(256) DEFAULT NULL,
 	content MEDIUMTEXT,
 	post_image VARCHAR(64) NOT NULL DEFAULT '',
@@ -68,8 +72,8 @@ CREATE TABLE posts (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE post_ratings (
-	post_id INT NOT NULL REFERENCES posts(id),
-	user_id INT NOT NULL REFERENCES users(id),
+	post_id INT UNSIGNED NOT NULL REFERENCES posts(id),
+	user_id INT UNSIGNED NOT NULL REFERENCES users(id),
 	rating_value INT NOT NULL DEFAULT 0,
 	UNIQUE KEY post_rating (post_id, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -77,7 +81,7 @@ CREATE TABLE post_ratings (
 CREATE TABLE comments (
 	id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	post_guid VARCHAR(256) NOT NULL REFERENCES posts(post_guid),
-	author_id INT NOT NULL REFERENCES users(id),
+	author_id INT UNSIGNED NOT NULL REFERENCES users(id),
 	content MEDIUMTEXT,
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -87,16 +91,16 @@ CREATE TABLE comments (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE comment_ratings (
-	comment_id INT NOT NULL REFERENCES comments(id),
-	user_id INT NOT NULL REFERENCES users(id),
+	comment_id INT UNSIGNED NOT NULL REFERENCES comments(id),
+	user_id INT UNSIGNED NOT NULL REFERENCES users(id),
 	rating_value INT NOT NULL DEFAULT 0,
 	UNIQUE KEY comment_rating (comment_id, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE notifications (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    user_id INT NOT NULL REFERENCES users(id),
-    from_user_id INT NOT NULL REFERENCES users(id),
+    user_id INT UNSIGNED NOT NULL REFERENCES users(id),
+    from_user_id INT UNSIGNED NOT NULL REFERENCES users(id),
     notif_type VARCHAR(50) NOT NULL,
     notif_message TEXT NOT NULL,
 	resource_id VARCHAR(64) NOT NULL,
@@ -116,26 +120,26 @@ CREATE TABLE tags (
 
 CREATE TABLE user_tags (
 	id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-	tag_id VARCHAR(255) NOT NULL REFERENCES tags(id),
-	post_id INT NOT NULL REFERENCES posts(id),
-	comment_id INT REFERENCES comments(id),
+	tag_id INT UNSIGNED NOT NULL REFERENCES tags(id),
+	post_id INT UNSIGNED NOT NULL REFERENCES posts(id),
+	comment_id INT UNSIGNED REFERENCES comments(id),
 	tag_place VARCHAR(10) NOT NULL,
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE reference_tags (
 	id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-	tag_id VARCHAR(255) NOT NULL REFERENCES tags(id),
-	post_id INT NOT NULL REFERENCES posts(id),
-	comment_id INT REFERENCES comments(id),
+	tag_id INT UNSIGNED NOT NULL REFERENCES tags(id),
+	post_id INT UNSIGNED NOT NULL REFERENCES posts(id),
+	comment_id INT UNSIGNED REFERENCES comments(id),
 	tag_place VARCHAR(10) NOT NULL,
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE conversations (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    user1_id INT REFERENCES users(id),
-    user2_id INT REFERENCES users(id),
+    user1_id INT UNSIGNED REFERENCES users(id),
+    user2_id INT UNSIGNED REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
@@ -144,8 +148,8 @@ CREATE TABLE conversations (
 
 CREATE TABLE dmessages (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    conversation_id INT REFERENCES conversations(id),
-    sender_id INT REFERENCES users(id),
+    conversation_id INT UNSIGNED REFERENCES conversations(id),
+    sender_id INT UNSIGNED REFERENCES users(id),
     content TEXT NOT NULL,
 	is_read BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

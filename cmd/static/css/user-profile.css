@@ -1,7 +1,7 @@
 /* Profile */
 
 .side-container img {
-    margin-top: 3rem;
+    margin: 1rem 0 2rem;
     height: 200px;
     width: 200px;
     border-radius: 50%;
@@ -17,6 +17,19 @@
     justify-content: space-between;
     margin: 0 20px 0 20px;
     padding: 20px;
+}
+
+.profile-pic {
+    position: relative;
+    display: inline-block;
+    margin: 0 auto;
+}
+
+.profile-pic label {
+    position: absolute;
+    top: 175px;
+    right: 10px; 
+    cursor: pointer;
 }
 
 .profile-pic-confirm {
