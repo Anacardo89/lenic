@@ -29,11 +29,11 @@ main {
 
 .side-container {
     position: fixed;
-    top: 0;
+    top: 8vh;
     bottom: 0;
     right: 0;
     width: 20%;
-    max-width: 250px;
+    max-width: 350px;
     background-color: #464646;
     display: flex;
     flex-direction: column;
