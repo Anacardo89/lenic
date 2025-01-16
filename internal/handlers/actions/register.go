@@ -20,6 +20,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// /action/register
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/register ", r.RemoteAddr)
 	// Parse Form
@@ -98,6 +99,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
+// /action/activate
 func ActivateUser(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/activate ", r.RemoteAddr)
 	vars := mux.Vars(r)

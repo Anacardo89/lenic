@@ -18,6 +18,7 @@ type LoginRequest struct {
 	UserPassword string `json:"user_password"`
 }
 
+// /action/login
 func Login(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/login ", r.RemoteAddr)
 	var (
@@ -68,6 +69,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// /action/logout
 func Logout(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/logout ", r.RemoteAddr)
 	session, err := auth.SessionStore.Get(r, "lenic")

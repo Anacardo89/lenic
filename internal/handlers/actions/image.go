@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// /action/image
 func PostImage(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/image ", r.RemoteAddr)
 	guid := r.URL.Query().Get("guid")
@@ -55,6 +56,7 @@ func PostImage(w http.ResponseWriter, r *http.Request) {
 	w.Write(imgData)
 }
 
+// /action/profile-pic
 func ProfilePic(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/profile-pic ", r.RemoteAddr)
 	encoded := r.URL.Query().Get("user-encoded")
@@ -102,6 +104,7 @@ func ProfilePic(w http.ResponseWriter, r *http.Request) {
 	w.Write(imgData)
 }
 
+// /action/user/{user_encoded}/profile-pic
 func PostProfilePic(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]

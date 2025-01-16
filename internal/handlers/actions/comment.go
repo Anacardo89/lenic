@@ -21,6 +21,7 @@ type Response struct {
 	Data string `json:"data"`
 }
 
+// POST /action/post/{Post_GUID}/comment
 func AddComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
@@ -130,6 +131,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+// PUT /action/post/{Post_GUID}/comment/{comment_id}
 func EditComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
@@ -240,6 +242,7 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// DELETE /action/post/{Post_GUID}/comment/{comment_id}
 func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
@@ -291,6 +294,7 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// POST /action/post/{Post_GUID}/comment/{comment_id}/up
 func RateCommentUp(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
@@ -314,6 +318,7 @@ func RateCommentUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// POST /action/post/{Post_GUID}/comment/{comment_id}/down
 func RateCommentDown(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
