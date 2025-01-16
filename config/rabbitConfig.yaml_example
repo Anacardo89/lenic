@@ -1,0 +1,7 @@
+rabbit_user: guest
+rabbit_pass: guest
+rabbit_host: '127.0.0.1'
+rabbit_port: '5672'
+queues:
+  - register_email
+  - password_recover_email
