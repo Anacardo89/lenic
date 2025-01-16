@@ -25,13 +25,18 @@ func handleFollowRequest(msg wsocket.Message) {
 		logger.Error.Println("Could not get post: ", err)
 		return
 	}
-	u := mapper.UserNotif(dbuser)
 
 	fromuser, err := orm.Da.GetUserByName(msg.FromUserName)
 	if err != nil {
 		logger.Error.Println("Could not get from user: ", err)
 		return
 	}
+
+	if dbuser.Id == fromuser.Id {
+		return
+	}
+
+	u := mapper.UserNotif(dbuser)
 	from_u := mapper.UserNotif(fromuser)
 
 	n := &database.Notification{
@@ -85,13 +90,18 @@ func handleFollowAccept(msg wsocket.Message) {
 		logger.Error.Println("Could not get post: ", err)
 		return
 	}
-	u := mapper.UserNotif(dbuser)
 
 	fromuser, err := orm.Da.GetUserByName(msg.FromUserName)
 	if err != nil {
 		logger.Error.Println("Could not get from user: ", err)
 		return
 	}
+
+	if dbuser.Id == fromuser.Id {
+		return
+	}
+
+	u := mapper.UserNotif(dbuser)
 	from_u := mapper.UserNotif(fromuser)
 
 	n := &database.Notification{

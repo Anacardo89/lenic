@@ -27,13 +27,18 @@ func HandleCommentTag(msg wsocket.Message, tagged_user string) {
 		logger.Error.Println("Could not get user: ", err)
 		return
 	}
-	u := mapper.UserNotif(dbuser)
 
 	fromuser, err := orm.Da.GetUserByName(msg.FromUserName)
 	if err != nil {
 		logger.Error.Println("Could not get from user: ", err)
 		return
 	}
+
+	if dbuser.Id == fromuser.Id {
+		return
+	}
+
+	u := mapper.UserNotif(dbuser)
 	from_u := mapper.UserNotif(fromuser)
 
 	n := &database.Notification{
@@ -82,13 +87,18 @@ func HandlePostTag(msg wsocket.Message, tagged_user string) {
 		logger.Error.Println("Could not get user: ", err)
 		return
 	}
-	u := mapper.UserNotif(dbuser)
 
 	fromuser, err := orm.Da.GetUserByName(msg.FromUserName)
 	if err != nil {
 		logger.Error.Println("Could not get from user: ", err)
 		return
 	}
+
+	if dbuser.Id == fromuser.Id {
+		return
+	}
+
+	u := mapper.UserNotif(dbuser)
 	from_u := mapper.UserNotif(fromuser)
 
 	n := &database.Notification{
