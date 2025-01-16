@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// GET /action/search/user
 func SearchUsers(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("GET /action/search/user", r.RemoteAddr)
 	queryParams := r.URL.Query()
@@ -50,6 +51,7 @@ func SearchUsers(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+// POST /action/user/{user_encoded}/follow
 func RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
@@ -83,6 +85,7 @@ func RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// DELETE /action/user/{user_encoded}/unfollow
 func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
@@ -140,6 +143,7 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// PUT /action/user/{user_encoded}/accept
 func AcceptFollowRequest(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]

@@ -19,6 +19,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// POST /action/post
 func AddPost(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/post ", r.RemoteAddr)
 	err := r.ParseMultipartForm(10 << 20)
@@ -223,6 +224,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// PUT /action/post/{Post_GUID}
 func EditPost(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
@@ -328,6 +330,7 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// DELETE /action/post/{Post_GUID}
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
@@ -371,6 +374,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// POST /action/post/{Post_GUID}/up
 func RatePostUp(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
@@ -396,6 +400,7 @@ func RatePostUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// POST /action/post/{Post_GUID}/down
 func RatePostDown(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]

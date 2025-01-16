@@ -19,6 +19,7 @@ type JSON_Convo struct {
 	User string `json:"to_user"`
 }
 
+// POST /action/user/{user_encoded}/conversations
 func StartConversation(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
@@ -91,6 +92,7 @@ func StartConversation(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+// GET /action/user/{user_encoded}/conversations
 func GetConversations(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
@@ -170,6 +172,7 @@ func GetConversations(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+// GET /action/user/{user_encoded}/conversations/{conversation_id}/dms
 func GetDMs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
@@ -242,6 +245,7 @@ type JSON_DM struct {
 	Msg string `json:"text"`
 }
 
+// POST /action/user/{user_encoded}/conversations/{conversation_id}/dms
 func SendDM(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
@@ -302,6 +306,7 @@ func SendDM(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// PUT /action/user/{user_encoded}/conversations/{conversation_id}/read
 func ReadConversation(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]

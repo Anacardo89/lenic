@@ -10,6 +10,7 @@ import (
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
+// /action/recover-password
 func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/recover-password ", r.RemoteAddr)
 	// Parse Form
@@ -84,6 +85,7 @@ func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
+// /action/change-password
 func ChangePassword(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/change-password ", r.RemoteAddr)
 	// Parse Form

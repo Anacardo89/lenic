@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// GET /action/user/{user_encoded}/notifications
 func GetNotifs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
@@ -76,6 +77,7 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+// PUT /action/user/{user_encoded}/notifications/{notif_id}/read
 func UpdateNotif(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
