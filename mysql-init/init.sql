@@ -13,6 +13,7 @@ CREATE TABLE users (
 	hashpass VARCHAR(128) NOT NULL DEFAULT '',
 	profile_pic VARCHAR(64) NOT NULL DEFAULT '',
 	profile_pic_ext VARCHAR(10) NOT NULL DEFAULT '',
+	bio VARCHAR(128),
 	user_followers INT NOT NULL DEFAULT 0,
 	user_following INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
