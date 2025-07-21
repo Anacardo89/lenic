@@ -1,0 +1,1 @@
+CREATE TYPE follow_status AS ENUM ('pending', 'accepted', 'refused', 'blocked');
