@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS increment_follow_counts();
