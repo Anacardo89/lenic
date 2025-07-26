@@ -10,7 +10,7 @@ CREATE TABLE users (
     user_following INTEGER NOT NULL DEFAULT 0,
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
-    role user_role NOT NULL DEFAULT 'user',
+    user_role user_role NOT NULL DEFAULT 'user',
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login_at TIMESTAMPTZ,

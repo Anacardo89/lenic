@@ -1,0 +1,5 @@
+CREATE TABLE hashtags (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tag_name VARCHAR(64) NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+);

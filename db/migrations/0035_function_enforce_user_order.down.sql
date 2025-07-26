@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS enforce_user_order();
