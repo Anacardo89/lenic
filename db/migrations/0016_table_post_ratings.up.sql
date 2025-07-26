@@ -1,0 +1,8 @@
+CREATE TABLE post_ratings (
+    raget_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rating_value SMALLINT NOT NULL DEFAULT 0 CHECK (rating_value IN (-1, 0, 1)),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (target_id, user_id)
+);
