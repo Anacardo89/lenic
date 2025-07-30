@@ -3,10 +3,11 @@ package query
 const (
 	InsertUser = `
 	INSERT INTO users
-		SET username=?,
+		SET id=?,
+			username=?,
+			display_name=?
 			email=?,
-			hashpass=?,
-			active=?
+			password_hash=?
 	;`
 
 	SelectUserById = `
