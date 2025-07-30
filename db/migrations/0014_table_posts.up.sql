@@ -1,12 +1,13 @@
 CREATE TABLE posts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     author_id UUID NOT NULL REFERENCES users(id),
-    title VARCHAR(256),
-    content TEXT,
-    post_image VARCHAR(64) NOT NULL DEFAULT '',
+    title VARCHAR(256) NOT NULL,
+    content TEXT NOT NULL,
+    post_image VARCHAR(64),
+    rating INTEGER NOT NULL DEFAULT 0,
+    is_public BOOLEAN NOT NULL DEFAULT FALSE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_public BOOLEAN NOT NULL DEFAULT FALSE,
-    rating INTEGER NOT NULL DEFAULT 0,
-    active BOOLEAN NOT NULL DEFAULT TRUE
+    deleted_at TIMESTAMPTZ
 );
