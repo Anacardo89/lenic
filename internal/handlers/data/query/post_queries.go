@@ -3,93 +3,104 @@ package query
 const (
 	InsertPost = `
 	INSERT INTO posts
-		SET post_guid=?,
-			author_id=?,
-			title=?,
-			content=?,
-			post_image=?,
-			image_ext=?,
-			is_public=?,
-			rating=?,
-			active=?
+	SET id = $1,
+		author_id = $2,
+		title = $3,
+		content = $4,
+		post_image = $5,
+		is_public = $6,
 	;`
 
 	SelectFeed = `
-	SELECT p.* FROM posts p
-	LEFT JOIN follows f ON p.author_id = f.followed_id AND f.follower_id=?
-	WHERE (p.is_public = TRUE AND p.active=1) OR (f.follower_id=? AND f.follow_status = 1 AND p.active=1) OR (p.author_id=? AND p.active=1)
+	SELECT p.* 
+	FROM posts p
+	LEFT JOIN follows f 
+		ON p.author_id = f.followed_id AND f.follower_id = $1
+	WHERE 
+		(p.is_public = TRUE AND p.is_active = 1) OR 
+		(f.follower_id = $1 AND f.follow_status = 1 AND p.is_active = 1) OR 
+		(p.author_id = $2 AND p.is_active = 1)
 	ORDER BY 
 		CASE 
-			WHEN p.created_at >= NOW() - INTERVAL 24 HOUR THEN 1 
+			WHEN p.created_at >= NOW() - INTERVAL '24 hours' 
+			THEN 1 
 			ELSE 2 
-    	END ASC,
+		END
+		ASC,
 		p.rating DESC,
 		p.created_at DESC
 	;`
 
 	SelectActivePosts = `
-	SELECT * FROM posts
-		WHERE active=1
-		ORDER BY created_at DESC
+	SELECT * 
+	FROM posts
+	WHERE is_active = 1
+	ORDER BY created_at DESC
 	;`
 
 	SelectUserActivePosts = `
-	SELECT * FROM posts
-		WHERE author_id=? AND active=1
-		ORDER BY created_at DESC
+	SELECT *
+	FROM posts
+	WHERE author_id = $1 AND is_active = 1
+	ORDER BY created_at DESC
 	;`
 
 	SelectUserPublicPosts = `
-	SELECT * FROM posts
-		WHERE author_id=? AND is_public=TRUE AND active=1
-		ORDER BY created_at DESC
+	SELECT * 
+	FROM posts
+	WHERE author_id = $1 AND is_public = TRUE AND is_active = 1
+	ORDER BY created_at DESC
 	;`
 
-	SelectPostByGUID = `
-	SELECT * FROM posts
-		WHERE post_guid=?
+	SelectPostByID = `
+	SELECT * 
+	FROM posts
+	WHERE id = $1
 	;`
 
 	UpdatePost = `
 	UPDATE posts
-		SET title=?,
-			content=?,
-			is_public=?
-		WHERE post_guid=?
+	SET title = $1,
+		content = $2,
+		is_public = $3
+	WHERE id = $4
 	;`
 
 	SetPostAsInactive = `
 	UPDATE posts
-		SET active=0
-		WHERE post_guid=?
+	SET is_active = 0
+	WHERE id = $1
 	;`
 
 	RatePostUp = `
 	INSERT INTO post_ratings
-		SET post_id=?,
-		user_id=?,
-		rating_value=1
-		ON DUPLICATE KEY UPDATE rating_value = CASE
-        	WHEN rating_value = 1
-				THEN 0
-        	ELSE 1
-    	END
+	SET target_id = $1,
+		user_id = $2,
+		rating_value = 1
+	ON DUPLICATE KEY UPDATE rating_value = 
+		CASE
+			WHEN rating_value = 1
+			THEN 0
+			ELSE 1
+		END
 	;`
 
 	RatePostDown = `
 	INSERT INTO post_ratings
-		SET post_id=?,
-		user_id=?,
-		rating_value=-1
-		ON DUPLICATE KEY UPDATE rating_value = CASE
-        	WHEN rating_value = -1
-				THEN 0
-        	ELSE -1
-    	END
+		SET target_id = $1,
+		user_id = $2,
+		rating_value = -1
+	ON DUPLICATE KEY UPDATE rating_value = 
+		CASE
+			WHEN rating_value = -1
+			THEN 0
+			ELSE -1
+		END
 	;`
 
 	SelectPostUserRating = `
-	SELECT * FROM post_ratings
-		WHERE post_id=? AND user_id=?
+	SELECT *
+	FROM post_ratings
+	WHERE post_id = $1 AND user_id = $2
 	;`
 )
