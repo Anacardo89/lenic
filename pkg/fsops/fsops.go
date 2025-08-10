@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"os"
 
-	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
+	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
 var (

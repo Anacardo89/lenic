@@ -1,7 +1,7 @@
 package rabbit
 
 import (
-	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
+	"github.com/Anacardo89/lenic/pkg/rabbitmq"
 	"github.com/streadway/amqp"
 )
 

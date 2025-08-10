@@ -3,20 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-
-	"github.com/Anacardo89/tpsi25_blog/config"
-	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
-	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
-	"github.com/Anacardo89/tpsi25_blog/internal/routes"
-	"github.com/Anacardo89/tpsi25_blog/internal/server"
-	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
-	"github.com/Anacardo89/tpsi25_blog/pkg/db"
-	"github.com/Anacardo89/tpsi25_blog/pkg/fsops"
-	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
-	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
-	"github.com/Anacardo89/tpsi25_blog/pkg/wsocket"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
 )
 
 var (
