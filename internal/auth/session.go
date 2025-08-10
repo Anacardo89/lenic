@@ -19,11 +19,19 @@ type Config struct {
 	Pass string `yaml:"session_pass"`
 }
 
-var (
-	SessionStore *sessions.CookieStore
-)
+type SessionStore struct {
+	store    *sessions.CookieStore
+	sessions map[string]presentation.Session
+}
 
-func CreateSession(w http.ResponseWriter, r *http.Request) presentation.Session {
+func NewSessionStore(store *sessions.CookieStore) *SessionStore {
+	return &SessionStore{
+		store:    store,
+		sessions: make(map[string]presentation.Session),
+	}
+}
+
+func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request) *presentation.Session {
 	usrSession := presentation.Session{}
 	session, err := SessionStore.Get(r, "lenic")
 	if err != nil {
