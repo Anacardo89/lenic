@@ -1,4 +1,4 @@
-package pages
+package server
 
 import (
 	"encoding/base64"
@@ -20,7 +20,7 @@ type HomePage struct {
 	Session presentation.Session
 }
 
-func Home(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Home(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/home ", r.RemoteAddr)
 	feed := HomePage{}
 	feed.Session = auth.ValidateSession(w, r)
@@ -33,7 +33,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, feed)
 }
 
-func Login(w http.ResponseWriter, r *http.Request) {
+func (s *Server) PageLogin(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/login ", r.RemoteAddr)
 	body, err := os.ReadFile("templates/login.html")
 	if err != nil {
@@ -44,7 +44,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(body))
 }
 
-func Register(w http.ResponseWriter, r *http.Request) {
+func (s *Server) PageRegister(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/register ", r.RemoteAddr)
 	body, err := os.ReadFile("templates/register.html")
 	if err != nil {
@@ -55,7 +55,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(body))
 }
 
-func ForgotPassword(w http.ResponseWriter, r *http.Request) {
+func (s *Server) PageForgotPassword(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/forgot-password ", r.RemoteAddr)
 	body, err := os.ReadFile("templates/forgot-password.html")
 	if err != nil {
@@ -71,7 +71,7 @@ type RecoverPasswdPage struct {
 	Token string
 }
 
-func RecoverPassword(w http.ResponseWriter, r *http.Request) {
+func (s *Server) PageRecoverPassword(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/recover-password ", r.RemoteAddr)
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
@@ -109,7 +109,7 @@ func RecoverPassword(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, page)
 }
 
-func ChangePassword(w http.ResponseWriter, r *http.Request) {
+func (s *Server) PageChangePassword(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/change-password ", r.RemoteAddr)
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]

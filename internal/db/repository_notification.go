@@ -34,7 +34,7 @@ func (c *dbClient) CreateNotification(ctx context.Context, n *Notification) (uui
 	return ID, err
 }
 
-func (c *dbClient) GetFollowNotification(ctx context.Context, userID uuid.UUID, fromUserID uuid.UUID) (*Notification, error) {
+func (c *dbClient) GetFollowNotification(ctx context.Context, userID, fromUserID uuid.UUID) (*Notification, error) {
 
 	query := `
 	SELECT *
@@ -45,23 +45,23 @@ func (c *dbClient) GetFollowNotification(ctx context.Context, userID uuid.UUID, 
 	;`
 
 	n := Notification{}
-	row := c.Pool().QueryRow(ctx, query, userID, fromUserID)
-	err := row.Scan(
-		&n.ID,
-		&n.UserID,
-		&n.FromUserID,
-		&n.NotifType,
-		&n.NotifText,
-		&n.ResourceID,
-		&n.ParentID,
-		&n.IsRead,
-		&n.CreatedAt,
-		&n.UpdatedAt,
-	)
+	err := c.Pool().QueryRow(ctx, query, userID, fromUserID).
+		Scan(
+			&n.ID,
+			&n.UserID,
+			&n.FromUserID,
+			&n.NotifType,
+			&n.NotifText,
+			&n.ResourceID,
+			&n.ParentID,
+			&n.IsRead,
+			&n.CreatedAt,
+			&n.UpdatedAt,
+		)
 	return &n, err
 }
 
-func (c *dbClient) GetNotificationById(ctx context.Context, ID uuid.UUID) (*Notification, error) {
+func (c *dbClient) GetNotification(ctx context.Context, ID uuid.UUID) (*Notification, error) {
 
 	query := `
 	SELECT *
@@ -70,23 +70,23 @@ func (c *dbClient) GetNotificationById(ctx context.Context, ID uuid.UUID) (*Noti
 	;`
 
 	n := Notification{}
-	row := c.Pool().QueryRow(ctx, query, ID)
-	err := row.Scan(
-		&n.ID,
-		&n.UserID,
-		&n.FromUserID,
-		&n.NotifType,
-		&n.NotifText,
-		&n.ResourceID,
-		&n.ParentID,
-		&n.IsRead,
-		&n.CreatedAt,
-		&n.UpdatedAt,
-	)
+	err := c.Pool().QueryRow(ctx, query, ID).
+		Scan(
+			&n.ID,
+			&n.UserID,
+			&n.FromUserID,
+			&n.NotifType,
+			&n.NotifText,
+			&n.ResourceID,
+			&n.ParentID,
+			&n.IsRead,
+			&n.CreatedAt,
+			&n.UpdatedAt,
+		)
 	return &n, err
 }
 
-func (c *dbClient) GetNotificationsByUser(ctx context.Context, userID uuid.UUID, limit int, offset int) ([]*Notification, error) {
+func (c *dbClient) GetNotificationsByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*Notification, error) {
 
 	query := `
 	SELECT *
@@ -141,7 +141,7 @@ func (c *dbClient) UpdateNotificationRead(ctx context.Context, ID uuid.UUID) err
 	return err
 }
 
-func (c *dbClient) DeleteNotificationByID(ctx context.Context, ID uuid.UUID) error {
+func (c *dbClient) DeleteNotification(ctx context.Context, ID uuid.UUID) error {
 
 	query := `
 	DELETE FROM notifications

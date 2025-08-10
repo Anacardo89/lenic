@@ -1,4 +1,4 @@
-package pages
+package server
 
 import (
 	"encoding/base64"
@@ -19,7 +19,7 @@ type FeedPage struct {
 	Posts   []presentation.Post
 }
 
-func Feed(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Feed(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("/user/%s/feed %s\n", encoded, r.RemoteAddr)

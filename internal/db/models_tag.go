@@ -25,19 +25,19 @@ func (r ResourceType) String() string {
 }
 
 type UserTag struct {
-	ID               uuid.UUID
-	TaggedResourceID uuid.UUID
-	ResourceTpe      string
+	UserID      uuid.UUID
+	TargetID    uuid.UUID
+	ResourceTpe string
 }
 
-type Hashtag struct {
+type HashTag struct {
 	ID        uuid.UUID
 	TagName   string
 	CreatedAt time.Time
 }
 
-type HashtagResource struct {
-	TagID            uuid.UUID
-	TaggedResourceID uuid.UUID
-	ResourceTpe      string
+type HashTagResource struct {
+	TagID       uuid.UUID
+	TargetID    uuid.UUID
+	ResourceTpe string
 }

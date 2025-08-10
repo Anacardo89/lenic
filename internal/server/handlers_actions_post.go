@@ -1,4 +1,4 @@
-package actions
+package server
 
 import (
 	"database/sql"
@@ -20,7 +20,7 @@ import (
 )
 
 // POST /action/post
-func AddPost(w http.ResponseWriter, r *http.Request) {
+func (s *Server) AddPost(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/post ", r.RemoteAddr)
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
@@ -225,7 +225,7 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 }
 
 // PUT /action/post/{Post_GUID}
-func EditPost(w http.ResponseWriter, r *http.Request) {
+func (s *Server) EditPost(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	logger.Info.Printf("PUT /action/post/%s %s\n", postGUID, r.RemoteAddr)
@@ -331,7 +331,7 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 }
 
 // DELETE /action/post/{Post_GUID}
-func DeletePost(w http.ResponseWriter, r *http.Request) {
+func (s *Server) DeletePost(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	logger.Info.Printf("DELETE /action/post/%s %s\n", postGUID, r.RemoteAddr)
@@ -375,7 +375,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 }
 
 // POST /action/post/{Post_GUID}/up
-func RatePostUp(w http.ResponseWriter, r *http.Request) {
+func (s *Server) RatePostUp(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	logger.Info.Printf("POST /action/post/%s/up %s\n", postGUID, r.RemoteAddr)
@@ -401,7 +401,7 @@ func RatePostUp(w http.ResponseWriter, r *http.Request) {
 }
 
 // POST /action/post/{Post_GUID}/down
-func RatePostDown(w http.ResponseWriter, r *http.Request) {
+func (s *Server) RatePostDown(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	logger.Info.Printf("POST /action/post/%s/down %s\n", postGUID, r.RemoteAddr)

@@ -1,4 +1,4 @@
-package actions
+package server
 
 import (
 	"encoding/base64"
@@ -14,7 +14,7 @@ import (
 )
 
 // GET /action/user/{user_encoded}/notifications
-func GetNotifs(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetNotifs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("GET /action/user/%s/notifications %s\n", encoded, r.RemoteAddr)
@@ -78,7 +78,7 @@ func GetNotifs(w http.ResponseWriter, r *http.Request) {
 }
 
 // PUT /action/user/{user_encoded}/notifications/{notif_id}/read
-func UpdateNotif(w http.ResponseWriter, r *http.Request) {
+func (s *Server) UpdateNotif(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	notif_id := vars["notif_id"]

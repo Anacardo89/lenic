@@ -1,24 +1,30 @@
 package server
 
 import (
-	"database/sql"
 	"net/http"
-)
 
-type Config struct {
-	Host      string `yaml:"host"`
-	ProxyPORT string `yaml:"proxyPort"`
-	HttpPORT  string `yaml:"httpPort"`
-	HttpsPORT string `yaml:"httpsPort"`
-}
+	"github.com/Anacardo89/tpsi25_blog/config"
+	"github.com/Anacardo89/tpsi25_blog/internal/auth"
+	"github.com/Anacardo89/tpsi25_blog/internal/db"
+	"github.com/gorilla/mux"
+)
 
 type Server struct {
-	http.Server
-	DB *sql.DB
-	SessionStore
-	// other dependencies
+	cfg          *config.Config
+	DB           db.DBRepository
+	SessionStore *auth.SessionStore
+	router       http.Handler
 }
 
-var (
-	Server *Config
-)
+func NewServer(cfg *config.Config, db db.DBRepository, sessionStore *auth.SessionStore) *Server {
+	s := &Server{
+		cfg:          cfg,
+		DB:           db,
+		SessionStore: sessionStore,
+	}
+
+	r := mux.NewRouter()
+	s.DeclareRoutes(r)
+	s.router = r
+	return s
+}

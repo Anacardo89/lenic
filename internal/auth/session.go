@@ -15,10 +15,6 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-type Config struct {
-	Pass string `yaml:"session_pass"`
-}
-
 type SessionStore struct {
 	store    *sessions.CookieStore
 	sessions map[string]presentation.Session

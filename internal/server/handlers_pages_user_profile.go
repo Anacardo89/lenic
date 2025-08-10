@@ -1,4 +1,4 @@
-package pages
+package server
 
 import (
 	"database/sql"
@@ -23,7 +23,7 @@ type ProfilePage struct {
 	Follows int
 }
 
-func UserProfile(w http.ResponseWriter, r *http.Request) {
+func (s *Server) UserProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("/user/%s %s\n", encoded, r.RemoteAddr)

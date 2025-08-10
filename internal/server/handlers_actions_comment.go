@@ -1,4 +1,4 @@
-package actions
+package server
 
 import (
 	"database/sql"
@@ -22,7 +22,7 @@ type Response struct {
 }
 
 // POST /action/post/{Post_GUID}/comment
-func AddComment(w http.ResponseWriter, r *http.Request) {
+func (s *Server) AddComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	logger.Info.Printf("POST /action/post/%s/comment %s\n", postGUID, r.RemoteAddr)
@@ -132,7 +132,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 }
 
 // PUT /action/post/{Post_GUID}/comment/{comment_id}
-func EditComment(w http.ResponseWriter, r *http.Request) {
+func (s *Server) EditComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	id := vars["comment_id"]
@@ -243,7 +243,7 @@ func EditComment(w http.ResponseWriter, r *http.Request) {
 }
 
 // DELETE /action/post/{Post_GUID}/comment/{comment_id}
-func DeleteComment(w http.ResponseWriter, r *http.Request) {
+func (s *Server) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	id := vars["comment_id"]
@@ -295,7 +295,7 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 }
 
 // POST /action/post/{Post_GUID}/comment/{comment_id}/up
-func RateCommentUp(w http.ResponseWriter, r *http.Request) {
+func (s *Server) RateCommentUp(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	id := vars["comment_id"]
@@ -319,7 +319,7 @@ func RateCommentUp(w http.ResponseWriter, r *http.Request) {
 }
 
 // POST /action/post/{Post_GUID}/comment/{comment_id}/down
-func RateCommentDown(w http.ResponseWriter, r *http.Request) {
+func (s *Server) RateCommentDown(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	id := vars["comment_id"]

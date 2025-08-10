@@ -174,7 +174,7 @@ func (c *dbClient) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) ([]
 	return posts, nil
 }
 
-func (c *dbClient) GetPostByID(ctx context.Context, ID uuid.UUID) (*Post, error) {
+func (c *dbClient) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 
 	query := `
 	SELECT * 
@@ -183,20 +183,20 @@ func (c *dbClient) GetPostByID(ctx context.Context, ID uuid.UUID) (*Post, error)
 	;`
 
 	p := Post{}
-	row := c.Pool().QueryRow(ctx, query, ID)
-	err := row.Scan(
-		&p.ID,
-		&p.AuthorID,
-		&p.Title,
-		&p.Content,
-		&p.PostImage,
-		&p.Rating,
-		&p.IsPublic,
-		&p.IsActive,
-		&p.CreatedAt,
-		&p.UpdatedAt,
-		&p.DeletedAt,
-	)
+	err := c.Pool().QueryRow(ctx, query, ID).
+		Scan(
+			&p.ID,
+			&p.AuthorID,
+			&p.Title,
+			&p.Content,
+			&p.PostImage,
+			&p.Rating,
+			&p.IsPublic,
+			&p.IsActive,
+			&p.CreatedAt,
+			&p.UpdatedAt,
+			&p.DeletedAt,
+		)
 	return &p, err
 }
 
@@ -233,7 +233,7 @@ func (c *dbClient) DisablePost(ctx context.Context, ID uuid.UUID) error {
 }
 
 // Post Ratings
-func (c *dbClient) RatePostUp(ctx context.Context, targetID uuid.UUID, userID uuid.UUID) error {
+func (c *dbClient) RatePostUp(ctx context.Context, targetID, userID uuid.UUID) error {
 
 	query := `
 	INSERT INTO post_ratings (
@@ -254,7 +254,7 @@ func (c *dbClient) RatePostUp(ctx context.Context, targetID uuid.UUID, userID uu
 	return err
 }
 
-func (c *dbClient) RatePostDown(ctx context.Context, targetID uuid.UUID, userID uuid.UUID) error {
+func (c *dbClient) RatePostDown(ctx context.Context, targetID, userID uuid.UUID) error {
 
 	query := `
 	INSERT INTO post_ratings (
@@ -276,27 +276,20 @@ func (c *dbClient) RatePostDown(ctx context.Context, targetID uuid.UUID, userID 
 	return err
 }
 
-func (c *dbClient) GetPostUserRating(ctx context.Context, targetID uuid.UUID, userID uuid.UUID) (*PostRatings, error) {
+func (c *dbClient) GetPostUserRating(ctx context.Context, targetID, userID uuid.UUID) (*PostRatings, error) {
 	query := `
 	SELECT *
 	FROM post_ratings
 	WHERE target_id = $1 AND user_id = $2
 	;`
 	pr := PostRatings{}
-	row := c.Pool().QueryRow(ctx, query, targetID, userID)
-	err := row.Scan(
-		&pr.TargetID,
-		&pr.UserID,
-		&pr.RatingValue,
-		&pr.CreatedAt,
-		&pr.UpdatedAt,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return &pr, err
-		} else {
-			return nil, err
-		}
-	}
-	return &pr, nil
+	err := c.Pool().QueryRow(ctx, query, targetID, userID).
+		Scan(
+			&pr.TargetID,
+			&pr.UserID,
+			&pr.RatingValue,
+			&pr.CreatedAt,
+			&pr.UpdatedAt,
+		)
+	return &pr, err
 }

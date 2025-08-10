@@ -39,24 +39,24 @@ func (c *dbClient) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, error)
 	;`
 
 	u := User{}
-	row := c.Pool().QueryRow(ctx, query, ID)
-	err := row.Scan(
-		&u.ID,
-		&u.UserName,
-		&u.DisplayName,
-		&u.Email,
-		&u.PasswordHash,
-		&u.ProfilePic,
-		&u.Bio,
-		&u.Followers,
-		&u.Following,
-		&u.IsActive,
-		&u.IsVerified,
-		&u.UserRole,
-		&u.CreatedAt,
-		&u.UpdatedAt,
-		&u.DeletedAt,
-	)
+	err := c.Pool().QueryRow(ctx, query, ID).
+		Scan(
+			&u.ID,
+			&u.UserName,
+			&u.DisplayName,
+			&u.Email,
+			&u.PasswordHash,
+			&u.ProfilePic,
+			&u.Bio,
+			&u.Followers,
+			&u.Following,
+			&u.IsActive,
+			&u.IsVerified,
+			&u.UserRole,
+			&u.CreatedAt,
+			&u.UpdatedAt,
+			&u.DeletedAt,
+		)
 	return &u, err
 }
 
@@ -69,24 +69,24 @@ func (c *dbClient) GetUserByUserName(ctx context.Context, userName string) (*Use
 	;`
 
 	u := User{}
-	row := c.Pool().QueryRow(ctx, query, userName)
-	err := row.Scan(
-		&u.ID,
-		&u.UserName,
-		&u.DisplayName,
-		&u.Email,
-		&u.PasswordHash,
-		&u.ProfilePic,
-		&u.Bio,
-		&u.Followers,
-		&u.Following,
-		&u.IsActive,
-		&u.IsVerified,
-		&u.UserRole,
-		&u.CreatedAt,
-		&u.UpdatedAt,
-		&u.DeletedAt,
-	)
+	err := c.Pool().QueryRow(ctx, query, userName).
+		Scan(
+			&u.ID,
+			&u.UserName,
+			&u.DisplayName,
+			&u.Email,
+			&u.PasswordHash,
+			&u.ProfilePic,
+			&u.Bio,
+			&u.Followers,
+			&u.Following,
+			&u.IsActive,
+			&u.IsVerified,
+			&u.UserRole,
+			&u.CreatedAt,
+			&u.UpdatedAt,
+			&u.DeletedAt,
+		)
 	return &u, err
 }
 
@@ -99,24 +99,24 @@ func (c *dbClient) GetUserByEmail(ctx context.Context, email string) (*User, err
 	;`
 
 	u := User{}
-	row := c.Pool().QueryRow(ctx, query, email)
-	err := row.Scan(
-		&u.ID,
-		&u.UserName,
-		&u.DisplayName,
-		&u.Email,
-		&u.PasswordHash,
-		&u.ProfilePic,
-		&u.Bio,
-		&u.Followers,
-		&u.Following,
-		&u.IsActive,
-		&u.IsVerified,
-		&u.UserRole,
-		&u.CreatedAt,
-		&u.UpdatedAt,
-		&u.DeletedAt,
-	)
+	err := c.Pool().QueryRow(ctx, query, email).
+		Scan(
+			&u.ID,
+			&u.UserName,
+			&u.DisplayName,
+			&u.Email,
+			&u.PasswordHash,
+			&u.ProfilePic,
+			&u.Bio,
+			&u.Followers,
+			&u.Following,
+			&u.IsActive,
+			&u.IsVerified,
+			&u.UserRole,
+			&u.CreatedAt,
+			&u.UpdatedAt,
+			&u.DeletedAt,
+		)
 	return &u, err
 }
 
@@ -178,7 +178,7 @@ func (c *dbClient) SetUserActive(ctx context.Context, userName string) error {
 	return err
 }
 
-func (c *dbClient) SetNewPassword(ctx context.Context, userName string, pass string) error {
+func (c *dbClient) SetNewPassword(ctx context.Context, userName, pass string) error {
 
 	query := `
 	UPDATE users
@@ -203,7 +203,7 @@ func (c *dbClient) UpdateProfilePic(ctx context.Context, userName string, profil
 }
 
 // Follow
-func (c *dbClient) FollowUser(ctx context.Context, followerID int, followedID int) error {
+func (c *dbClient) FollowUser(ctx context.Context, followerID, followedID uuid.UUID) error {
 
 	query := `
 	INSERT INTO follows (
@@ -217,7 +217,7 @@ func (c *dbClient) FollowUser(ctx context.Context, followerID int, followedID in
 	return err
 }
 
-func (c *dbClient) AcceptFollow(ctx context.Context, followerID int, followedID int) error {
+func (c *dbClient) AcceptFollow(ctx context.Context, followerID, followedID uuid.UUID) error {
 
 	query := `
 	UPDATE follows
@@ -230,7 +230,7 @@ func (c *dbClient) AcceptFollow(ctx context.Context, followerID int, followedID 
 
 }
 
-func (c *dbClient) UnfollowUser(ctx context.Context, followerID int, followedID int) error {
+func (c *dbClient) UnfollowUser(ctx context.Context, followerID, followedID uuid.UUID) error {
 
 	query := `
 	DELETE FROM follows
@@ -241,7 +241,7 @@ func (c *dbClient) UnfollowUser(ctx context.Context, followerID int, followedID 
 	return err
 }
 
-func (c *dbClient) GetUserFollows(ctx context.Context, followerID int, followedID int) (*Follows, error) {
+func (c *dbClient) GetUserFollows(ctx context.Context, followerID, followedID uuid.UUID) (*Follows, error) {
 
 	query := `
 	SELECT *
@@ -250,18 +250,18 @@ func (c *dbClient) GetUserFollows(ctx context.Context, followerID int, followedI
 	;`
 
 	f := Follows{}
-	row := c.Pool().QueryRow(ctx, query, followerID, followedID)
-	err := row.Scan(
-		&f.FollowerID,
-		&f.FollowedID,
-		&f.FollowStatus,
-		&f.CreatedAt,
-		&f.UpdatedAt,
-	)
+	err := c.Pool().QueryRow(ctx, query, followerID, followedID).
+		Scan(
+			&f.FollowerID,
+			&f.FollowedID,
+			&f.FollowStatus,
+			&f.CreatedAt,
+			&f.UpdatedAt,
+		)
 	return &f, err
 }
 
-func (c *dbClient) GetFollowers(ctx context.Context, followedID int) ([]*Follows, error) {
+func (c *dbClient) GetFollowers(ctx context.Context, followedID uuid.UUID) ([]*Follows, error) {
 
 	query := `
 	SELECT *
@@ -296,7 +296,7 @@ func (c *dbClient) GetFollowers(ctx context.Context, followedID int) ([]*Follows
 	return follows, nil
 }
 
-func (c *dbClient) GetFollowing(ctx context.Context, followerID int) ([]*Follows, error) {
+func (c *dbClient) GetFollowing(ctx context.Context, followerID uuid.UUID) ([]*Follows, error) {
 
 	query := `
 	SELECT *

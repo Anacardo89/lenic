@@ -1,4 +1,4 @@
-package actions
+package server
 
 import (
 	"database/sql"
@@ -20,7 +20,7 @@ type JSON_Convo struct {
 }
 
 // POST /action/user/{user_encoded}/conversations
-func StartConversation(w http.ResponseWriter, r *http.Request) {
+func (s *Server) StartConversation(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("POST /action/user/%s/conversations %s\n", encoded, r.RemoteAddr)
@@ -93,7 +93,7 @@ func StartConversation(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET /action/user/{user_encoded}/conversations
-func GetConversations(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetConversations(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("GET /action/user/%s/conversations %s\n", encoded, r.RemoteAddr)
@@ -173,7 +173,7 @@ func GetConversations(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET /action/user/{user_encoded}/conversations/{conversation_id}/dms
-func GetDMs(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetDMs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	conversation_id := vars["conversation_id"]
@@ -246,7 +246,7 @@ type JSON_DM struct {
 }
 
 // POST /action/user/{user_encoded}/conversations/{conversation_id}/dms
-func SendDM(w http.ResponseWriter, r *http.Request) {
+func (s *Server) SendDM(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	conversation_id := vars["conversation_id"]
@@ -307,7 +307,7 @@ func SendDM(w http.ResponseWriter, r *http.Request) {
 }
 
 // PUT /action/user/{user_encoded}/conversations/{conversation_id}/read
-func ReadConversation(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ReadConversation(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	convo_id := vars["conversation_id"]

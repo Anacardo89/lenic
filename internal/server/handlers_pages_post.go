@@ -1,4 +1,4 @@
-package pages
+package server
 
 import (
 	"database/sql"
@@ -19,7 +19,7 @@ type PostPage struct {
 	Post    presentation.Post
 }
 
-func NewPost(w http.ResponseWriter, r *http.Request) {
+func (s *Server) NewPost(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/newPost ", r.RemoteAddr)
 	postp := PostPage{
 		Session: auth.ValidateSession(w, r),
@@ -34,7 +34,7 @@ func NewPost(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, postp)
 }
 
-func Post(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Post(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postGUID := vars["post_guid"]
 	logger.Info.Printf("/post/%s %s\n", postGUID, r.RemoteAddr)

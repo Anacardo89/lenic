@@ -1,4 +1,4 @@
-package pages
+package server
 
 import (
 	"html/template"
@@ -11,7 +11,7 @@ type ErrorPage struct {
 	ErrorMsg string
 }
 
-func Error(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Error(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/error ", r.RemoteAddr)
 
 	queryParams := r.URL.Query()

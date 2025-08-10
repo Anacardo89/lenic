@@ -1,4 +1,4 @@
-package pages
+package server
 
 import (
 	"encoding/base64"
@@ -26,7 +26,7 @@ type FollowingPage struct {
 	Following []presentation.User
 }
 
-func UserFollowers(w http.ResponseWriter, r *http.Request) {
+func (s *Server) UserFollowers(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("/user/%s/followers %s\n", encoded, r.RemoteAddr)
@@ -80,7 +80,7 @@ func UserFollowers(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, followersp)
 }
 
-func UserFollowing(w http.ResponseWriter, r *http.Request) {
+func (s *Server) UserFollowing(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("/user/%s/following %s\n", encoded, r.RemoteAddr)

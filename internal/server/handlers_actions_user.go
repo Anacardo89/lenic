@@ -1,4 +1,4 @@
-package actions
+package server
 
 import (
 	"database/sql"
@@ -15,7 +15,7 @@ import (
 )
 
 // GET /action/search/user
-func SearchUsers(w http.ResponseWriter, r *http.Request) {
+func (s *Server) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("GET /action/search/user", r.RemoteAddr)
 	queryParams := r.URL.Query()
 	username := queryParams.Get("username")
@@ -52,7 +52,7 @@ func SearchUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 // POST /action/user/{user_encoded}/follow
-func RequestFollowUser(w http.ResponseWriter, r *http.Request) {
+func (s *Server) RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("POST /action/user/%s/follow %s\n", encoded, r.RemoteAddr)
@@ -86,7 +86,7 @@ func RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // DELETE /action/user/{user_encoded}/unfollow
-func UnfollowUser(w http.ResponseWriter, r *http.Request) {
+func (s *Server) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("DELETE /action/user/%s/unfollow %s\n", encoded, r.RemoteAddr)
@@ -144,7 +144,7 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // PUT /action/user/{user_encoded}/accept
-func AcceptFollowRequest(w http.ResponseWriter, r *http.Request) {
+func (s *Server) AcceptFollowRequest(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("PUT /action/user/%s/accept %s\n", encoded, r.RemoteAddr)

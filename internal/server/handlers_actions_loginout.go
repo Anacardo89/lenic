@@ -1,4 +1,4 @@
-package actions
+package server
 
 import (
 	"database/sql"
@@ -7,9 +7,7 @@ import (
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
-	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
-	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 )
 
@@ -19,7 +17,7 @@ type LoginRequest struct {
 }
 
 // /action/login
-func Login(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/login ", r.RemoteAddr)
 	var (
 		err      error
@@ -70,7 +68,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 // /action/logout
-func Logout(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Logout(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/logout ", r.RemoteAddr)
 	session, err := auth.SessionStore.Get(r, "lenic")
 	if err != nil {

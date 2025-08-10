@@ -1,4 +1,4 @@
-package actions
+package server
 
 import (
 	"database/sql"
@@ -17,7 +17,7 @@ import (
 )
 
 // /action/image
-func PostImage(w http.ResponseWriter, r *http.Request) {
+func (s *Server) PostImage(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/image ", r.RemoteAddr)
 	guid := r.URL.Query().Get("guid")
 	if guid == "" {
@@ -57,7 +57,7 @@ func PostImage(w http.ResponseWriter, r *http.Request) {
 }
 
 // /action/profile-pic
-func ProfilePic(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ProfilePic(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/profile-pic ", r.RemoteAddr)
 	encoded := r.URL.Query().Get("user-encoded")
 	if encoded == "" {
@@ -105,7 +105,7 @@ func ProfilePic(w http.ResponseWriter, r *http.Request) {
 }
 
 // /action/user/{user_encoded}/profile-pic
-func PostProfilePic(w http.ResponseWriter, r *http.Request) {
+func (s *Server) PostProfilePic(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	logger.Info.Printf("/action/user/%s/profile-pic  %s\n", encoded, r.RemoteAddr)

@@ -1,19 +1,18 @@
-package actions
+package server
 
 import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/data/orm"
 	"github.com/Anacardo89/tpsi25_blog/internal/handlers/redirect"
+	"github.com/Anacardo89/tpsi25_blog/internal/helpers"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mapper"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/mqmodel"
 	"github.com/Anacardo89/tpsi25_blog/internal/model/presentation"
 	"github.com/Anacardo89/tpsi25_blog/internal/rabbit"
-	"github.com/Anacardo89/tpsi25_blog/internal/server"
 	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/Anacardo89/tpsi25_blog/pkg/logger"
 	"github.com/Anacardo89/tpsi25_blog/pkg/rabbitmq"
@@ -21,7 +20,7 @@ import (
 )
 
 // /action/register
-func RegisterUser(w http.ResponseWriter, r *http.Request) {
+func (s *Server) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/register ", r.RemoteAddr)
 	// Parse Form
 	err := r.ParseForm()
@@ -69,7 +68,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	msg := mqmodel.Register{
 		Email: u.Email,
 		User:  u.UserName,
-		Link:  makeActivateUserLink(u.UserName),
+		Link:  helpers.MakeActivateUserLink(u.UserName),
 	}
 	data, err := json.Marshal(msg)
 	if err != nil {
@@ -100,7 +99,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // /action/activate
-func ActivateUser(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ActivateUser(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/activate ", r.RemoteAddr)
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
@@ -120,9 +119,4 @@ func ActivateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Info.Printf("OK - /action/activate %s %s\n", r.RemoteAddr, userName)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
-}
-
-func makeActivateUserLink(user string) string {
-	encoded := base64.URLEncoding.EncodeToString([]byte(user))
-	return fmt.Sprintf("https://%s:%s/action/activate/%s", server.Server.Host, server.Server.HttpsPORT, encoded)
 }
