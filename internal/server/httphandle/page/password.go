@@ -10,7 +10,7 @@ import (
 	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
 	"github.com/Anacardo89/lenic/internal/handlers/redirect"
 	"github.com/Anacardo89/lenic/internal/model/mapper"
-	"github.com/Anacardo89/lenic/internal/model/presentation"
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/auth"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/gorilla/mux"
@@ -28,7 +28,7 @@ func (h *PageHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 }
 
 type RecoverPasswdPage struct {
-	User  presentation.User
+	User  models.User
 	Token string
 }
 

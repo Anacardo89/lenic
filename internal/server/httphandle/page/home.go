@@ -7,13 +7,13 @@ import (
 	"os"
 
 	"github.com/Anacardo89/lenic/internal/handlers/redirect"
-	"github.com/Anacardo89/lenic/internal/model/presentation"
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/auth"
 	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
 type HomePage struct {
-	Session presentation.Session
+	Session models.Session
 }
 
 func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {

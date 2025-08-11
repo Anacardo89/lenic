@@ -34,11 +34,13 @@ func (s *Server) DeclareRoutes(r *mux.Router) {
 	r.HandleFunc("/action/user/{encoded_user_name}/accept", s.apiHandler.AcceptFollowRequest).Methods("PUT").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/unfollow", s.apiHandler.UnfollowUser).Methods("DELETE").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/profile-pic", s.apiHandler.PostProfilePic).Methods("POST").Schemes("https")
+	// DM
 	r.HandleFunc("/action/user/{encoded_user_name}/conversations", s.apiHandler.GetConversations).Methods("GET").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/conversations", s.apiHandler.StartConversation).Methods("POST").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/conversations/{conversation_id}/read", s.apiHandler.ReadConversation).Methods("PUT").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/conversations/{conversation_id}/dms", s.apiHandler.GetDMs).Methods("GET").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/conversations/{conversation_id}/dms", s.apiHandler.SendDM).Methods("POST").Schemes("https")
+	// Notif
 	r.HandleFunc("/action/user/{encoded_user_name}/notifications", s.apiHandler.GetNotifs).Methods("GET").Schemes("https")
 	r.HandleFunc("/action/user/{encoded_user_name}/notifications/{notif_id}/read", s.apiHandler.UpdateNotif).Methods("PUT").Schemes("https")
 	// Post

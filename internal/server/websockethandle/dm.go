@@ -2,59 +2,53 @@ package websockethandle
 
 import (
 	"encoding/json"
-	"strconv"
 
-	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
-	"github.com/Anacardo89/lenic/internal/model/mapper"
-	"github.com/Anacardo89/lenic/internal/model/presentation"
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/logger"
-	"github.com/Anacardo89/lenic/pkg/wsocket"
 )
 
 func (h *WSHandler) handleDM(msg Message) {
 	logger.Info.Println("/ws handling DM")
 	logger.Debug.Println(msg)
 
-	dbuser, err := orm.Da.GetUserByName(msg.ResourceId)
+	dbUser, err := h.db.GetUserByUserName(h.ctx, msg.ResourceID)
 	if err != nil {
 		logger.Error.Println("Could not get post: ", err)
 		return
 	}
 
-	fromuser, err := orm.Da.GetUserByName(msg.FromUserName)
+	fromUser, err := h.db.GetUserByUserName(h.ctx, msg.FromUserName)
 	if err != nil {
 		logger.Error.Println("Could not get from user: ", err)
 		return
 	}
 
-	if dbuser.Id == fromuser.Id {
+	if dbUser.ID == fromUser.ID {
 		return
 	}
 
-	u := mapper.UserNotif(dbuser)
-	from_u := mapper.UserNotif(fromuser)
+	u := models.FromDBUserNotif(dbUser)
+	fromU := models.FromDBUserNotif(fromUser)
 
-	dbConvo, err := orm.Da.GetConversationByUserIds(u.Id, from_u.Id)
+	dbConvo, err := h.db.GetConversationByUsers(h.ctx, u.ID, fromU.ID)
 	if err != nil {
 		logger.Error.Println("Could not get conversation: ", err)
 		return
 	}
 
-	err = orm.Da.UpdateConversationById(dbConvo.Id)
+	err = h.db.UpdateConversation(h.ctx, dbConvo.ID)
 	if err != nil {
 		logger.Error.Println("Could not update conversation: ", err)
 		return
 	}
 
-	convo_id := strconv.Itoa(dbConvo.Id)
-
-	n := &presentation.Notification{
+	n := &models.Notification{
 		User:       *u,
-		FromUser:   *from_u,
-		NotifType:  msg.Type,
-		NotifMsg:   msg.Msg,
-		ResourceId: convo_id,
-		ParentId:   "",
+		FromUser:   *fromU,
+		NotifType:  models.NotifType(msg.Type),
+		NotifText:  msg.Msg,
+		ResourceID: dbConvo.ID.String(),
+		ParentID:   "",
 		IsRead:     false,
 	}
 
@@ -64,5 +58,7 @@ func (h *WSHandler) handleDM(msg Message) {
 		return
 	}
 
-	wsocket.WSConnMan.SendMessage(u.UserName, data)
+	if h.wsConnMann.IsConnected(dbUser.UserName) {
+		h.wsConnMann.SendMessage(u.UserName, data)
+	}
 }

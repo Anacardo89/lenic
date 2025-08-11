@@ -8,15 +8,15 @@ import (
 	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
 	"github.com/Anacardo89/lenic/internal/handlers/redirect"
 	"github.com/Anacardo89/lenic/internal/model/mapper"
-	"github.com/Anacardo89/lenic/internal/model/presentation"
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/auth"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
 type FeedPage struct {
-	Session presentation.Session
-	Posts   []presentation.Post
+	Session models.Session
+	Posts   []models.Post
 }
 
 func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +33,7 @@ func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 	userName := string(bytes)
 	logger.Info.Printf("/user/%s/feed %s %s\n", encoded, r.RemoteAddr, userName)
 
-	dbuser, err := orm.Da.GetUserByName(userName)
+	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
 		logger.Error.Printf("/user/%s/feed - Could not get user: %s\n", encoded, err)
 		redirect.RedirectToError(w, r, err.Error())
@@ -42,7 +42,7 @@ func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 
 	feed := FeedPage{}
 	feed.Session = auth.ValidateSession(w, r)
-	dbposts, err := orm.Da.GetFeed(dbuser.Id)
+	dbPosts, err := h.db.GetFeed(dbuser.Id)
 	if err != nil {
 		logger.Error.Printf("/user/%s/feed - Could not get Posts: %s\n", encoded, err)
 		redirect.RedirectToError(w, r, err.Error())

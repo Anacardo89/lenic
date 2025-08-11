@@ -10,43 +10,43 @@ import (
 )
 
 func (h *WSHandler) handleCommentOnPost(msg Message) {
-	comment_id, err := strconv.Atoi(msg.ResourceID)
+	commentID, err := strconv.Atoi(msg.ResourceID)
 	if err != nil {
 		logger.Error.Printf("Could not convert %s to int: %s\n", msg.ResourceID, err)
 		return
 	}
-	c, err := h.db.GetComment(h.ctx, comment_id)
+	c, err := h.db.GetComment(h.ctx, commentID)
 	if err != nil {
 		logger.Error.Println("Could not get comment: ", err)
 		return
 	}
-	dbpost, err := h.db.GetPost(h.ctx, c.PostID)
+	dbPost, err := h.db.GetPost(h.ctx, c.PostID)
 	if err != nil {
 		logger.Error.Println("Could not get post: ", err)
 		return
 	}
-	dbuser, err := h.db.GetUserByID(h.ctx, dbpost.AuthorID)
+	dbUser, err := h.db.GetUserByID(h.ctx, dbPost.AuthorID)
 	if err != nil {
 		logger.Error.Println("Could not get user: ", err)
 		return
 	}
 
-	fromuser, err := h.db.GetUserByUserName(h.ctx, msg.FromUserName)
+	fromUser, err := h.db.GetUserByUserName(h.ctx, msg.FromUserName)
 	if err != nil {
 		logger.Error.Println("Could not get from user: ", err)
 		return
 	}
 
-	if dbuser.ID == fromuser.ID {
+	if dbUser.ID == fromUser.ID {
 		return
 	}
 
-	u := models.FromDBUserNotif(dbuser)
-	from_u := models.FromDBUserNotif(fromuser)
+	u := models.FromDBUserNotif(dbUser)
+	fromU := models.FromDBUserNotif(fromUser)
 
 	n := &db.Notification{
-		UserID:     dbpost.AuthorID,
-		FromUserID: fromuser.ID,
+		UserID:     dbPost.AuthorID,
+		FromUserID: fromUser.ID,
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: msg.ResourceID,
@@ -59,13 +59,13 @@ func (h *WSHandler) handleCommentOnPost(msg Message) {
 		return
 	}
 
-	dbnotif, err := h.db.GetNotification(h.ctx, notifID)
+	dbNotif, err := h.db.GetNotification(h.ctx, notifID)
 	if err != nil {
 		logger.Error.Println("Could not get notification: ", err)
 		return
 	}
-	notif := models.FromDBNotification(dbnotif, *u, *from_u)
-	notif.ParentId = c.PostID
+	notif := models.FromDBNotification(dbNotif, *u, *fromU)
+	notif.ParentID = c.PostID
 
 	data, err := json.Marshal(notif)
 	if err != nil {
@@ -73,5 +73,7 @@ func (h *WSHandler) handleCommentOnPost(msg Message) {
 		return
 	}
 
-	h.wsConnMann.SendMessage(u.UserName, data)
+	if h.wsConnMann.IsConnected(dbUser.UserName) {
+		h.wsConnMann.SendMessage(u.UserName, data)
+	}
 }
