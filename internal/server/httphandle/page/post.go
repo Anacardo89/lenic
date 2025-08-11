@@ -9,14 +9,15 @@ import (
 	"github.com/Anacardo89/lenic/internal/handlers/redirect"
 	"github.com/Anacardo89/lenic/internal/model/mapper"
 	"github.com/Anacardo89/lenic/internal/model/presentation"
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/auth"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
 type PostPage struct {
-	Session presentation.Session
-	Post    presentation.Post
+	Session models.Session
+	Post    models.Post
 }
 
 func (h *PageHandler) NewPost(w http.ResponseWriter, r *http.Request) {

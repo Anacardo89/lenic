@@ -10,6 +10,7 @@ import (
 	"github.com/Anacardo89/lenic/internal/config"
 	"github.com/Anacardo89/lenic/internal/model/mapper"
 	"github.com/Anacardo89/lenic/internal/model/presentation"
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/gorilla/sessions"
 )
@@ -27,7 +28,14 @@ func NewSessionStore(store *sessions.CookieStore) *SessionStore {
 	}
 }
 
-func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request) *presentation.Session {
+type Session struct {
+	IsAuthenticated bool                  `json:"is_authenticated"`
+	User            models.User           `json:"user"`
+	Notifs          []models.Notification `json:"notifs"`
+	DMs             []models.Conversation `json:"dms"`
+}
+
+func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request) *Session {
 	usrSession := presentation.Session{}
 	session, err := SessionStore.Get(r, "lenic")
 	if err != nil {
@@ -44,7 +52,7 @@ func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request) *pr
 	return usrSession
 }
 
-func ValidateSession(w http.ResponseWriter, r *http.Request) presentation.Session {
+func ValidateSession(w http.ResponseWriter, r *http.Request) *Session {
 	usrSession := presentation.Session{
 		Authenticated: false,
 	}

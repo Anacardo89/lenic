@@ -35,7 +35,7 @@ func NewServer(cfg *config.Config, db db.DBRepository, sessionStore *auth.Sessio
 		sessionStore:    sessionStore,
 		apiHandler:      api.NewHandler(db, sessionStore),
 		pageHandler:     page.NewHandler(db, sessionStore),
-		redirectHandler: redirect.NewHandler,
+		redirectHandler: redirect.NewHandler(cfg, db, sessionStore),
 	}
 
 	r := mux.NewRouter()

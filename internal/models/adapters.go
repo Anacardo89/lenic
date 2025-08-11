@@ -9,21 +9,23 @@ import (
 
 func FromDBUser(u *db.User) *User {
 	return &User{
-		Id:          u.Id,
-		UserName:    u.UserName,
-		EncodedName: base64.URLEncoding.EncodeToString([]byte(u.UserName)),
-		Email:       u.Email,
-		HashPass:    u.HashPass,
-		ProfilePic:  u.ProfilePic,
-		Followers:   u.Followers,
-		Following:   u.Following,
-		Active:      u.Active,
+		ID:           u.ID,
+		UserName:     u.UserName,
+		EncodedName:  base64.URLEncoding.EncodeToString([]byte(u.UserName)),
+		DisplayName:  u.DisplayName,
+		Email:        u.Email,
+		ProfilePic:   u.ProfilePic,
+		Bio:          u.Bio,
+		Followers:    u.Followers,
+		Following:    u.Following,
+		PasswordHash: u.PasswordHash,
+		IsActive:     u.IsActive,
 	}
 }
 
 func FromDBUserNotif(u *db.User) *UserNotif {
 	return &UserNotif{
-		Id:          u.Id,
+		ID:          u.ID,
 		UserName:    u.UserName,
 		EncodedName: base64.URLEncoding.EncodeToString([]byte(u.UserName)),
 		ProfilePic:  u.ProfilePic,
@@ -32,31 +34,31 @@ func FromDBUserNotif(u *db.User) *UserNotif {
 
 func FromDBFollows(f *db.Follows) *Follows {
 	return &Follows{
-		FollowerId: f.FollowerId,
-		FollowedId: f.FollowedId,
-		Status:     f.Status,
+		FollowerID:   f.FollowerID,
+		FollowedID:   f.FollowedID,
+		FollowStatus: FollowStatus(f.FollowStatus),
 	}
 }
 
 func ToDBUser(u *User) *db.User {
 	return &db.User{
-		UserName:   u.UserName,
-		Email:      u.Email,
-		HashPass:   u.HashPass,
-		ProfilePic: u.ProfilePic,
-		Active:     u.Active,
+		UserName:     u.UserName,
+		Email:        u.Email,
+		PasswordHash: u.PasswordHash,
+		ProfilePic:   u.ProfilePic,
+		IsActive:     u.IsActive,
+		IsVerified:   u.IsVerified,
 	}
 }
 
 func FromDBPost(p *db.Post, u *User) *Post {
 	return &Post{
-		Id:         p.Id,
-		GUID:       p.GUID,
+		ID:         p.ID,
 		Author:     *u,
 		Title:      p.Title,
 		RawContent: p.Content,
-		Image:      p.Image,
-		Date:       fmt.Sprint(p.CreatedAt.Format(db.DateLayout)),
+		Image:      p.PostImage,
+		Date:       fmt.Sprint(p.CreatedAt.Format(dateLayout)),
 		IsPublic:   p.IsPublic,
 		Rating:     p.Rating,
 	}
@@ -64,33 +66,33 @@ func FromDBPost(p *db.Post, u *User) *Post {
 
 func FromDBComment(c *db.Comment, u *User) *Comment {
 	return &Comment{
-		Id:      c.Id,
+		ID:      c.ID,
 		Author:  *u,
 		Content: c.Content,
-		Date:    fmt.Sprint(c.CreatedAt.Format(db.DateLayout)),
+		Date:    fmt.Sprint(c.CreatedAt.Format(dateLayout)),
 		Rating:  c.Rating,
 	}
 }
 
-func FromDBNotification(n *db.Notification, u, from_u UserNotif) *Notification {
+func FromDBNotification(n *db.Notification, u, fromU UserNotif) *Notification {
 	return &Notification{
-		Id:         n.Id,
+		ID:         n.ID,
 		User:       u,
-		FromUser:   from_u,
-		NotifType:  n.NotifType,
-		NotifMsg:   n.NotifMsg,
-		ResourceId: n.ResourceId,
-		ParentId:   n.ParentId,
+		FromUser:   fromU,
+		NotifType:  NotifType(n.NotifType),
+		NotifText:  n.NotifText,
+		ResourceID: n.ResourceID,
+		ParentID:   n.ParentID,
 		IsRead:     n.IsRead,
 	}
 }
 
-func FromDBConversation(c *db.Conversation, u1, u2 UserNotif, is_read bool) *Conversation {
+func FromDBConversation(c *db.Conversation, u1, u2 UserNotif, isRead bool) *Conversation {
 	return &Conversation{
-		Id:        c.Id,
+		ID:        c.ID,
 		User1:     u1,
 		User2:     u2,
-		IsRead:    is_read,
+		IsRead:    isRead,
 		CreatedAt: c.CreatedAt,
 		UpdatedAt: c.UpdatedAt,
 	}
@@ -98,8 +100,8 @@ func FromDBConversation(c *db.Conversation, u1, u2 UserNotif, is_read bool) *Con
 
 func FromDBDMessage(m *db.DMessage, u UserNotif) *DMessage {
 	return &DMessage{
-		Id:             m.Id,
-		ConversationId: m.ConversationId,
+		ID:             m.ID,
+		ConversationID: m.ConversationID,
 		Sender:         u,
 		Content:        m.Content,
 		IsRead:         m.IsRead,

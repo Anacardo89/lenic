@@ -7,25 +7,6 @@ import (
 )
 
 // Users
-type UserRole int
-
-const (
-	RoleUser UserRole = iota
-	RoleMod
-	RoleAdmin
-)
-
-var (
-	userRoleList = []string{
-		"user",
-		"moderator",
-		"admin",
-	}
-)
-
-func (r UserRole) String() string {
-	return userRoleList[r]
-}
 
 type User struct {
 	ID           uuid.UUID
@@ -47,26 +28,6 @@ type User struct {
 }
 
 // Follows
-type FollowStatus int
-
-const (
-	StatusPending FollowStatus = iota
-	StatusAccepted
-	StatusBlocked
-)
-
-var (
-	followStatusList = []string{
-		"pending",
-		"accepted",
-		"blocked",
-	}
-)
-
-func (f FollowStatus) String() string {
-	return followStatusList[f]
-}
-
 type Follows struct {
 	FollowerID   uuid.UUID
 	FollowedID   uuid.UUID
@@ -122,33 +83,6 @@ type CommentRatings struct {
 }
 
 // Notifications
-type NotifType int
-
-const (
-	NotifFollowRequest NotifType = iota
-	NotifFollowResponse
-	NotifComment
-	NotifPostMention
-	NotifCommentMention
-	NotifPostRating
-	NotifCommentRating
-)
-
-var (
-	notifTypeList = []string{
-		"follow_request",
-		"follow_response",
-		"post_comment",
-		"post_mention",
-		"comment_mention",
-		"post_rating",
-		"comment_rating",
-	}
-)
-
-func (n NotifType) String() string {
-	return notifTypeList[n]
-}
 
 type Notification struct {
 	ID         uuid.UUID

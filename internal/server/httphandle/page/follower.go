@@ -8,22 +8,22 @@ import (
 	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
 	"github.com/Anacardo89/lenic/internal/handlers/redirect"
 	"github.com/Anacardo89/lenic/internal/model/mapper"
-	"github.com/Anacardo89/lenic/internal/model/presentation"
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/auth"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
 type FollowersPage struct {
-	Session   presentation.Session
-	User      presentation.User
-	Followers []presentation.User
+	Session   models.Session
+	User      models.User
+	Followers []models.User
 }
 
 type FollowingPage struct {
-	Session   presentation.Session
-	User      presentation.User
-	Following []presentation.User
+	Session   models.Session
+	User      models.User
+	Following []models.User
 }
 
 func (h *PageHandler) UserFollowers(w http.ResponseWriter, r *http.Request) {
