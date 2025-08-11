@@ -1,107 +1,121 @@
 package session
 
 import (
-	"crypto/rand"
-	"encoding/base64"
-	"io"
+	"context"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/Anacardo89/lenic/internal/config"
-	"github.com/Anacardo89/lenic/internal/model/mapper"
-	"github.com/Anacardo89/lenic/internal/model/presentation"
+	"github.com/Anacardo89/lenic/internal/db"
+
 	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/logger"
+	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 )
 
 type SessionStore struct {
+	ctx      context.Context
 	cfg      *config.SessionConfig
+	mu       sync.Mutex
+	db       db.DBRepository
 	store    *sessions.CookieStore
-	sessions map[string]presentation.Session
+	sessions map[string]*Session
 }
 
-func NewSessionStore(store *sessions.CookieStore) *SessionStore {
+func NewSessionStore(ctx context.Context, cfg *config.SessionConfig, store *sessions.CookieStore, db db.DBRepository) *SessionStore {
 	return &SessionStore{
+		ctx:      ctx,
+		db:       db,
 		store:    store,
-		sessions: make(map[string]presentation.Session),
+		sessions: make(map[string]*Session),
 	}
 }
 
 type Session struct {
-	IsAuthenticated bool                  `json:"is_authenticated"`
-	User            models.User           `json:"user"`
-	Notifs          []models.Notification `json:"notifs"`
-	DMs             []models.Conversation `json:"dms"`
+	ID              uuid.UUID
+	IsAuthenticated bool                   `json:"is_authenticated"`
+	User            *models.User           `json:"user"`
+	Notifs          []*models.Notification `json:"notifs"`
+	DMs             []*models.Conversation `json:"dms"`
+	UpdatedAt       time.Time              `json:"updated_at"`
 }
 
-func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request) *Session {
-	usrSession := presentation.Session{}
-	session, err := SessionStore.Get(r, "lenic")
+func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request, userID uuid.UUID) *Session {
+	lenicSession, err := SessionStore.Get(r, "lenic_session")
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	newSID := generateSessionId()
-	session.Values["sid"] = newSID
-	err = session.Save(r, w)
+	sessionID := uuid.New()
+	lenicSession.Values["session_id"] = sessionID
+	err = lenicSession.Save(r, w)
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	usrSession.SessionId = newSID
-	usrSession.Authenticated = true
-	return usrSession
-}
-
-func ValidateSession(w http.ResponseWriter, r *http.Request) *Session {
-	usrSession := presentation.Session{
-		Authenticated: false,
-	}
-	session, err := SessionStore.Get(r, "lenic")
+	dbUser, err := s.db.GetUserByID(s.ctx, userID)
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	if sid, valid := session.Values["sid"]; valid {
-		dbsession, err := orm.Da.GetSessionBySessionID(sid.(string))
-		if err != nil {
-			logger.Error.Println(err)
-			return usrSession
-		}
-		if time.Now().After(dbsession.UpdatedAt.Add(time.Duration(24) * time.Hour)) {
-			session.Options.MaxAge = -1
-			session.Save(r, w)
-			return usrSession
-		}
-		dbuser, err := orm.GetUserBySessionID(sid.(string))
-		if err != nil {
-			session.Options.MaxAge = -1
-			session.Save(r, w)
-			return usrSession
-		}
-		u := mapper.User(dbuser)
-		usrSession.User = *u
-		UpdateSession(sid.(string), usrSession.User.Id)
-		usrSession.SessionId = sid.(string)
-		usrSession.Authenticated = true
+	u := models.FromDBUser(dbUser)
+
+	session := &Session{
+		ID:              sessionID,
+		IsAuthenticated: true,
+		User:            u,
+		UpdatedAt:       time.Now(),
 	}
-	return usrSession
+	s.mu.Lock()
+	s.sessions[userID] = session
+	s.mu.Unlock()
+	return session
 }
 
-func UpdateSession(sid string, uid int) {
-	s := &database.Session{
-		SessionId: sid,
-		UserId:    uid,
-		Active:    1,
+func (s *SessionStore) ValidateSession(w http.ResponseWriter, r *http.Request) *Session {
+	// Error handling
+	deleteSession := func(sessionID string) {
+		s.mu.Lock()
+		delete(s.sessions, sessionID)
+		s.mu.Unlock()
 	}
-	if err := orm.Da.CreateSession(s); err != nil {
-		logger.Error.Println(err)
-	}
-}
+	//
 
-func generateSessionId() string {
-	sid := make([]byte, 24)
-	_, err := io.ReadFull(rand.Reader, sid)
+	// Execution
+	session := &Session{IsAuthenticated: false}
+	lenicSession, err := SessionStore.Get(r, "lenic_session")
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	return base64.URLEncoding.EncodeToString(sid)
+	sessionID, ok := lenicSession.Values["session_id"]
+	if !ok {
+		return session
+	}
+	s.mu.Lock()
+	session, ok = s.sessions[sessionID]
+	s.mu.Unlock()
+	if !ok {
+		return session
+	}
+	if time.Now().After(session.UpdatedAt.Add(time.Duration(24) * time.Hour)) {
+		deleteSession(sessionID)
+		lenicSession.Options.MaxAge = -1
+		lenicSession.Save(r, w)
+		return session
+	}
+	dbUser, err := s.db.GetUserByID(s.ctx, &session.User.ID)
+	if err != nil {
+		deleteSession(sessionID)
+		lenicSession.Options.MaxAge = -1
+		lenicSession.Save(r, w)
+		return session
+	}
+	u := models.FromDBUser(dbUser)
+	session.User = u
+	session.IsAuthenticated = true
+	session.UpdatedAt = time.Now()
+
+	s.mu.Lock()
+	s.sessions[sessionID] = session
+
+	return session
 }
