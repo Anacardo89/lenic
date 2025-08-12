@@ -28,16 +28,15 @@ func NewWSConnMan() *WSConnMan {
 }
 
 func (cm *WSConnMan) AddClient(username string, conn *websocket.Conn) {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
 
 	client := &Client{
 		conn:     conn,
 		username: username,
 		message:  make(chan []byte),
 	}
-
+	cm.mu.Lock()
 	cm.clients[username] = client
+	cm.mu.Unlock()
 
 	go client.listen()
 }
@@ -45,7 +44,6 @@ func (cm *WSConnMan) AddClient(username string, conn *websocket.Conn) {
 func (cm *WSConnMan) RemoveClient(username string) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
-
 	if client, ok := cm.clients[username]; ok {
 		close(client.message)
 		client.conn.Close()

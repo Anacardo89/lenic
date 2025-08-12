@@ -23,7 +23,7 @@ func (h *RedirectHandler) RedirIndex(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
-func (h *RedirectHandler) RedirectToError(w http.ResponseWriter, r *http.Request, err string) {
+func RedirectToError(w http.ResponseWriter, r *http.Request, err string) {
 	cookie := http.Cookie{Name: "errormsg",
 		Value:    err,
 		Expires:  time.Now().Add(60 * time.Second),

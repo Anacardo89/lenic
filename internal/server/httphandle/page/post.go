@@ -5,26 +5,23 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
-	"github.com/Anacardo89/lenic/internal/handlers/redirect"
-	"github.com/Anacardo89/lenic/internal/model/mapper"
-	"github.com/Anacardo89/lenic/internal/model/presentation"
 	"github.com/Anacardo89/lenic/internal/models"
-	"github.com/Anacardo89/lenic/pkg/auth"
+	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
+	"github.com/Anacardo89/lenic/internal/session"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
 type PostPage struct {
-	Session models.Session
-	Post    models.Post
+	Session *session.Session
+	Post    *models.Post
 }
 
 func (h *PageHandler) NewPost(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/newPost ", r.RemoteAddr)
 	postp := PostPage{
-		Session: auth.ValidateSession(w, r),
-		Post:    presentation.Post{},
+		Session: h.sessionStore.ValidateSession(w, r),
+		Post:    &models.Post{},
 	}
 	t, err := template.ParseFiles("templates/authorized/newPost.html")
 	if err != nil {
@@ -37,30 +34,30 @@ func (h *PageHandler) NewPost(w http.ResponseWriter, r *http.Request) {
 
 func (h *PageHandler) Post(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	postGUID := vars["post_guid"]
-	logger.Info.Printf("/post/%s %s\n", postGUID, r.RemoteAddr)
-	postp := PostPage{}
-	dbpost, err := orm.Da.GetPostByGUID(postGUID)
+	postID := vars["post_id"]
+	logger.Info.Printf("/post/%s %s\n", postID, r.RemoteAddr)
+	pp := PostPage{}
+	dbPost, err := h.db.GetPost(h.ctx, postID)
 	if err != nil {
-		logger.Error.Printf("/post/%s - Could not get Post: %s\n", postGUID, err)
+		logger.Error.Printf("/post/%s - Could not get Post: %s\n", postID, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	dbuser, err := orm.Da.GetUserByID(dbpost.AuthorId)
+	dbUser, err := h.db.GetUserByID(h.ctx, dbPost.AuthorID)
 	if err != nil {
-		logger.Error.Printf("/post/%s - Could not get Author: %s\n", postGUID, err)
+		logger.Error.Printf("/post/%s - Could not get Author: %s\n", postID, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	u := mapper.User(dbuser)
 
-	p := mapper.Post(dbpost, u)
+	u := models.FromDBUser(dbUser)
+	p := models.FromDBPost(dbPost, u)
 
-	postp.Session = auth.ValidateSession(w, r)
-	pr, err := orm.Da.GetPostUserRating(dbpost.Id, postp.Session.User.Id)
+	pp.Session = h.sessionStore.ValidateSession(w, r)
+	pr, err := h.db.GetPostUserRating(h.ctx, dbPost.ID, pp.Session.User.ID)
 	if err != nil {
 		if err != sql.ErrNoRows {
-			logger.Error.Printf("/post/%s - Could not get rating: %s\n", postGUID, err)
+			logger.Error.Printf("/post/%s - Could not get rating: %s\n", postID, err)
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
@@ -71,27 +68,27 @@ func (h *PageHandler) Post(w http.ResponseWriter, r *http.Request) {
 		p.UserRating = 0
 	}
 	p.Content = template.HTML(p.RawContent)
-	p.Comments = []presentation.Comment{}
+	p.Comments = []*models.Comment{}
 
-	dbcomments, err := orm.Da.GetCommentsByPost(p.GUID)
+	dbComments, err := h.db.GetCommentsByPost(h.ctx, p.ID)
 	if err != nil {
 		logger.Error.Println(err)
 	}
-	for _, dbcomment := range *dbcomments {
-		dbuser, err := orm.Da.GetUserByID(dbcomment.AuthorId)
+	for _, dbComment := range dbComments {
+		dbUser, err := h.db.GetUserByID(h.ctx, dbComment.AuthorID)
 		if err != nil {
-			logger.Error.Printf("/post/%s - Could not get Comment Author: %s\n", postGUID, err)
+			logger.Error.Printf("/post/%s - Could not get Comment Author: %s\n", postID, err)
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
-		u := mapper.User(dbuser)
 
-		c := mapper.Comment(&dbcomment, u)
+		u := models.FromDBUser(dbUser)
+		c := models.FromDBComment(dbComment, u)
 
-		cr, err := orm.Da.GetCommentUserRating(dbcomment.Id, postp.Session.User.Id)
+		cr, err := h.db.GetCommentUserRating(h.ctx, dbComment.ID, pp.Session.User.ID)
 		if err != nil {
 			if err != sql.ErrNoRows {
-				logger.Error.Printf("/post/%s - Could not get comment rating: %s\n", postGUID, err)
+				logger.Error.Printf("/post/%s - Could not get comment rating: %s\n", postID, err)
 				redirect.RedirectToError(w, r, err.Error())
 				return
 			}
@@ -102,14 +99,14 @@ func (h *PageHandler) Post(w http.ResponseWriter, r *http.Request) {
 		} else {
 			c.UserRating = 0
 		}
-		p.Comments = append(p.Comments, *c)
+		p.Comments = append(p.Comments, c)
 	}
-	postp.Post = *p
+	pp.Post = p
 	t, err := template.ParseFiles("templates/authorized/post.html")
 	if err != nil {
-		logger.Error.Printf("/post/%s - Could not parse template: %s\n", postGUID, err)
+		logger.Error.Printf("/post/%s - Could not parse template: %s\n", postID, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	t.Execute(w, postp)
+	t.Execute(w, pp)
 }
