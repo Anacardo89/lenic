@@ -54,7 +54,7 @@ func ToDBUser(u *User) *db.User {
 func FromDBPost(p *db.Post, u *User) *Post {
 	return &Post{
 		ID:         p.ID,
-		Author:     *u,
+		Author:     u,
 		Title:      p.Title,
 		RawContent: p.Content,
 		Image:      p.PostImage,

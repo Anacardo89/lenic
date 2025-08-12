@@ -20,3 +20,7 @@ func NewHandler(ctx context.Context, db db.DBRepository, sessionStore *session.S
 		sessionStore: sessionStore,
 	}
 }
+
+func (h *PageHandler) decodeUser() (string, error) {
+	return "", nil
+}

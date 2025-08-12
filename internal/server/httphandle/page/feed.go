@@ -5,23 +5,21 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
-	"github.com/Anacardo89/lenic/internal/handlers/redirect"
-	"github.com/Anacardo89/lenic/internal/model/mapper"
 	"github.com/Anacardo89/lenic/internal/models"
-	"github.com/Anacardo89/lenic/pkg/auth"
+	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
+	"github.com/Anacardo89/lenic/internal/session"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
 type FeedPage struct {
-	Session models.Session
-	Posts   []models.Post
+	Session *session.Session
+	Posts   []*models.Post
 }
 
 func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	encoded := vars["encoded_user_name"]
+	encoded := vars["encoded_username"]
 	logger.Info.Printf("/user/%s/feed %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
@@ -41,24 +39,24 @@ func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	feed := FeedPage{}
-	feed.Session = auth.ValidateSession(w, r)
-	dbPosts, err := h.db.GetFeed(dbuser.Id)
+	feed.Session = h.sessionStore.ValidateSession(w, r)
+	dbPosts, err := h.db.GetFeed(h.ctx, dbUser.ID)
 	if err != nil {
 		logger.Error.Printf("/user/%s/feed - Could not get Posts: %s\n", encoded, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	for _, dbpost := range *dbposts {
-		dbuser, err := orm.Da.GetUserByID(dbpost.AuthorId)
+	for _, p := range dbPosts {
+		user, err := h.db.GetUserByID(h.ctx, p.AuthorID)
 		if err != nil {
-			logger.Error.Printf("/post/%s - Could not get Comment Author: %s\n", dbpost.GUID, err)
+			logger.Error.Printf("/post/%s - Could not get Comment Author: %s\n", p.ID, err)
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
-		u := mapper.User(dbuser)
-		post := mapper.Post(&dbpost, u)
+		u := models.FromDBUser(user)
+		post := models.FromDBPost(p, u)
 		post.Content = template.HTML(post.RawContent)
-		feed.Posts = append(feed.Posts, *post)
+		feed.Posts = append(feed.Posts, post)
 	}
 	t, err := template.ParseFiles("templates/authorized/feed.html")
 	if err != nil {

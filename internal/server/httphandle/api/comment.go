@@ -7,13 +7,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Anacardo89/lenic/internal/auth"
 	"github.com/Anacardo89/lenic/internal/db"
 	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
-	"github.com/Anacardo89/lenic/internal/handlers/wsoc"
+	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/Anacardo89/lenic/pkg/parse"
 	"github.com/Anacardo89/lenic/pkg/wsocket"
+	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 	"github.com/gorilla/mux"
 )
 
@@ -24,43 +24,38 @@ type Response struct {
 // POST /action/post/{Post_GUID}/comment
 func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	postGUID := vars["post_guid"]
-	logger.Info.Printf("POST /action/post/%s/comment %s\n", postGUID, r.RemoteAddr)
-	session := auth.ValidateSession(w, r)
+	postID := vars["post_id"]
+	logger.Info.Printf("POST /action/post/%s/comment %s\n", postID, r.RemoteAddr)
+	session := h.sessionStore.ValidateSession(w, r)
 
 	c := db.Comment{
-		PostGUID: postGUID,
+		PostGUID: postID,
 		AuthorId: session.User.Id,
 		Content:  r.FormValue("comment_text"),
 		Rating:   0,
 		Active:   1,
 	}
-	res, err := orm.Da.CreateComment(&c)
+	cID, err := h.db.CreateComment(h.ctx, c)
 	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/comment - Could not create comment: %s\n", postGUID, err)
+		logger.Error.Printf("POST /action/post/%s/comment - Could not create comment: %s\n", postID, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	lastInsertID, err := res.LastInsertId()
+	dbComment, err := h.db.GetComment(h.ctx, cID)
 	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/comment - Could not get notification Id: %s\n", postGUID, err)
+		logger.Error.Printf("POST /action/post/%s/comment - Could not get comment Id: %s\n", postID, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	dbComment, err := orm.Da.GetCommentById(int(lastInsertID))
-	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/comment - Could not get comment Id: %s\n", postGUID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	mentions := helpers.ParseAtString(c.Content)
 
-	mentions := parse.ParseAtString(c.Content)
+	// REWORK THIS!!!!!!!
 	if len(mentions) > 0 {
 		for _, mention := range mentions {
 			mention = strings.TrimLeft(mention, "@")
-			_, err := orm.Da.GetTagByName(mention)
+			_, err := h.db.GetTagByName(mention)
 			if err == sql.ErrNoRows {
 				t := &database.Tag{
 					TagName: mention,

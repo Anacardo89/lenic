@@ -6,20 +6,19 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Anacardo89/lenic/internal/handlers/redirect"
-	"github.com/Anacardo89/lenic/internal/models"
-	"github.com/Anacardo89/lenic/pkg/auth"
+	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
+	"github.com/Anacardo89/lenic/internal/session"
 	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
 type HomePage struct {
-	Session models.Session
+	Session *session.Session
 }
 
 func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/home ", r.RemoteAddr)
 	feed := HomePage{}
-	feed.Session = auth.ValidateSession(w, r)
+	feed.Session = h.sessionStore.ValidateSession(w, r)
 	t, err := template.ParseFiles("templates/home.html")
 	if err != nil {
 		logger.Error.Println("/home - Could not parse template: ", err)

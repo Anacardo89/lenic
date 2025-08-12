@@ -70,7 +70,7 @@ type Follows struct {
 // Post
 type Post struct {
 	ID         uuid.UUID     `json:"id"`
-	Author     User          `json:"author"`
+	Author     *User         `json:"author"`
 	Title      string        `json:"title"`
 	RawContent string        `json:"raw_content"`
 	Content    template.HTML `json:"content"`
@@ -79,7 +79,7 @@ type Post struct {
 	UserRating int           `json:"user_ratinmg"`
 	Date       string        `json:"date"`
 	IsPublic   bool          `json:"is_public"`
-	Comments   []Comment     `json:"comments"`
+	Comments   []*Comment    `json:"comments"`
 }
 
 func (p Post) TruncatedText() string {

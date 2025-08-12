@@ -6,21 +6,19 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
-	"github.com/Anacardo89/lenic/internal/handlers/redirect"
-	"github.com/Anacardo89/lenic/internal/model/database"
-	"github.com/Anacardo89/lenic/internal/model/mapper"
+	"github.com/Anacardo89/lenic/internal/db"
 	"github.com/Anacardo89/lenic/internal/models"
-	"github.com/Anacardo89/lenic/pkg/auth"
+	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
+	"github.com/Anacardo89/lenic/internal/session"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
 type ProfilePage struct {
-	Session models.Session
-	User    models.User
-	Posts   []models.Post
-	Follows int
+	Session *session.Session
+	User    *models.User
+	Posts   []*models.Post
+	Follows string
 }
 
 func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
@@ -37,46 +35,46 @@ func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 	userName := string(bytes)
 	logger.Info.Printf("/user/%s %s %s\n", encoded, r.RemoteAddr, userName)
 
-	dbuser, err := orm.Da.GetUserByName(userName)
+	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
 		logger.Error.Printf("/user/%s - Could not get user: %s\n", encoded, err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	u := mapper.User(dbuser)
 
-	session := auth.ValidateSession(w, r)
+	u := models.FromDBUser(dbUser)
+	session := h.sessionStore.ValidateSession(w, r)
 
 	pp := ProfilePage{
-		User:    *u,
+		User:    u,
 		Session: session,
 	}
 
-	dbfollow, err := orm.Da.GetUserFollows(session.User.Id, u.Id)
+	dbFollow, err := h.db.GetUserFollows(h.ctx, session.User.ID, u.ID)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			logger.Error.Printf("/user/%s - Could not get follows: %s\n", encoded, err)
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		} else {
-			pp.Follows = -1
+			pp.Follows = models.StatusPending.String()
 		}
-	} else if dbfollow != nil { // Check if dbfollow is not nil
-		pp.Follows = dbfollow.Status
+	} else if dbFollow != nil {
+		pp.Follows = dbFollow.FollowStatus
 	} else {
-		pp.Follows = -1 // Default or handle case where dbfollow is nil
+		pp.Follows = models.StatusPending.String()
 	}
 
-	var dbposts *[]database.Post
-	if (session.User.Id == u.Id) || (dbfollow != nil && dbfollow.Status == 1) {
-		dbposts, err = orm.Da.GetUserPosts(u.Id)
+	var dbPosts []*db.Post
+	if (session.User.ID == u.ID) || (dbFollow != nil && dbFollow.FollowStatus == models.StatusAccepted.String()) {
+		dbPosts, err = h.db.GetUserPosts(h.ctx, u.ID)
 		if err != nil {
 			logger.Error.Printf("/user/%s - Could not get Posts: %s\n", encoded, err)
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
 	} else {
-		dbposts, err = orm.Da.GetUserPublicPosts(u.Id)
+		dbPosts, err = h.db.GetUserPublicPosts(h.ctx, u.ID)
 		if err != nil {
 			logger.Error.Printf("/user/%s - Could not get Posts: %s\n", encoded, err)
 			redirect.RedirectToError(w, r, err.Error())
@@ -84,17 +82,17 @@ func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	for _, dbpost := range *dbposts {
-		dbuser, err := orm.Da.GetUserByID(dbpost.AuthorId)
+	for _, p := range dbPosts {
+		dbUser, err := h.db.GetUserByID(h.ctx, p.AuthorID)
 		if err != nil {
-			logger.Error.Printf("/post/%s - Could not get Comment Author: %s\n", dbpost.GUID, err)
+			logger.Error.Printf("/post/%s - Could not get Comment Author: %s\n", p.ID, err)
 			redirect.RedirectToError(w, r, err.Error())
 			return
 		}
-		u := mapper.User(dbuser)
-		post := mapper.Post(&dbpost, u)
+		u := models.FromDBUser(dbUser)
+		post := models.FromDBPost(p, u)
 		post.Content = template.HTML(post.RawContent)
-		pp.Posts = append(pp.Posts, *post)
+		pp.Posts = append(pp.Posts, post)
 	}
 
 	t, err := template.ParseFiles("templates/authorized/user-profile.html")
