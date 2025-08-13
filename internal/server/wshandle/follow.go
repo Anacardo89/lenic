@@ -1,19 +1,26 @@
-package websockethandle
+package wshandle
 
 import (
+	"encoding/base64"
 	"encoding/json"
-	"strconv"
 
 	"github.com/Anacardo89/lenic/internal/db"
 	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
-func (h *WSHandler) HandlePostTag(msg Message, taggedUser string) {
+func (h *WSHandler) handleFollowRequest(msg Message) {
 
-	dbUser, err := h.db.GetUserByUserName(h.ctx, taggedUser)
+	bytes, err := base64.URLEncoding.DecodeString(msg.ResourceID)
 	if err != nil {
-		logger.Error.Println("Could not get user: ", err)
+		logger.Error.Printf("Could not decode user %s: %s\n", msg.ResourceID, err)
+		return
+	}
+	userName := string(bytes)
+
+	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
+	if err != nil {
+		logger.Error.Println("Could not get post: ", err)
 		return
 	}
 
@@ -31,7 +38,7 @@ func (h *WSHandler) HandlePostTag(msg Message, taggedUser string) {
 	fromU := models.FromDBUserNotif(fromUser)
 
 	n := &db.Notification{
-		UserID:     dbUser.ID,
+		UserID:     u.ID,
 		FromUserID: fromUser.ID,
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
@@ -64,20 +71,18 @@ func (h *WSHandler) HandlePostTag(msg Message, taggedUser string) {
 	}
 }
 
-func (h *WSHandler) HandleCommentTag(msg Message, taggedUser string) {
-	commentID, err := strconv.Atoi(msg.ResourceID)
+func (h *WSHandler) handleFollowAccept(msg Message) {
+
+	bytes, err := base64.URLEncoding.DecodeString(msg.ResourceID)
 	if err != nil {
-		logger.Error.Printf("Could not convert %s to int: %s\n", msg.ResourceID, err)
+		logger.Error.Printf("Could not decode user %s: %s\n", msg.ResourceID, err)
 		return
 	}
-	c, err := h.db.GetComment(h.ctx, commentID)
+	userName := string(bytes)
+
+	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
-		logger.Error.Println("Could not get comment: ", err)
-		return
-	}
-	dbUser, err := h.db.GetUserByUserName(h.ctx, taggedUser)
-	if err != nil {
-		logger.Error.Println("Could not get user: ", err)
+		logger.Error.Println("Could not get post: ", err)
 		return
 	}
 
@@ -95,12 +100,12 @@ func (h *WSHandler) HandleCommentTag(msg Message, taggedUser string) {
 	fromU := models.FromDBUserNotif(fromUser)
 
 	n := &db.Notification{
-		UserID:     dbUser.ID,
+		UserID:     u.ID,
 		FromUserID: fromUser.ID,
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: msg.ResourceID,
-		ParentID:   msg.ParentID,
+		ParentID:   "",
 	}
 
 	notifID, err := h.db.CreateNotification(h.ctx, n)
@@ -115,7 +120,7 @@ func (h *WSHandler) HandleCommentTag(msg Message, taggedUser string) {
 		return
 	}
 	notif := models.FromDBNotification(dbNotif, *u, *fromU)
-	notif.ParentID = c.PostID
+	notif.ParentID = ""
 
 	data, err := json.Marshal(notif)
 	if err != nil {

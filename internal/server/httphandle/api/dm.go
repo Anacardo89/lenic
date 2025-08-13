@@ -7,10 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Anacardo89/lenic/internal/db"
 	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
-	"github.com/Anacardo89/lenic/internal/model/database"
-	"github.com/Anacardo89/lenic/internal/model/mapper"
-	"github.com/Anacardo89/lenic/internal/model/presentation"
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/gorilla/mux"
 )
@@ -22,7 +21,7 @@ type JSON_Convo struct {
 // POST /action/user/{user_encoded}/conversations
 func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	encoded := vars["encoded_user_name"]
+	encoded := vars["encoded_username"]
 	logger.Info.Printf("POST /action/user/%s/conversations %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
@@ -40,47 +39,46 @@ func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbuser, err := orm.Da.GetUserByName(userName)
+	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
 		logger.Error.Printf("POST /action/user/%s/conversations - Could not get user: %s\n", encoded, err)
 		return
 	}
-	u := mapper.UserNotif(dbuser)
+	u := models.FromDBUserNotif(dbUser)
 
-	dbfromuser, err := orm.Da.GetUserByName(msg.User)
+	dbFromUser, err := h.db.GetUserByUserName(h.ctx, msg.User)
 	if err != nil {
 		logger.Error.Printf("POST /action/user/%s/conversations - Could not get from user: %s\n", encoded, err)
 		return
 	}
-	from_u := mapper.UserNotif(dbfromuser)
+	fromU := models.FromDBUserNotif(dbFromUser)
 
-	var dbconvo *database.Conversation
-	dbconvo, err = orm.Da.GetConversationByUserIds(u.Id, from_u.Id)
+	exists := true
+	var dbConvo *db.Conversation
+	dbConvo, err = h.db.GetConversationByUsers(h.ctx, u.ID, fromU.ID)
 	if err == sql.ErrNoRows {
-		convo := &database.Conversation{
-			User1Id: u.Id,
-			User2Id: from_u.Id,
-		}
-		res, err := orm.Da.CreateConversation(convo)
-		if err != nil {
-			logger.Error.Println("Could not create conversation: ", err)
-			return
-		}
-		lastInsertID, err := res.LastInsertId()
-		if err != nil {
-			logger.Error.Printf("POST /action/user/%s/conversations - Could not get conversation id: %s\n", encoded, err)
-			return
-		}
-		dbconvo, err = orm.Da.GetConversationById(int(lastInsertID))
-		if err != nil {
-			logger.Error.Printf("POST /action/user/%s/conversations - Could not get conversation: %s\n", encoded, err)
-			return
-		}
+		exists = false
 	} else if err != nil {
 		logger.Error.Println("Could not get conversation: ", err)
 		return
 	}
-	convo := mapper.Convesation(dbconvo, *u, *from_u, false)
+	if exists {
+		convo := &db.Conversation{
+			User1ID: u.ID,
+			User2ID: fromU.ID,
+		}
+		convoID, err := h.db.CreateConversation(h.ctx, convo)
+		if err != nil {
+			logger.Error.Println("Could not create conversation: ", err)
+			return
+		}
+		dbConvo, err = h.db.GetConversation(h.ctx, convoID)
+		if err != nil {
+			logger.Error.Printf("POST /action/user/%s/conversations - Could not get conversation: %s\n", encoded, err)
+			return
+		}
+	}
+	convo := models.FromDBConversation(dbConvo, *u, *fromU, false)
 
 	data, err := json.Marshal(convo)
 	if err != nil {
@@ -95,7 +93,7 @@ func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 // GET /action/user/{user_encoded}/conversations
 func (h *APIHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	encoded := vars["encoded_user_name"]
+	encoded := vars["encoded_username"]
 	logger.Info.Printf("GET /action/user/%s/conversations %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
@@ -106,59 +104,59 @@ func (h *APIHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	userName := string(bytes)
 	logger.Info.Printf("GET /action/user/%s/conversations %s %s\n", encoded, r.RemoteAddr, userName)
 
-	dbuser, err := orm.Da.GetUserByName(userName)
+	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/conversations - Could not get user: %s\n", encoded, err)
 		return
 	}
-	u := mapper.UserNotif(dbuser)
+	u := models.FromDBUserNotif(dbUser)
 
 	queryParams := r.URL.Query()
-	offset := queryParams.Get("offset")
-	offsetint, err := strconv.Atoi(offset)
+	offsetStr := queryParams.Get("offset")
+	offset, err := strconv.Atoi(offsetStr)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/conversations - Could not parse offset to int: %s\n", encoded, err)
 		return
 	}
 
-	limit := queryParams.Get("limit")
-	limitint, err := strconv.Atoi(limit)
+	limitStr := queryParams.Get("limit")
+	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/conversations - Could not parse limit to int: %s\n", encoded, err)
 		return
 	}
 
-	dbconvos, err := orm.Da.GetConversationsByUserId(dbuser.Id, limitint, offsetint)
+	dbConvos, err := h.db.GetConversationsByUser(h.ctx, dbUser.ID, limit, offset)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/conversations - Could not get conversations: %s\n", encoded, err)
 		return
 	}
 
-	var convos []*presentation.Conversation
-	for _, dbconvo := range dbconvos {
-		fromuser_id := dbconvo.User1Id
-		if dbconvo.User1Id == dbuser.Id {
-			fromuser_id = dbconvo.User2Id
+	var convos []*models.Conversation
+	for _, dbConvo := range dbConvos {
+		fromUserID := dbConvo.User1ID
+		if dbConvo.User1ID == dbUser.ID {
+			fromUserID = dbConvo.User2ID
 		}
-		dbfromuser, err := orm.Da.GetUserByID(fromuser_id)
+		dbFromUser, err := h.db.GetUserByID(h.ctx, fromUserID)
 		if err != nil {
 			logger.Error.Printf("GET /action/user/%s/conversations - Could not get user: %s\n", encoded, err)
 			return
 		}
-		from_u := mapper.UserNotif(dbfromuser)
-		dms, err := orm.Da.GetDMsByConversationId(dbconvo.Id, 1000, 0)
+		fromU := models.FromDBUserNotif(h.ctx, dbFromUser)
+		dms, err := h.db.GetDMsByConversation(h.ctx, dbConvo.ID, 1000, 0)
 		if err != nil {
 			logger.Error.Printf("GET /action/user/%s/conversations - Could not get dms: %s\n", encoded, err)
 			return
 		}
-		is_read := true
+		isRead := true
 		for _, dm := range dms {
-			if dm.SenderId != dbuser.Id && !dm.IsRead {
-				is_read = false
+			if dm.SenderID != dbUser.ID && !dm.IsRead {
+				isRead = false
 				break
 			}
 		}
-		c := mapper.Convesation(dbconvo, *u, *from_u, is_read)
+		c := models.FromDBConversation(dbConvo, *u, *fromU, isRead)
 		convos = append(convos, c)
 	}
 
@@ -171,6 +169,14 @@ func (h *APIHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
 }
+
+//-------------------------------------------------------------------------------------------------------
+//
+//
+// Restart from here
+//
+//
+//------------------------------------------------------------------------------------------------------------
 
 // GET /action/user/{user_encoded}/conversations/{conversation_id}/dms
 func (h *APIHandler) GetDMs(w http.ResponseWriter, r *http.Request) {

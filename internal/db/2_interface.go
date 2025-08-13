@@ -67,7 +67,7 @@ type DBRepository interface {
 	// UserTags
 	CreateUserTag(ctx context.Context, t *UserTag) error
 	GetUserTagByTarget(ctx context.Context, userID, targetID uuid.UUID) (*UserTag, error)
-	DeleteUserTag(ctx context.Context, ID uuid.UUID) error
+	DeleteUserTag(ctx context.Context, userID uuid.UUID, targetID uuid.UUID) error
 
 	//HashTags
 	CreateHashtag(ctx context.Context, t *HashTag) (uuid.UUID, error)

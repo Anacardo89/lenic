@@ -1,4 +1,4 @@
-package websockethandle
+package wshandle
 
 import (
 	"context"
