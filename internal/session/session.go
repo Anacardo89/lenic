@@ -42,8 +42,31 @@ type Session struct {
 	UpdatedAt       time.Time              `json:"updated_at"`
 }
 
+func (s *SessionStore) Store() *sessions.CookieStore {
+	return s.store
+}
+
+func (s *SessionStore) DeleteSession(r *http.Request) {
+	lenicSession, err := s.store.Get(r, "lenic_session")
+	if err != nil {
+		logger.Error.Println(err)
+	}
+	sessionID := lenicSession.Values["session_id"]
+	s.mu.Lock()
+	delete(s.sessions, sessionID)
+	s.mu.Unlock()
+
+	lenicSession.Options.MaxAge = -1
+	err = lenicSession.Save(r, w)
+	if err != nil {
+		logger.Error.Println(err)
+	}
+
+	return
+}
+
 func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request, userID uuid.UUID) *Session {
-	lenicSession, err := SessionStore.Get(r, "lenic_session")
+	lenicSession, err := s.store.Get(r, "lenic_session")
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -82,7 +105,7 @@ func (s *SessionStore) ValidateSession(w http.ResponseWriter, r *http.Request) *
 
 	// Execution
 	session := &Session{IsAuthenticated: false}
-	lenicSession, err := SessionStore.Get(r, "lenic_session")
+	lenicSession, err := s.store.Get(r, "lenic_session")
 	if err != nil {
 		logger.Error.Println(err)
 	}

@@ -9,7 +9,6 @@ import (
 	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/internal/server/wshandle"
 	"github.com/Anacardo89/lenic/pkg/logger"
-
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
