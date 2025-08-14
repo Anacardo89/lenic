@@ -1,21 +1,19 @@
 package api
 
 import (
-	"database/sql"
+	"fmt"
 	"io"
 	"net/http"
 	"path/filepath"
 	"strings"
 
-	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
-	"github.com/Anacardo89/lenic/internal/handlers/wsoc"
-	"github.com/Anacardo89/lenic/internal/model/database"
-	"github.com/Anacardo89/lenic/pkg/auth"
+	"github.com/Anacardo89/lenic/internal/db"
+	"github.com/Anacardo89/lenic/internal/helpers"
+	"github.com/Anacardo89/lenic/internal/server/wshandle"
 	"github.com/Anacardo89/lenic/pkg/fsops"
 	"github.com/Anacardo89/lenic/pkg/logger"
-	"github.com/Anacardo89/lenic/pkg/parse"
-	"github.com/Anacardo89/lenic/pkg/wsocket"
 	"github.com/google/uuid"
+
 	"github.com/gorilla/mux"
 )
 
@@ -28,106 +26,72 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	session := auth.ValidateSession(w, r)
+	session := h.sessionStore.ValidateSession(w, r)
 
-	is_public := false
-	visibility := r.FormValue("post-visibility")
-	if visibility == "1" {
-		is_public = true
+	isPublic := false
+	isPublicStr := r.FormValue("is_public")
+	if isPublicStr == "1" {
+		isPublic = true
 	}
 
-	dbpost := database.Post{
-		GUID:     uuid.New().String(),
-		Title:    r.FormValue("post-title"),
-		Content:  r.FormValue("post-content"),
-		AuthorId: session.User.Id,
-		Image:    "",
-		ImageExt: "",
-		IsPublic: is_public,
-		Rating:   0,
-		Active:   1,
+	pDB := db.Post{
+		Title:    r.FormValue("title"),
+		Content:  r.FormValue("content"),
+		AuthorID: session.User.ID,
+		IsPublic: isPublic,
 	}
-	if dbpost.Title == "" || dbpost.Content == "" {
+	if pDB.Title == "" || pDB.Content == "" {
 		http.Error(w, "Post must contain a title and a body", http.StatusBadRequest)
 		return
 	}
 
-	file, header, err := r.FormFile("post-image")
+	file, header, err := r.FormFile("post_image")
 	if err != nil {
 		if err != http.ErrMissingFile {
 			logger.Error.Println("/action/post - Could not get image: ", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err = orm.Da.CreatePost(&dbpost)
+
+		pID, err := h.db.CreatePost(h.ctx, &pDB)
 		if err != nil {
 			logger.Error.Println("/action/post - Could not create post: ", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		dbP, err := orm.Da.GetPostByGUID(dbpost.GUID)
+		pDB, err = h.db.GetPost(h.ctx, pID)
 		if err != nil {
 			logger.Error.Println("/action/post - Could not get post: ", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		dbUser, err := orm.Da.GetUserByID(dbP.AuthorId)
-		if err != nil {
-			logger.Error.Printf("PUT /action/post/%s/comment - Could not get user: %s\n", dbP.GUID, err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		mentions := parse.ParseAtString(dbP.Content)
+		mentions := helpers.ParseAtString(pDB.Content)
+		titleMentions := helpers.ParseAtString(pDB.Title)
+		mentions = append(mentions, titleMentions...)
 		if len(mentions) > 0 {
 			for _, mention := range mentions {
 				mention = strings.TrimLeft(mention, "@")
-				_, err := orm.Da.GetTagByName(mention)
-				if err == sql.ErrNoRows {
-					t := &database.Tag{
-						TagName: mention,
-						TagType: "user",
-					}
-					err := orm.Da.CreateTag(t)
-					if err != nil {
-						logger.Error.Printf("PUT /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
-						http.Error(w, err.Error(), http.StatusBadRequest)
-						return
-					}
-				} else if err != nil {
-					logger.Error.Printf("PUT /action/post/%s/comment - Could not get tag By Id: %s\n", dbP.GUID, err)
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
+				userDB, err := h.db.GetUserByUserName(h.ctx, mention)
+				ut := &db.UserTag{
+					UserID:      userDB.ID,
+					TargetID:    pDB.ID,
+					ResourceTpe: db.ResourcePost.String(),
 				}
-				dbTag, err := orm.Da.GetTagByName(mention)
+				err = h.db.CreateUserTag(h.ctx, ut)
 				if err != nil {
-					logger.Error.Printf("POST /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
+					logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", postID, err)
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
-				ut := &database.UserTag{
-					TagId:     dbTag.Id,
-					PostId:    dbP.Id,
-					CommentId: -1,
-					TagPlace:  "post",
-				}
-				err = orm.Da.CreateUserTag(ut)
-				if err != nil {
-					logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", dbP.GUID, err)
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-				wsMsg := wsocket.Message{
-					FromUserName: dbUser.UserName,
+				wsMsg := wshandle.Message{
+					FromUserName: session.User.UserName,
 					Type:         "post_tag",
 					Msg:          " has tagged you in their post",
-					ResourceId:   dbP.GUID,
-					ParentId:     "",
+					ResourceID:   pDB.ID.String(),
 				}
-
-				wsoc.HandlePostTag(wsMsg, mention)
+				h.wsHandler.HandleCommentTag(wsMsg, mention)
 			}
 		}
 
@@ -136,87 +100,58 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Handle uploaded image
-	dbpost.ImageExt = filepath.Ext(header.Filename)
+	fileExt := filepath.Ext(header.Filename)
 	fileName := fsops.NameImg(16)
-	dbpost.Image = fileName
+	fileName = fmt.Sprintf("%s.%s", fileName, fileExt)
+	pDB.PostImage = fileName
 	imgData, err := io.ReadAll(file)
 	if err != nil {
 		logger.Error.Println("/action/post - Could not read image data: ", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	fsops.SaveImg(imgData, fsops.PostImgPath, fileName, dbpost.ImageExt)
+	fsops.SaveImg(imgData, fsops.PostImgPath, fileName)
 
 	// Insert post with image data
-	err = orm.Da.CreatePost(&dbpost)
+	pID, err := h.db.CreatePost(h.ctx, &pDB)
 	if err != nil {
 		logger.Error.Println("/action/post - Could not not create post: ", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	dbP, err := orm.Da.GetPostByGUID(dbpost.GUID)
+	pDB, err = h.db.GetPost(h.ctx, pID)
 	if err != nil {
 		logger.Error.Println("/action/post - Could not get post: ", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	dbUser, err := orm.Da.GetUserByID(dbP.AuthorId)
-	if err != nil {
-		logger.Error.Printf("PUT /action/post/%s/comment - Could not get user: %s\n", dbP.GUID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	mentions := parse.ParseAtString(dbP.Content)
+	mentions := helpers.ParseAtString(pDB.Content)
+	titleMentions := helpers.ParseAtString(pDB.Title)
+	mentions = append(mentions, titleMentions...)
 	if len(mentions) > 0 {
 		for _, mention := range mentions {
 			mention = strings.TrimLeft(mention, "@")
-			_, err := orm.Da.GetTagByName(mention)
-			if err == sql.ErrNoRows {
-				t := &database.Tag{
-					TagName: mention,
-					TagType: "user",
-				}
-				err := orm.Da.CreateTag(t)
-				if err != nil {
-					logger.Error.Printf("PUT /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-			} else if err != nil {
-				logger.Error.Printf("PUT /action/post/%s/comment - Could not get tag By Id: %s\n", dbP.GUID, err)
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
+			userDB, err := h.db.GetUserByUserName(h.ctx, mention)
+			ut := &db.UserTag{
+				UserID:      userDB.ID,
+				TargetID:    pDB.ID,
+				ResourceTpe: db.ResourcePost.String(),
 			}
-			dbTag, err := orm.Da.GetTagByName(mention)
+			err = h.db.CreateUserTag(h.ctx, ut)
 			if err != nil {
-				logger.Error.Printf("POST /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
+				logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", postID, err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			ut := &database.UserTag{
-				TagId:     dbTag.Id,
-				PostId:    dbP.Id,
-				CommentId: -1,
-				TagPlace:  "post",
-			}
-			err = orm.Da.CreateUserTag(ut)
-			if err != nil {
-				logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", dbP.GUID, err)
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			wsMsg := wsocket.Message{
-				FromUserName: dbUser.UserName,
+			wsMsg := wshandle.Message{
+				FromUserName: session.User.UserName,
 				Type:         "post_tag",
 				Msg:          " has tagged you in their post",
-				ResourceId:   dbP.GUID,
-				ParentId:     "",
+				ResourceID:   pDB.ID.String(),
 			}
-
-			wsoc.HandlePostTag(wsMsg, mention)
+			h.wsHandler.HandleCommentTag(wsMsg, mention)
 		}
 	}
 
@@ -227,201 +162,195 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 // PUT /action/post/{Post_GUID}
 func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	postGUID := vars["post_guid"]
-	logger.Info.Printf("PUT /action/post/%s %s\n", postGUID, r.RemoteAddr)
+	pIDstr := vars["post_id"]
+	logger.Info.Printf("PUT /action/post/%s %s\n", pIDstr, r.RemoteAddr)
+	session := h.sessionStore.ValidateSession(w, r)
 
 	err := r.ParseForm()
 	if err != nil {
-		logger.Error.Printf("PUT /action/post/%s - Could not parse form: %s\n", postGUID, err)
+		logger.Error.Printf("PUT /action/post/%s - Could not parse form: %s\n", pIDstr, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	is_public := false
-	visibility := r.FormValue("visibility")
-	if visibility == "1" {
-		is_public = true
+	pID, err := uuid.Parse(pIDstr)
+	if err != nil {
+		logger.Error.Printf("PUT /action/post/%s - Could not convert id to string: %s\n", pIDstr, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	p := database.Post{
-		GUID:     postGUID,
+	isPublic := false
+	isPublicStr := r.FormValue("is_public")
+	if isPublicStr == "1" {
+		isPublic = true
+	}
+
+	p := db.Post{
+		ID:       pID,
 		Title:    r.FormValue("title"),
 		Content:  r.FormValue("content"),
-		IsPublic: is_public,
+		IsPublic: isPublic,
 	}
 	if p.Content == "" || p.Title == "" {
 		http.Error(w, "All form fields must be filled out", http.StatusBadRequest)
 		return
 	}
 
-	err = orm.Da.UpdatePost(p)
+	err = h.db.UpdatePost(h.ctx, &p)
 	if err != nil {
-		logger.Error.Printf("PUT /action/post/%s - Could not update post: %s\n", postGUID, err)
+		logger.Error.Printf("PUT /action/post/%s - Could not update post: %s\n", pIDstr, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	dbP, err := orm.Da.GetPostByGUID(p.GUID)
-	if err != nil {
-		logger.Error.Println("/action/post - Could not get post: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	dbUser, err := orm.Da.GetUserByID(dbP.AuthorId)
-	if err != nil {
-		logger.Error.Printf("PUT /action/post/%s/comment - Could not get user: %s\n", dbP.GUID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	mentions := parse.ParseAtString(dbP.Content)
+	mentions := helpers.ParseAtString(p.Content)
+	titleMentions := helpers.ParseAtString(pDB.Title)
+	mentions = append(mentions, titleMentions...)
 	if len(mentions) > 0 {
 		for _, mention := range mentions {
 			mention = strings.TrimLeft(mention, "@")
-			_, err := orm.Da.GetTagByName(mention)
-			if err == sql.ErrNoRows {
-				t := &database.Tag{
-					TagName: mention,
-					TagType: "user",
-				}
-				err := orm.Da.CreateTag(t)
-				if err != nil {
-					logger.Error.Printf("PUT /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-			} else if err != nil {
-				logger.Error.Printf("PUT /action/post/%s/comment - Could not get tag By Id: %s\n", dbP.GUID, err)
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
+			userDB, err := h.db.GetUserByUserName(h.ctx, mention)
+			ut := &db.UserTag{
+				UserID:      userDB.ID,
+				TargetID:    p.ID,
+				ResourceTpe: db.ResourcePost.String(),
 			}
-			dbTag, err := orm.Da.GetTagByName(mention)
+			err = h.db.CreateUserTag(h.ctx, ut)
 			if err != nil {
-				logger.Error.Printf("POST /action/post/%s/comment - Could not get create Tag: %s\n", dbP.GUID, err)
+				logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", pIDstr, err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			ut := &database.UserTag{
-				TagId:     dbTag.Id,
-				PostId:    dbP.Id,
-				CommentId: -1,
-				TagPlace:  "post",
-			}
-			err = orm.Da.CreateUserTag(ut)
-			if err != nil {
-				logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", dbP.GUID, err)
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			wsMsg := wsocket.Message{
-				FromUserName: dbUser.UserName,
+			wsMsg := wshandle.Message{
+				FromUserName: session.User.UserName,
 				Type:         "post_tag",
 				Msg:          " has tagged you in their post",
-				ResourceId:   dbP.GUID,
-				ParentId:     "",
+				ResourceID:   p.ID.String(),
 			}
-
-			wsoc.HandlePostTag(wsMsg, mention)
+			h.wsHandler.HandleCommentTag(wsMsg, mention)
 		}
 	}
 
-	logger.Info.Printf("OK - PUT /action/post/%s %s\n", postGUID, r.RemoteAddr)
+	logger.Info.Printf("OK - PUT /action/post/%s %s\n", pIDstr, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
 // DELETE /action/post/{Post_GUID}
 func (h *APIHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	postGUID := vars["post_guid"]
-	logger.Info.Printf("DELETE /action/post/%s %s\n", postGUID, r.RemoteAddr)
+	pIDstr := vars["post_id"]
+	logger.Info.Printf("DELETE /action/post/%s %s\n", pIDstr, r.RemoteAddr)
 
-	err := orm.Da.DisablePost(postGUID)
+	pID, err := uuid.Parse(pIDstr)
 	if err != nil {
-		logger.Error.Printf("DELETE /action/post/%s - Could not update comment: %s\n", postGUID, err)
+		logger.Error.Printf("DELETE /action/post/%s - Could not convert id to string: %s\n", pIDstr, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	dbP, err := orm.Da.GetPostByGUID(postGUID)
+	pDB, err := h.db.GetPost(h.ctx, pID)
 	if err != nil {
-		logger.Error.Printf("DELETE /action/post/%s - Could not get comment: %s\n", postGUID, err)
+		logger.Error.Printf("DELETE /action/post/%s - Could not get comment: %s\n", pIDstr, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	mentions := parse.ParseAtString(dbP.Content)
+	err = h.db.DisablePost(h.ctx, pID)
+	if err != nil {
+		logger.Error.Printf("DELETE /action/post/%s - Could not update comment: %s\n", pIDstr, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	mentions := helpers.ParseAtString(pDB.Content)
+	titleMentions := helpers.ParseAtString(pDB.Title)
+	mentions = append(mentions, titleMentions...)
 	if len(mentions) > 0 {
 		for _, mention := range mentions {
 			mention = strings.TrimLeft(mention, "@")
-			dbTag, err := orm.Da.GetTagByName(mention)
+			uDB, err := h.db.GetUserByUserName(h.ctx, mention)
 			if err != nil {
-				logger.Error.Printf("DELETE /action/post/%s - Could not get tag By Id: %s\n", postGUID, err)
+				logger.Error.Printf("DELETE /action/post/%s - Could not get tag By Id: %s\n", pIDstr, err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 
-			err = orm.Da.DeleteUserTagByID(dbTag.Id)
+			err = h.db.DeleteUserTag(h.ctx, uDB.ID, pDB.ID)
 			if err != nil {
-				logger.Error.Printf("DELETE /action/post/%s - Could not delete tag By Id: %s\n", postGUID, err)
+				logger.Error.Printf("DELETE /action/post/%s - Could not delete tag By Id: %s\n", pIDstr, err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 		}
 	}
 
-	logger.Info.Printf("OK - DELETE /action/post/%s %s\n", postGUID, r.RemoteAddr)
+	logger.Info.Printf("OK - DELETE /action/post/%s %s\n", pIDstr, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
 // POST /action/post/{Post_GUID}/up
 func (h *APIHandler) RatePostUp(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	postGUID := vars["post_guid"]
-	logger.Info.Printf("POST /action/post/%s/up %s\n", postGUID, r.RemoteAddr)
+	pIDstr := vars["post_id"]
+	logger.Info.Printf("POST /action/post/%s/up %s\n", pIDstr, r.RemoteAddr)
 
-	session := auth.ValidateSession(w, r)
+	session := h.sessionStore.ValidateSession(w, r)
 
-	dbpost, err := orm.Da.GetPostByGUID(postGUID)
+	pID, err := uuid.Parse(pIDstr)
 	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/up - Could not get post: %s\n", postGUID, err)
+		logger.Error.Printf("POST /action/post/%s/up - Could not convert id to string: %s\n", pIDstr, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = orm.Da.RatePostUp(dbpost.Id, session.User.Id)
+	pDB, err := h.db.GetPost(h.ctx, pID)
 	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/up - Could not update post rating: %s\n", postGUID, err)
+		logger.Error.Printf("POST /action/post/%s/up - Could not get post: %s\n", pIDstr, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	logger.Info.Printf("OK - POST /action/post/%s/up %s\n", postGUID, r.RemoteAddr)
+	err = h.db.RatePostUp(h.ctx, pDB.ID, session.User.ID)
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/up - Could not update post rating: %s\n", pIDstr, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	logger.Info.Printf("OK - POST /action/post/%s/up %s\n", pIDstr, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
 // POST /action/post/{Post_GUID}/down
 func (h *APIHandler) RatePostDown(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	postGUID := vars["post_guid"]
-	logger.Info.Printf("POST /action/post/%s/down %s\n", postGUID, r.RemoteAddr)
+	pIDstr := vars["post_id"]
+	logger.Info.Printf("POST /action/post/%s/down %s\n", pIDstr, r.RemoteAddr)
 
-	session := auth.ValidateSession(w, r)
+	session := h.sessionStore.ValidateSession(w, r)
 
-	dbpost, err := orm.Da.GetPostByGUID(postGUID)
+	pID, err := uuid.Parse(pIDstr)
 	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/down - Could not get post: %s\n", postGUID, err)
+		logger.Error.Printf("POST /action/post/%s/down - Could not convert id to string: %s\n", pIDstr, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = orm.Da.RatePostDown(dbpost.Id, session.User.Id)
+	pDB, err := h.db.GetPost(h.ctx, pID)
 	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/down - Could not update post rating: %s\n", postGUID, err)
+		logger.Error.Printf("POST /action/post/%s/down - Could not get post: %s\n", pIDstr, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	logger.Info.Printf("OK - POST /action/post/%s/down %s\n", postGUID, r.RemoteAddr)
+	err = h.db.RatePostDown(h.ctx, pDB.ID, session.User.ID)
+	if err != nil {
+		logger.Error.Printf("POST /action/post/%s/down - Could not update post rating: %s\n", pIDstr, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	logger.Info.Printf("OK - POST /action/post/%s/down %s\n", pIDstr, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }

@@ -6,14 +6,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
-	"github.com/Anacardo89/lenic/internal/handlers/redirect"
 	"github.com/Anacardo89/lenic/internal/helpers"
-	"github.com/Anacardo89/lenic/internal/model/mapper"
-	"github.com/Anacardo89/lenic/internal/model/mqmodel"
-	"github.com/Anacardo89/lenic/internal/model/presentation"
+	"github.com/Anacardo89/lenic/internal/models"
+	"github.com/Anacardo89/lenic/internal/models/mqmodel"
 	"github.com/Anacardo89/lenic/internal/rabbit"
-	"github.com/Anacardo89/lenic/pkg/auth"
+	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/Anacardo89/lenic/pkg/rabbitmq"
 	"github.com/gorilla/mux"
@@ -29,12 +26,11 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	var u = &presentation.User{
-		UserName:   r.FormValue("user_name"),
-		Email:      r.FormValue("user_email"),
-		Pass:       r.FormValue("user_password"),
+	var u = &models.User{
+		UserName:   r.FormValue("username"),
+		Email:      r.FormValue("email"),
+		Pass:       r.FormValue("password"),
 		ProfilePic: "",
-		Active:     0,
 	}
 	pass2 := r.FormValue("user_password2")
 	if u.Pass != pass2 {
@@ -43,13 +39,13 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if UserName or Email in use
-	_, err = orm.Da.GetUserByName(u.UserName)
+	_, err = h.db.GetUserByUserName(h.ctx, u.UserName)
 	if err != sql.ErrNoRows {
 		logger.Error.Println("/action/register - Could not get user by name: ", err)
-		redirect.RedirectToError(w, r, "User already exists")
+		redirect.RedirectToError(w, r, "Username already exists")
 		return
 	}
-	_, err = orm.Da.GetUserByEmail(u.Email)
+	_, err = h.db.GetUserByEmail(h.ctx, u.Email)
 	if err != sql.ErrNoRows {
 		logger.Error.Println("/action/register - Could not get user by mail: ", err)
 		redirect.RedirectToError(w, r, "Email already exists")
@@ -57,7 +53,7 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Password Hashing
-	u.HashPass, err = auth.HashPassword(u.Pass)
+	u.PasswordHash, err = helpers.HashPassword(u.Pass)
 	if err != nil {
 		logger.Error.Println("/action/register - Could not hash password: ", err)
 		redirect.RedirectToError(w, r, err.Error())
@@ -68,7 +64,7 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	msg := mqmodel.Register{
 		Email: u.Email,
 		User:  u.UserName,
-		Link:  helpers.MakeActivateUserLink(u.UserName),
+		Link:  helpers.MakeActivateUserLink(h.cfg.Host, h.cfg.HTTPSPort, u.UserName),
 	}
 	data, err := json.Marshal(msg)
 	if err != nil {
@@ -85,16 +81,15 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert User in DB
-	dbuser := mapper.UserToDB(u)
-	dbuser.ProfilePicExt = ""
-	err = orm.Da.CreateUser(dbuser)
+	uDB := models.ToDBUser(u)
+	_, err = h.db.CreateUser(h.ctx, uDB)
 	if err != nil {
 		logger.Error.Println("/action/register - Could not create user: ", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
 
-	logger.Info.Printf("OK - /action/register %s %s\n", r.RemoteAddr, dbuser.UserName)
+	logger.Info.Printf("OK - /action/register %s %s\n", r.RemoteAddr, uDB.UserName)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
@@ -111,7 +106,7 @@ func (h *APIHandler) ActivateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	userName := string(bytes)
 	logger.Info.Printf("/action/activate %s %s\n", r.RemoteAddr, userName)
-	err = orm.Da.SetUserAsActive(userName)
+	err = h.db.SetUserActive(h.ctx, userName)
 	if err != nil {
 		logger.Error.Println("/action/activate - Could not activate user: ", err)
 		redirect.RedirectToError(w, r, err.Error())

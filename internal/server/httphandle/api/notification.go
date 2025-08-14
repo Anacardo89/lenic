@@ -6,17 +6,16 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
-	"github.com/Anacardo89/lenic/internal/model/mapper"
-	"github.com/Anacardo89/lenic/internal/model/presentation"
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/logger"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 // GET /action/user/{user_encoded}/notifications
 func (h *APIHandler) GetNotifs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	encoded := vars["encoded_user_name"]
+	encoded := vars["encoded_username"]
 	logger.Info.Printf("GET /action/user/%s/notifications %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
@@ -27,43 +26,43 @@ func (h *APIHandler) GetNotifs(w http.ResponseWriter, r *http.Request) {
 	userName := string(bytes)
 	logger.Info.Printf("GET /action/user/%s/notifications %s %s\n", encoded, r.RemoteAddr, userName)
 
-	dbuser, err := orm.Da.GetUserByName(userName)
+	uDB, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/notifications - Could not get user: %s\n", encoded, err)
 		return
 	}
-	u := mapper.UserNotif(dbuser)
+	u := models.FromDBUserNotif(uDB)
 
 	queryParams := r.URL.Query()
-	offset := queryParams.Get("offset")
-	offsetint, err := strconv.Atoi(offset)
+	offsetStr := queryParams.Get("offset")
+	offset, err := strconv.Atoi(offsetStr)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/notifications - Could not parse offset to int: %s\n", encoded, err)
 		return
 	}
 
-	limit := queryParams.Get("limit")
-	limitint, err := strconv.Atoi(limit)
+	limitStr := queryParams.Get("limit")
+	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/notifications - Could not parse limit to int: %s\n", encoded, err)
 		return
 	}
 
-	dbnotifs, err := orm.Da.GetNotificationsByUser(dbuser.Id, limitint, offsetint)
+	dbNotifs, err := h.db.GetNotificationsByUser(h.ctx, u.ID, limit, offset)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/notifications - Could not get notifs: %s\n", encoded, err)
 		return
 	}
 
-	var notifs []*presentation.Notification
-	for _, dbnotif := range dbnotifs {
-		dbfromuser, err := orm.Da.GetUserByID(dbnotif.FromUserId)
+	var notifs []*models.Notification
+	for _, nDB := range dbNotifs {
+		fromUserDB, err := h.db.GetUserByID(h.ctx, nDB.FromUserID)
 		if err != nil {
 			logger.Error.Printf("GET /action/user/%s/notifications - Could not get user: %s\n", encoded, err)
 			return
 		}
-		from_u := mapper.UserNotif(dbfromuser)
-		n := mapper.Notification(dbnotif, *u, *from_u)
+		fromU := models.FromDBUserNotif(fromUserDB)
+		n := models.FromDBNotification(nDB, *u, *fromU)
 		notifs = append(notifs, n)
 	}
 
@@ -81,26 +80,27 @@ func (h *APIHandler) GetNotifs(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) UpdateNotif(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
-	notif_id := vars["notif_id"]
-	logger.Info.Printf("PUT /action/user/%s/notifications/%s/read %s\n", encoded, notif_id, r.RemoteAddr)
+	nIDstr := vars["notif_id"]
+	logger.Info.Printf("PUT /action/user/%s/notifications/%s/read %s\n", encoded, nIDstr, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
-		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not decode user: %s\n", encoded, notif_id, err)
+		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not decode user: %s\n", encoded, nIDstr, err)
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("PUT /action/user/%s/notifications/%s/read %s %s\n", encoded, notif_id, r.RemoteAddr, userName)
+	logger.Info.Printf("PUT /action/user/%s/notifications/%s/read %s %s\n", encoded, nIDstr, r.RemoteAddr, userName)
 
-	notif_id_int, err := strconv.Atoi(notif_id)
+	nID, err := uuid.Parse(nIDstr)
 	if err != nil {
-		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not parse notif_id to int: %s\n", encoded, notif_id, err)
+		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not convert id to string: %s\n", encoded, nIDstr, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = orm.Da.UpdateNotificationRead(notif_id_int)
+	err = h.db.UpdateNotificationRead(h.ctx, nID)
 	if err != nil {
-		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not update notif: %s\n", encoded, notif_id, err)
+		logger.Error.Printf("PUT /action/user/%s/notifications/%s/read - Could not update notif: %s\n", encoded, nIDstr, err)
 		return
 	}
 }

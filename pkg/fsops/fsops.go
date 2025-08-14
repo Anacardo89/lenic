@@ -56,8 +56,8 @@ func MakeImgDir() {
 	}
 }
 
-func SaveImg(data []byte, path string, name string, extension string) {
-	filePath := path + name + extension
+func SaveImg(data []byte, path string, name string) {
+	filePath := path + name
 	img, err := os.Create(filePath)
 	if err != nil {
 		logger.Error.Println(err)

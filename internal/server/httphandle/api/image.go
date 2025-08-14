@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"encoding/base64"
+	"fmt"
 	"io"
 	"mime"
 	"net/http"
@@ -10,20 +11,28 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
 	"github.com/Anacardo89/lenic/pkg/fsops"
 	"github.com/Anacardo89/lenic/pkg/logger"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 // /action/image
 func (h *APIHandler) PostImage(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/image ", r.RemoteAddr)
-	guid := r.URL.Query().Get("guid")
-	if guid == "" {
+	pIDstr := r.URL.Query().Get("post_id")
+	if pIDstr == "" {
 		return
 	}
-	dbpost, err := orm.Da.GetPostByGUID(guid)
+
+	pID, err := uuid.Parse(pIDstr)
+	if err != nil {
+		logger.Error.Printf("/action/image - Could not convert id to string: %s\n", pIDstr, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	pDB, err := h.db.GetPost(h.ctx, pID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return
@@ -32,7 +41,7 @@ func (h *APIHandler) PostImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imgPath := fsops.PostImgPath + dbpost.Image + dbpost.ImageExt
+	imgPath := fsops.PostImgPath + pDB.PostImage
 	imgFile, err := os.Open(imgPath)
 	if err != nil {
 		logger.Error.Println("/action/image - Could not open image: ", err)
@@ -46,8 +55,8 @@ func (h *APIHandler) PostImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbpost.ImageExt = strings.TrimPrefix(dbpost.ImageExt, ".")
-	mimeType := mime.TypeByExtension(dbpost.ImageExt)
+	imageExt := strings.TrimPrefix(pDB.PostImage, ".")
+	mimeType := mime.TypeByExtension(imageExt)
 	if mimeType == "" {
 		mimeType = "application/octet-stream"
 	}
@@ -59,7 +68,7 @@ func (h *APIHandler) PostImage(w http.ResponseWriter, r *http.Request) {
 // /action/profile-pic
 func (h *APIHandler) ProfilePic(w http.ResponseWriter, r *http.Request) {
 	logger.Info.Println("/action/profile-pic ", r.RemoteAddr)
-	encoded := r.URL.Query().Get("user-encoded")
+	encoded := r.URL.Query().Get("encoded_username")
 	if encoded == "" {
 		return
 	}
@@ -71,7 +80,7 @@ func (h *APIHandler) ProfilePic(w http.ResponseWriter, r *http.Request) {
 	}
 	userName := string(bytes)
 
-	dbuser, err := orm.Da.GetUserByName(userName)
+	uDB, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return
@@ -80,7 +89,7 @@ func (h *APIHandler) ProfilePic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imgPath := fsops.ProfilePicPath + dbuser.ProfilePic + dbuser.ProfilePicExt
+	imgPath := fsops.ProfilePicPath + uDB.ProfilePic
 	imgFile, err := os.Open(imgPath)
 	if err != nil {
 		logger.Error.Println("/action/profile-pic - Could not open image: ", err)
@@ -94,8 +103,8 @@ func (h *APIHandler) ProfilePic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbuser.ProfilePicExt = strings.TrimPrefix(dbuser.ProfilePicExt, ".")
-	mimeType := mime.TypeByExtension(dbuser.ProfilePicExt)
+	picExt := strings.TrimPrefix(uDB.ProfilePic, ".")
+	mimeType := mime.TypeByExtension(picExt)
 	if mimeType == "" {
 		mimeType = "application/octet-stream"
 	}
@@ -107,7 +116,7 @@ func (h *APIHandler) ProfilePic(w http.ResponseWriter, r *http.Request) {
 // /action/user/{user_encoded}/profile-pic
 func (h *APIHandler) PostProfilePic(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	encoded := vars["encoded_user_name"]
+	encoded := vars["encoded_username"]
 	logger.Info.Printf("/action/user/%s/profile-pic  %s\n", encoded, r.RemoteAddr)
 
 	err := r.ParseMultipartForm(10 << 20)
@@ -117,7 +126,7 @@ func (h *APIHandler) PostProfilePic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, header, err := r.FormFile("profile-image")
+	file, header, err := r.FormFile("profile_pic")
 	if err != nil {
 		logger.Error.Printf("/action/user/%s/profile-pic - Could not get image: %s\n", encoded, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -126,6 +135,7 @@ func (h *APIHandler) PostProfilePic(w http.ResponseWriter, r *http.Request) {
 
 	fileName := fsops.NameImg(16)
 	fileExt := filepath.Ext(header.Filename)
+	fileName = fmt.Sprintf("%s.%s", fileName, fileExt)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -135,7 +145,7 @@ func (h *APIHandler) PostProfilePic(w http.ResponseWriter, r *http.Request) {
 	}
 	userName := string(bytes)
 
-	err = orm.Da.UpdateProfilePic(fileName, fileExt, userName)
+	err = h.db.UpdateProfilePic(h.ctx, userName, fileName)
 	if err != nil {
 		logger.Error.Printf("/action/user/%s/profile-pic - Could not update profile pic: %s\n", encoded, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -148,7 +158,7 @@ func (h *APIHandler) PostProfilePic(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	fsops.SaveImg(imgData, fsops.ProfilePicPath, fileName, fileExt)
+	fsops.SaveImg(imgData, fsops.ProfilePicPath, fileName)
 	logger.Info.Printf("/action/user/%s/profile-pic  %s\n", encoded, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }

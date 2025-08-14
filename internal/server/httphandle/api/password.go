@@ -8,12 +8,11 @@ import (
 
 	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
 	"github.com/Anacardo89/lenic/internal/helpers"
-	"github.com/Anacardo89/lenic/internal/model/database"
-	"github.com/Anacardo89/lenic/internal/model/mqmodel"
+	"github.com/Anacardo89/lenic/internal/models/mqmodel"
 	"github.com/Anacardo89/lenic/internal/rabbit"
-	"github.com/Anacardo89/lenic/pkg/auth"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/Anacardo89/lenic/pkg/rabbitmq"
+	"github.com/Anacardo89/tpsi25_blog/pkg/auth"
 )
 
 // POST /action/forgot-password

@@ -8,9 +8,9 @@ import (
 	"strconv"
 
 	"github.com/Anacardo89/lenic/internal/db"
-	"github.com/Anacardo89/lenic/internal/handlers/data/orm"
 	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/logger"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -143,7 +143,7 @@ func (h *APIHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
 			logger.Error.Printf("GET /action/user/%s/conversations - Could not get user: %s\n", encoded, err)
 			return
 		}
-		fromU := models.FromDBUserNotif(h.ctx, dbFromUser)
+		fromU := models.FromDBUserNotif(dbFromUser)
 		dms, err := h.db.GetDMsByConversation(h.ctx, dbConvo.ID, 1000, 0)
 		if err != nil {
 			logger.Error.Printf("GET /action/user/%s/conversations - Could not get dms: %s\n", encoded, err)
@@ -170,76 +170,69 @@ func (h *APIHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-//-------------------------------------------------------------------------------------------------------
-//
-//
-// Restart from here
-//
-//
-//------------------------------------------------------------------------------------------------------------
-
 // GET /action/user/{user_encoded}/conversations/{conversation_id}/dms
 func (h *APIHandler) GetDMs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	encoded := vars["encoded_user_name"]
-	conversation_id := vars["conversation_id"]
-	logger.Info.Printf("GET /action/user/%s/conversations/%s/dms %s\n", encoded, conversation_id, r.RemoteAddr)
+	encoded := vars["encoded_username"]
+	cIDstr := vars["conversation_id"]
+	logger.Info.Printf("GET /action/user/%s/conversations/%s/dms %s\n", encoded, cIDstr, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
-		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not decode user: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not decode user: %s\n", encoded, cIDstr, err)
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("GET /action/user/%s/conversations/%s/dms %s %s\n", encoded, conversation_id, r.RemoteAddr, userName)
+	logger.Info.Printf("GET /action/user/%s/conversations/%s/dms %s %s\n", encoded, cIDstr, r.RemoteAddr, userName)
 
-	convoid_int, err := strconv.Atoi(conversation_id)
+	cID, err := uuid.Parse(cIDstr)
 	if err != nil {
-		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not parse conversation_id to int: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not convert id to string: %s\n", encoded, cIDstr, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	queryParams := r.URL.Query()
-	offset := queryParams.Get("offset")
-	offsetint, err := strconv.Atoi(offset)
+	offsetStr := queryParams.Get("offset")
+	offset, err := strconv.Atoi(offsetStr)
 	if err != nil {
-		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not parse offset to int: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not parse offset to int: %s\n", encoded, cIDstr, err)
 		return
 	}
 
-	limit := queryParams.Get("limit")
-	limitint, err := strconv.Atoi(limit)
+	limitStr := queryParams.Get("limit")
+	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
-		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not parse limit to int: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not parse limit to int: %s\n", encoded, cIDstr, err)
 		return
 	}
 
-	dbconvo, err := orm.Da.GetConversationById(convoid_int)
+	dbConvo, err := h.db.GetConversation(h.ctx, cID)
 	if err != nil {
-		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not get conversation: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not get conversation: %s\n", encoded, cIDstr, err)
 		return
 	}
 
-	var dms []*presentation.DMessage
-	dbdms, err := orm.Da.GetDMsByConversationId(dbconvo.Id, limitint, offsetint)
+	var dms []*models.DMessage
+	dbDMs, err := h.db.GetDMsByConversation(h.ctx, dbConvo.ID, limit, offset)
 	if err != nil {
-		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not get DMs: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not get DMs: %s\n", encoded, cIDstr, err)
 		return
 	}
-	for _, dbdm := range dbdms {
-		dbdm_sender, err := orm.Da.GetUserByID(dbdm.SenderId)
+	for _, dm := range dbDMs {
+		senderDB, err := h.db.GetUserByID(h.ctx, dm.SenderID)
 		if err != nil {
-			logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not get sender: %s\n", encoded, conversation_id, err)
+			logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not get sender: %s\n", encoded, cIDstr, err)
 			return
 		}
-		dm_sender := mapper.UserNotif(dbdm_sender)
-		dm := mapper.DMessage(dbdm, *dm_sender)
+		sender := models.FromDBUserNotif(senderDB)
+		dm := models.FromDBDMessage(dm, *sender)
 		dms = append(dms, dm)
 	}
 
 	data, err := json.Marshal(dms)
 	if err != nil {
-		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not marshal dms: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("GET /action/user/%s/conversations/%s/dms - Could not marshal dms: %s\n", encoded, cIDstr, err)
 		return
 	}
 
@@ -254,107 +247,109 @@ type JSON_DM struct {
 // POST /action/user/{user_encoded}/conversations/{conversation_id}/dms
 func (h *APIHandler) SendDM(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	encoded := vars["encoded_user_name"]
-	conversation_id := vars["conversation_id"]
-	logger.Info.Printf("POST /action/user/%s/conversations/%s/dms %s\n", encoded, conversation_id, r.RemoteAddr)
+	encoded := vars["encoded_username"]
+	cIDstr := vars["conversation_id"]
+	logger.Info.Printf("POST /action/user/%s/conversations/%s/dms %s\n", encoded, cIDstr, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
-		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not decode user: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not decode user: %s\n", encoded, cIDstr, err)
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("POST /action/user/%s/conversations/%s/dms %s %s\n", encoded, conversation_id, r.RemoteAddr, userName)
+	logger.Info.Printf("POST /action/user/%s/conversations/%s/dms %s %s\n", encoded, cIDstr, r.RemoteAddr, userName)
 
-	convoid_int, err := strconv.Atoi(conversation_id)
+	cID, err := uuid.Parse(cIDstr)
 	if err != nil {
-		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not parse conversation_id to int: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not convert id to string: %s\n", encoded, cIDstr, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	var msg JSON_DM
 	err = json.NewDecoder(r.Body).Decode(&msg)
 	if err != nil {
-		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not parse Json Data: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not parse Json Data: %s\n", encoded, cIDstr, err)
 		return
 	}
 
-	dbconvo, err := orm.Da.GetConversationById(convoid_int)
+	dbConvo, err := h.db.GetConversation(h.ctx, cID)
 	if err != nil {
-		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not get db conversation: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not get db conversation: %s\n", encoded, cIDstr, err)
 		return
 	}
 
-	dbuser, err := orm.Da.GetUserByName(userName)
+	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
-		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not get db user: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not get db user: %s\n", encoded, cIDstr, err)
 		return
 	}
 
-	sender_id := dbconvo.User1Id
-	if dbconvo.User1Id != dbuser.Id {
-		sender_id = dbconvo.User2Id
+	senderID := dbConvo.User1ID
+	if dbConvo.User1ID != dbUser.ID {
+		senderID = dbConvo.User2ID
 	}
 
-	m := &database.DMessage{
-		ConversationId: convoid_int,
-		SenderId:       sender_id,
+	m := &db.DMessage{
+		ConversationID: cID,
+		SenderID:       senderID,
 		Content:        msg.Msg,
 	}
 
-	_, err = orm.Da.CreateDMessage(m)
+	_, err = h.db.CreateDM(h.ctx, m)
 	if err != nil {
-		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not get db user: %s\n", encoded, conversation_id, err)
+		logger.Error.Printf("POST /action/user/%s/conversations/%s/dms - Could not get db user: %s\n", encoded, cIDstr, err)
 		return
 	}
 
-	logger.Info.Printf("OK - POST /action/user/%s/conversations/%s/dms\n", encoded, conversation_id)
+	logger.Info.Printf("OK - POST /action/user/%s/conversations/%s/dms\n", encoded, cIDstr)
 	w.WriteHeader(http.StatusOK)
 }
 
 // PUT /action/user/{user_encoded}/conversations/{conversation_id}/read
 func (h *APIHandler) ReadConversation(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	encoded := vars["encoded_user_name"]
-	convo_id := vars["conversation_id"]
-	logger.Info.Printf("PUT /action/user/%s/conversations/%s/read %s\n", encoded, convo_id, r.RemoteAddr)
+	encoded := vars["encoded_username"]
+	cIDstr := vars["conversation_id"]
+	logger.Info.Printf("PUT /action/user/%s/conversations/%s/read %s\n", encoded, cIDstr, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
-		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not decode user: %s\n", encoded, convo_id, err)
+		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not decode user: %s\n", encoded, cIDstr, err)
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("PUT /action/user/%s/conversations/%s/read %s %s\n", encoded, convo_id, r.RemoteAddr, userName)
+	logger.Info.Printf("PUT /action/user/%s/conversations/%s/read %s %s\n", encoded, cIDstr, r.RemoteAddr, userName)
 
-	dbuser, err := orm.Da.GetUserByName(userName)
+	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
-		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could get user: %s\n", encoded, convo_id, err)
+		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could get user: %s\n", encoded, cIDstr, err)
 		return
 	}
 
-	convo_id_int, err := strconv.Atoi(convo_id)
+	cID, err := uuid.Parse(cIDstr)
 	if err != nil {
-		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not parse convo_id to int: %s\n", encoded, convo_id, err)
+		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not convert id to string: %s\n", encoded, cIDstr, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	dms, err := orm.Da.GetDMsByConversationId(convo_id_int, 1000, 0)
+	dms, err := h.db.GetDMsByConversation(h.ctx, cID, 1000, 0)
 	if err != nil {
-		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could get DMs: %s\n", encoded, convo_id, err)
+		logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could get DMs: %s\n", encoded, cIDstr, err)
 		return
 	}
 
 	for _, dm := range dms {
-		if dm.SenderId != dbuser.Id {
-			err = orm.Da.UpdateDMReadById(dm.Id)
+		if dm.SenderID != dbUser.ID {
+			err = h.db.UpdateDMRead(h.ctx, dm.ID)
 			if err != nil {
-				logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not update notif: %s\n", encoded, convo_id, err)
+				logger.Error.Printf("PUT /action/user/%s/conversations/%s/read - Could not update notif: %s\n", encoded, cIDstr, err)
 				return
 			}
 		}
 	}
 
-	logger.Info.Printf("OK - PUT /action/user/%s/conversations/%s/read\n", encoded, convo_id)
+	logger.Info.Printf("OK - PUT /action/user/%s/conversations/%s/read\n", encoded, cIDstr)
 	w.WriteHeader(http.StatusOK)
 }

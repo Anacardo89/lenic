@@ -43,14 +43,14 @@ func (c *dbClient) GetUserTagByTarget(ctx context.Context, userID, targetID uuid
 	return &t, err
 }
 
-func (c *dbClient) DeleteUserTag(ctx context.Context, ID uuid.UUID) error {
+func (c *dbClient) DeleteUserTag(ctx context.Context, userID uuid.UUID, targetID uuid.UUID) error {
 
 	query := `
 	DELETE FROM user_tags
-	WHERE id = $1
+	WHERE user_id = $1 AND target_id = $2
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, ID)
+	_, err := c.Pool().Exec(ctx, query, userID, targetID)
 	return err
 }
 

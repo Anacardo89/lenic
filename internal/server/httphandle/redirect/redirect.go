@@ -19,7 +19,7 @@ func (h *RedirectHandler) RedirectNonSecure(w http.ResponseWriter, r *http.Reque
 	http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)
 }
 
-func (h *RedirectHandler) RedirIndex(w http.ResponseWriter, r *http.Request) {
+func RedirIndex(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
