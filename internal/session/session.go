@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Anacardo89/lenic/internal/config"
-	"github.com/Anacardo89/lenic/internal/db"
+	"github.com/Anacardo89/lenic/config"
+	"github.com/Anacardo89/lenic/internal/repo"
 
 	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/pkg/logger"
@@ -17,18 +17,18 @@ import (
 
 type SessionStore struct {
 	ctx      context.Context
-	cfg      *config.SessionConfig
+	cfg      config.Session
 	mu       sync.Mutex
-	db       db.DBRepository
+	db       repo.DBRepository
 	store    *sessions.CookieStore
 	sessions map[string]*Session
 }
 
-func NewSessionStore(ctx context.Context, cfg *config.SessionConfig, store *sessions.CookieStore, db db.DBRepository) *SessionStore {
+func NewSessionStore(ctx context.Context, cfg config.Session, db repo.DBRepository) *SessionStore {
 	return &SessionStore{
 		ctx:      ctx,
 		db:       db,
-		store:    store,
+		store:    sessions.NewCookieStore([]byte(cfg.Secret)),
 		sessions: make(map[string]*Session),
 	}
 }

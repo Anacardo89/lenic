@@ -1,8 +1,24 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/Anacardo89/lenic/config"
+	"github.com/Anacardo89/lenic/internal/auth"
+	"github.com/Anacardo89/lenic/internal/middleware"
+	"github.com/Anacardo89/lenic/internal/server"
+	"github.com/Anacardo89/lenic/internal/server/httphandle/api"
+	"github.com/Anacardo89/lenic/internal/server/httphandle/page"
+	"github.com/Anacardo89/lenic/internal/server/wshandle"
+	"github.com/Anacardo89/lenic/internal/session"
+	"github.com/Anacardo89/lenic/internal/wsconnman"
+	"github.com/Anacardo89/lenic/pkg/logger"
+	"github.com/Anacardo89/lenic/pkg/mail"
 )
 
 var (
@@ -11,104 +27,47 @@ var (
 )
 
 func main() {
-	logger.CreateLogger()
-	logger.Info.Println("System start")
-	fsops.MakeImgDir()
-
-	// DB
-	dbConfig, err := config.LoadDBConfig()
+	// Dependencies
+	log.SetOutput(os.Stdout)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	cfg, err := config.LoadConfig()
 	if err != nil {
-		logger.Error.Fatalln("Could not load dbConfig:", err)
+		log.Fatalf("failed to load config: %v", err)
 	}
-	db.Dbase, err = db.LoginDB(dbConfig)
+	logg := logger.NewLogger(cfg.Log)
+	dbRepo, err := initDB(cfg.DB)
 	if err != nil {
-		logger.Error.Fatalln("Could not connect to DB: ", err)
+		logg.Fatal("failed to init db: %v", err)
 	}
-	orm.Da.Db = db.Dbase
-	logger.Info.Println("Connecting to DB OK")
+	defer dbRepo.Close()
+	tokenMan := auth.NewTokenManager(&cfg.Token)
+	sessionStore := session.NewSessionStore(context.Background(), cfg.Session, dbRepo)
+	mailClient := mail.NewClient(cfg.Mail)
 
-	// Certificate
-	cert := fsops.MakePaths()
-	tlsConf, err := fsops.LoadCertificates(cert)
-	if err != nil {
-		logger.Error.Fatalln("Could not load SSL Certificates:", err)
-	}
-	logger.Info.Println("Loading SSL Certificates OK")
+	wsh := wshandle.NewHandler(dbRepo, logg, sessionStore, wsconnman.NewWSConnMan())
+	ah := api.NewHandler(context.Background(), logg, &cfg.Server, dbRepo, tokenMan, sessionStore, wsh, mailClient)
+	ph := page.NewHandler(context.Background(), logg, dbRepo, sessionStore)
+	mw := middleware.NewMiddlewareHandler(tokenMan, logg, cfg.Server.WriteTimeout)
 
-	// Session Store
-	sessConfig, err := config.LoadSessionConfig()
-	if err != nil {
-		logger.Error.Fatalln("Could not load sessConfig:", err)
-	}
-	auth.SessionStore = sessions.NewCookieStore([]byte(sessConfig.Pass))
-	logger.Info.Println("Creating SessionStore OK")
+	srv := server.NewServer(cfg.Server, logg, ah, ph, mw, wsh)
 
-	// RabbitMQ
-	rabbitmq.RMQ, err = config.LoadRabbitConfig()
-	if err != nil {
-		logger.Error.Fatalln("Could not load rabbitConfig:", err)
-	}
-	rconn, err := rabbitmq.RMQ.Connect()
-	if err != nil {
-		logger.Error.Fatalln("Could not connect to RabbitMQ:", err)
-	}
-	rabbitmq.RCh, err = rconn.Channel()
-	if err != nil {
-		logger.Error.Fatalln("Could not create Rabbit Channel:", err)
-	}
-	defer rabbitmq.RCh.Close()
-	logger.Info.Println("Connecting to RabbitMQ OK")
-
-	err = rabbitmq.RMQ.DeclareQueues(rabbitmq.RCh)
-	if err != nil {
-		logger.Error.Fatalln("Could not declare Rabbit Queue:", err)
-	}
-	logger.Info.Println("Declaring Rabbit Queues OK")
-
-	// Router
-	r := mux.NewRouter()
-	routes.DeclareRoutes(r)
-
-	http.Handle("/", r)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-
-	// Websocket
-	wsocket.WSConnMan = wsocket.NewWSConnManager()
-
-	// Server
-	server.Server, err = config.LoadServerConfig()
-	if err != nil {
-		logger.Error.Fatalln("Could not load serverConfig:", err)
-	}
-	logger.Info.Println("Loading serverConfig OK")
-
-	httpServer = &http.Server{
-		Addr:    ":" + server.Server.HttpPORT,
-		Handler: http.HandlerFunc(redirect.RedirectNonSecure),
-	}
-
-	httpsServer = &http.Server{
-		Addr:      ":" + server.Server.HttpsPORT,
-		TLSConfig: tlsConf,
-	}
-
-	// Work
-	errChan := make(chan error, 2)
-
+	// Serve
+	stopChan := make(chan os.Signal, 1)
+	errChan := make(chan error, 1)
+	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
-		log.Println("Starting HTTP server on :8081")
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			errChan <- err
-		}
+		errChan <- srv.Start()
 	}()
-
-	go func() {
-		log.Println("Starting HTTPS server on :8082")
-		if err := httpsServer.ListenAndServeTLS(cert.CertPath, cert.KeyPath); err != nil && err != http.ErrServerClosed {
-			errChan <- err
+	select {
+	case sig := <-stopChan:
+		logg.Info("Shutting down...", "signal", sig)
+		if err := srv.Shutdown(); err != nil {
+			logg.Fatal("Failed to shutdown server gracefully", "error", err)
 		}
-	}()
-
-	logger.Error.Fatalf("Server error: %v", <-errChan)
-
+		logg.Info("Server stopped gracefully")
+	case err := <-errChan:
+		if err != http.ErrServerClosed {
+			logg.Fatal("Server failed", "error", err)
+		}
+	}
 }

@@ -1,45 +1,71 @@
 package server
 
 import (
+	"context"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Anacardo89/lenic/config"
-	"github.com/Anacardo89/lenic/internal/auth"
-	"github.com/Anacardo89/lenic/internal/db"
-	"github.com/Anacardo89/lenic/internal/server/handlers/api"
-	"github.com/Anacardo89/lenic/internal/server/handlers/page"
-	"github.com/Anacardo89/lenic/internal/server/handlers/redirect"
-	"github.com/Anacardo89/lenic/internal/server/http/redirect"
-	"github.com/Anacardo89/lenic/internal/server/websocket"
-	"github.com/Anacardo89/lenic/internal/wsconnman"
-	"github.com/gorilla/mux"
+	"github.com/Anacardo89/lenic/internal/middleware"
+	"github.com/Anacardo89/lenic/internal/server/httphandle/api"
+	"github.com/Anacardo89/lenic/internal/server/httphandle/page"
+	"github.com/Anacardo89/lenic/internal/server/wshandle"
+	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
 type Server struct {
-	cfg          *config.Config
-	db           db.DBRepository
-	sessionStore *auth.SessionStore
-	wsConnMann   *wsconnman.WSConnMan
-	router       http.Handler
-
-	apiHandler      *api.Handler
-	pageHandler     *page.Handler
-	redirectHandler *redirect.Handler
-	websocketHanler *websocket.Handler
+	httpSrv  *http.Server
+	router   http.Handler
+	addr     string
+	log      *logger.Logger
+	timeouts ServerTimeouts
 }
 
-func NewServer(cfg *config.Config, db db.DBRepository, sessionStore *auth.SessionStore) *Server {
-	s := &Server{
-		cfg:             cfg,
-		db:              db,
-		sessionStore:    sessionStore,
-		apiHandler:      api.NewHandler(db, sessionStore),
-		pageHandler:     page.NewHandler(db, sessionStore),
-		redirectHandler: redirect.NewHandler(cfg, db, sessionStore),
-	}
+type ServerTimeouts struct {
+	ReadTimeout     time.Duration
+	WriteTimeout    time.Duration
+	ShutdownTimeout time.Duration
+}
 
-	r := mux.NewRouter()
-	s.DeclareRoutes(r)
-	s.router = r
+func NewServer(
+	cfg config.Server,
+	l *logger.Logger,
+	ah *api.APIHandler,
+	ph *page.PageHandler,
+	mw *middleware.MiddlewareHandler,
+	wsh *wshandle.WSHandler,
+) *Server {
+	to := ServerTimeouts{
+		ReadTimeout:     cfg.ReadTimeout,
+		WriteTimeout:    cfg.WriteTimeout,
+		ShutdownTimeout: cfg.ShutdownTimeout,
+	}
+	s := &Server{
+		router:   NewRouter(ah, ph, wsh, mw),
+		addr:     fmt.Sprintf(":%s", cfg.Port),
+		log:      l,
+		timeouts: to,
+	}
 	return s
+}
+
+func (s *Server) Start() error {
+	s.httpSrv = &http.Server{
+		Addr:         s.addr,
+		Handler:      s.router,
+		ReadTimeout:  s.timeouts.ReadTimeout,
+		WriteTimeout: s.timeouts.WriteTimeout,
+	}
+	s.log.Info("Starting server on", "adress", s.addr)
+	return s.httpSrv.ListenAndServe()
+}
+
+func (s *Server) Shutdown() error {
+	ctx, cancel := context.WithTimeout(context.Background(), s.timeouts.ShutdownTimeout)
+	defer cancel()
+	if s.httpSrv != nil {
+		return s.httpSrv.Shutdown(ctx)
+	}
+	return nil
 }

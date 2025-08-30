@@ -1,4 +1,4 @@
-package db
+package repo
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 )
 
 // Posts
-func (c *dbClient) CreatePost(ctx context.Context, p *Post) (uuid.UUID, error) {
+func (db *dbHandler) CreatePost(ctx context.Context, p *Post) (uuid.UUID, error) {
 
 	query := `
 	INSERT INTO posts (
@@ -24,7 +24,7 @@ func (c *dbClient) CreatePost(ctx context.Context, p *Post) (uuid.UUID, error) {
 	;`
 
 	var ID uuid.UUID
-	err := c.Pool().QueryRow(ctx, query,
+	err := db.pool.QueryRow(ctx, query,
 		p.ID,
 		p.AuthorID,
 		p.Title,
@@ -35,7 +35,7 @@ func (c *dbClient) CreatePost(ctx context.Context, p *Post) (uuid.UUID, error) {
 	return ID, err
 }
 
-func (c *dbClient) GetFeed(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
+func (db *dbHandler) GetFeed(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
 	query := `
 	SELECT p.* 
 	FROM posts p
@@ -59,7 +59,7 @@ func (c *dbClient) GetFeed(ctx context.Context, userID uuid.UUID) ([]*Post, erro
 	;`
 
 	posts := []*Post{}
-	rows, err := c.Pool().Query(ctx, query, userID)
+	rows, err := db.pool.Query(ctx, query, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return posts, nil
@@ -90,7 +90,7 @@ func (c *dbClient) GetFeed(ctx context.Context, userID uuid.UUID) ([]*Post, erro
 	return posts, nil
 }
 
-func (c *dbClient) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
+func (db *dbHandler) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
 
 	query := `
 	SELECT *
@@ -100,7 +100,7 @@ func (c *dbClient) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Post,
 	;`
 
 	posts := []*Post{}
-	rows, err := c.Pool().Query(ctx, query, userID)
+	rows, err := db.pool.Query(ctx, query, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return posts, nil
@@ -132,7 +132,7 @@ func (c *dbClient) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Post,
 	return posts, nil
 }
 
-func (c *dbClient) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
+func (db *dbHandler) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
 
 	query := `
 	SELECT * 
@@ -142,7 +142,7 @@ func (c *dbClient) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) ([]
 	;`
 
 	posts := []*Post{}
-	rows, err := c.Pool().Query(ctx, query, userID)
+	rows, err := db.pool.Query(ctx, query, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return posts, nil
@@ -174,7 +174,7 @@ func (c *dbClient) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) ([]
 	return posts, nil
 }
 
-func (c *dbClient) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
+func (db *dbHandler) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 
 	query := `
 	SELECT * 
@@ -183,7 +183,7 @@ func (c *dbClient) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 	;`
 
 	p := Post{}
-	err := c.Pool().QueryRow(ctx, query, ID).
+	err := db.pool.QueryRow(ctx, query, ID).
 		Scan(
 			&p.ID,
 			&p.AuthorID,
@@ -200,7 +200,7 @@ func (c *dbClient) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 	return &p, err
 }
 
-func (c *dbClient) UpdatePost(ctx context.Context, post *Post) error {
+func (db *dbHandler) UpdatePost(ctx context.Context, post *Post) error {
 
 	query := `
 	UPDATE posts
@@ -210,7 +210,7 @@ func (c *dbClient) UpdatePost(ctx context.Context, post *Post) error {
 	WHERE id = $1
 	;`
 
-	_, err := c.Pool().Exec(ctx, query,
+	_, err := db.pool.Exec(ctx, query,
 		post.ID,
 		post.Title,
 		post.Content,
@@ -219,7 +219,7 @@ func (c *dbClient) UpdatePost(ctx context.Context, post *Post) error {
 	return err
 }
 
-func (c *dbClient) DisablePost(ctx context.Context, ID uuid.UUID) error {
+func (db *dbHandler) DisablePost(ctx context.Context, ID uuid.UUID) error {
 
 	query := `
 	UPDATE posts
@@ -228,12 +228,12 @@ func (c *dbClient) DisablePost(ctx context.Context, ID uuid.UUID) error {
 	WHERE id = $1
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, ID)
+	_, err := db.pool.Exec(ctx, query, ID)
 	return err
 }
 
 // Post Ratings
-func (c *dbClient) RatePostUp(ctx context.Context, targetID, userID uuid.UUID) error {
+func (db *dbHandler) RatePostUp(ctx context.Context, targetID, userID uuid.UUID) error {
 
 	query := `
 	INSERT INTO post_ratings (
@@ -250,11 +250,11 @@ func (c *dbClient) RatePostUp(ctx context.Context, targetID, userID uuid.UUID) e
 			ELSE 1
 		END;
 	;`
-	_, err := c.Pool().Exec(ctx, query, targetID, userID)
+	_, err := db.pool.Exec(ctx, query, targetID, userID)
 	return err
 }
 
-func (c *dbClient) RatePostDown(ctx context.Context, targetID, userID uuid.UUID) error {
+func (db *dbHandler) RatePostDown(ctx context.Context, targetID, userID uuid.UUID) error {
 
 	query := `
 	INSERT INTO post_ratings (
@@ -272,18 +272,18 @@ func (c *dbClient) RatePostDown(ctx context.Context, targetID, userID uuid.UUID)
 		END;
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, targetID, userID)
+	_, err := db.pool.Exec(ctx, query, targetID, userID)
 	return err
 }
 
-func (c *dbClient) GetPostUserRating(ctx context.Context, targetID, userID uuid.UUID) (*PostRatings, error) {
+func (db *dbHandler) GetPostUserRating(ctx context.Context, targetID, userID uuid.UUID) (*PostRatings, error) {
 	query := `
 	SELECT *
 	FROM post_ratings
 	WHERE target_id = $1 AND user_id = $2
 	;`
 	pr := PostRatings{}
-	err := c.Pool().QueryRow(ctx, query, targetID, userID).
+	err := db.pool.QueryRow(ctx, query, targetID, userID).
 		Scan(
 			&pr.TargetID,
 			&pr.UserID,

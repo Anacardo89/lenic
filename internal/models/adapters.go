@@ -4,10 +4,10 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/Anacardo89/lenic/internal/db"
+	"github.com/Anacardo89/lenic/internal/repo"
 )
 
-func FromDBUser(u *db.User) *User {
+func FromDBUser(u *repo.User) *User {
 	return &User{
 		ID:           u.ID,
 		UserName:     u.UserName,
@@ -23,7 +23,7 @@ func FromDBUser(u *db.User) *User {
 	}
 }
 
-func FromDBUserNotif(u *db.User) *UserNotif {
+func FromDBUserNotif(u *repo.User) *UserNotif {
 	return &UserNotif{
 		ID:          u.ID,
 		UserName:    u.UserName,
@@ -32,7 +32,7 @@ func FromDBUserNotif(u *db.User) *UserNotif {
 	}
 }
 
-func FromDBFollows(f *db.Follows) *Follows {
+func FromDBFollows(f *repo.Follows) *Follows {
 	return &Follows{
 		FollowerID:   f.FollowerID,
 		FollowedID:   f.FollowedID,
@@ -40,8 +40,8 @@ func FromDBFollows(f *db.Follows) *Follows {
 	}
 }
 
-func ToDBUser(u *User) *db.User {
-	return &db.User{
+func ToDBUser(u *User) *repo.User {
+	return &repo.User{
 		UserName:     u.UserName,
 		Email:        u.Email,
 		PasswordHash: u.PasswordHash,
@@ -51,7 +51,7 @@ func ToDBUser(u *User) *db.User {
 	}
 }
 
-func FromDBPost(p *db.Post, u *User) *Post {
+func FromDBPost(p *repo.Post, u *User) *Post {
 	return &Post{
 		ID:         p.ID,
 		Author:     u,
@@ -64,7 +64,7 @@ func FromDBPost(p *db.Post, u *User) *Post {
 	}
 }
 
-func FromDBComment(c *db.Comment, u *User) *Comment {
+func FromDBComment(c *repo.Comment, u *User) *Comment {
 	return &Comment{
 		ID:      c.ID,
 		Author:  *u,
@@ -74,20 +74,20 @@ func FromDBComment(c *db.Comment, u *User) *Comment {
 	}
 }
 
-func FromDBNotification(n *db.Notification, u, fromU UserNotif) *Notification {
+func FromDBNotification(n *repo.Notification, u, fromU UserNotif) *Notification {
 	return &Notification{
 		ID:         n.ID,
 		User:       u,
 		FromUser:   fromU,
 		NotifType:  NotifType(n.NotifType),
 		NotifText:  n.NotifText,
-		ResourceID: n.ResourceID,
-		ParentID:   n.ParentID,
+		ResourceID: n.ResourceID.String(),
+		ParentID:   n.ParentID.String(),
 		IsRead:     n.IsRead,
 	}
 }
 
-func FromDBConversation(c *db.Conversation, u1, u2 UserNotif, isRead bool) *Conversation {
+func FromDBConversation(c *repo.Conversation, u1, u2 UserNotif, isRead bool) *Conversation {
 	return &Conversation{
 		ID:        c.ID,
 		User1:     u1,
@@ -98,7 +98,7 @@ func FromDBConversation(c *db.Conversation, u1, u2 UserNotif, isRead bool) *Conv
 	}
 }
 
-func FromDBDMessage(m *db.DMessage, u UserNotif) *DMessage {
+func FromDBDMessage(m *repo.DMessage, u UserNotif) *DMessage {
 	return &DMessage{
 		ID:             m.ID,
 		ConversationID: m.ConversationID,

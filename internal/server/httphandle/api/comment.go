@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Anacardo89/lenic/internal/db"
 	"github.com/Anacardo89/lenic/internal/helpers"
+	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/internal/server/wshandle"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/google/uuid"
@@ -30,7 +30,7 @@ func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	c := db.Comment{
+	c := repo.Comment{
 		PostID:   postID,
 		AuthorID: session.User.ID,
 		Content:  r.FormValue("comment_text"),
@@ -56,10 +56,10 @@ func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 		for _, mention := range mentions {
 			mention = strings.TrimLeft(mention, "@")
 			userDB, err := h.db.GetUserByUserName(h.ctx, mention)
-			ut := &db.UserTag{
+			ut := &repo.UserTag{
 				UserID:      userDB.ID,
 				TargetID:    cID,
-				ResourceTpe: db.ResourceComment.String(),
+				ResourceTpe: repo.ResourceComment.String(),
 			}
 			err = h.db.CreateUserTag(h.ctx, ut)
 			if err != nil {
@@ -139,7 +139,7 @@ func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 		for _, mention := range mentions {
 			mention = strings.TrimLeft(mention, "@")
 			userDB, err := h.db.GetUserByUserName(h.ctx, mention)
-			ut := &db.UserTag{
+			ut := &repo.UserTag{
 				UserID:      userDB.ID,
 				TargetID:    cID,
 				ResourceTpe: db.ResourceComment.String(),

@@ -1,4 +1,4 @@
-package db
+package repo
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 )
 
 // Comments
-func (c *dbClient) CreateComment(ctx context.Context, comment *Comment) (uuid.UUID, error) {
+func (db *dbHandler) CreateComment(ctx context.Context, comment *Comment) (uuid.UUID, error) {
 	query := `
 	INSERT INTO comments (
 		post_id,
@@ -21,7 +21,7 @@ func (c *dbClient) CreateComment(ctx context.Context, comment *Comment) (uuid.UU
 	;`
 
 	var ID uuid.UUID
-	err := c.Pool().QueryRow(ctx, query,
+	err := db.pool.QueryRow(ctx, query,
 		comment.PostID,
 		comment.AuthorID,
 		comment.Content,
@@ -30,7 +30,7 @@ func (c *dbClient) CreateComment(ctx context.Context, comment *Comment) (uuid.UU
 	return ID, err
 }
 
-func (c *dbClient) GetComment(ctx context.Context, ID uuid.UUID) (*Comment, error) {
+func (db *dbHandler) GetComment(ctx context.Context, ID uuid.UUID) (*Comment, error) {
 
 	query := `
 	SELECT *
@@ -39,7 +39,7 @@ func (c *dbClient) GetComment(ctx context.Context, ID uuid.UUID) (*Comment, erro
 	;`
 
 	comment := Comment{}
-	err := c.Pool().QueryRow(ctx, query, ID).
+	err := db.pool.QueryRow(ctx, query, ID).
 		Scan(
 			&comment.ID,
 			&comment.PostID,
@@ -54,7 +54,7 @@ func (c *dbClient) GetComment(ctx context.Context, ID uuid.UUID) (*Comment, erro
 	return &comment, err
 }
 
-func (c *dbClient) GetCommentsByPost(ctx context.Context, postID uuid.UUID) ([]*Comment, error) {
+func (db *dbHandler) GetCommentsByPost(ctx context.Context, postID uuid.UUID) ([]*Comment, error) {
 
 	query := `
 	SELECT *
@@ -64,7 +64,7 @@ func (c *dbClient) GetCommentsByPost(ctx context.Context, postID uuid.UUID) ([]*
 	;`
 
 	comments := []*Comment{}
-	rows, err := c.Pool().Query(ctx, query, postID)
+	rows, err := db.pool.Query(ctx, query, postID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return comments, nil
@@ -94,7 +94,7 @@ func (c *dbClient) GetCommentsByPost(ctx context.Context, postID uuid.UUID) ([]*
 	return comments, nil
 }
 
-func (c *dbClient) UpdateCommentContent(ctx context.Context, ID uuid.UUID, content string) error {
+func (db *dbHandler) UpdateCommentContent(ctx context.Context, ID uuid.UUID, content string) error {
 
 	query := `
 	UPDATE comments
@@ -102,11 +102,11 @@ func (c *dbClient) UpdateCommentContent(ctx context.Context, ID uuid.UUID, conte
 	WHERE id = $1
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, ID, content)
+	_, err := db.pool.Exec(ctx, query, ID, content)
 	return err
 }
 
-func (c *dbClient) DisableComment(ctx context.Context, ID uuid.UUID) error {
+func (db *dbHandler) DisableComment(ctx context.Context, ID uuid.UUID) error {
 
 	query := `
 	UPDATE comments
@@ -115,12 +115,12 @@ func (c *dbClient) DisableComment(ctx context.Context, ID uuid.UUID) error {
 	WHERE id = $1
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, ID)
+	_, err := db.pool.Exec(ctx, query, ID)
 	return err
 }
 
 // Comment Ratings
-func (c *dbClient) RateCommentUp(ctx context.Context, targetID, userID uuid.UUID) error {
+func (db *dbHandler) RateCommentUp(ctx context.Context, targetID, userID uuid.UUID) error {
 
 	query := `
 	INSERT INTO comment_ratings (
@@ -138,11 +138,11 @@ func (c *dbClient) RateCommentUp(ctx context.Context, targetID, userID uuid.UUID
 		END;
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, targetID, userID)
+	_, err := db.pool.Exec(ctx, query, targetID, userID)
 	return err
 }
 
-func (c *dbClient) RateCommentDown(ctx context.Context, targetID, userID uuid.UUID) error {
+func (db *dbHandler) RateCommentDown(ctx context.Context, targetID, userID uuid.UUID) error {
 
 	query := `
 	INSERT INTO comment_ratings (
@@ -160,11 +160,11 @@ func (c *dbClient) RateCommentDown(ctx context.Context, targetID, userID uuid.UU
 		END;
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, targetID, userID)
+	_, err := db.pool.Exec(ctx, query, targetID, userID)
 	return err
 }
 
-func (c *dbClient) GetCommentUserRating(ctx context.Context, targetID, userID uuid.UUID) (*CommentRatings, error) {
+func (db *dbHandler) GetCommentUserRating(ctx context.Context, targetID, userID uuid.UUID) (*CommentRatings, error) {
 
 	query := `
 	SELECT *
@@ -173,7 +173,7 @@ func (c *dbClient) GetCommentUserRating(ctx context.Context, targetID, userID uu
 	;`
 
 	cr := CommentRatings{}
-	err := c.Pool().QueryRow(ctx, query, targetID, userID).
+	err := db.pool.QueryRow(ctx, query, targetID, userID).
 		Scan(
 			&cr.TargetID,
 			&cr.UserID,

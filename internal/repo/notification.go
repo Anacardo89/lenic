@@ -1,4 +1,4 @@
-package db
+package repo
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (c *dbClient) CreateNotification(ctx context.Context, n *Notification) (uuid.UUID, error) {
+func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) (uuid.UUID, error) {
 
 	query := `
 	INSERT INTO notifications (
@@ -23,7 +23,7 @@ func (c *dbClient) CreateNotification(ctx context.Context, n *Notification) (uui
 	;`
 
 	var ID uuid.UUID
-	err := c.Pool().QueryRow(ctx, query,
+	err := db.pool.QueryRow(ctx, query,
 		n.UserID,
 		n.FromUserID,
 		n.NotifType,
@@ -34,7 +34,7 @@ func (c *dbClient) CreateNotification(ctx context.Context, n *Notification) (uui
 	return ID, err
 }
 
-func (c *dbClient) GetFollowNotification(ctx context.Context, userID, fromUserID uuid.UUID) (*Notification, error) {
+func (db *dbHandler) GetFollowNotification(ctx context.Context, userID, fromUserID uuid.UUID) (*Notification, error) {
 
 	query := `
 	SELECT *
@@ -45,7 +45,7 @@ func (c *dbClient) GetFollowNotification(ctx context.Context, userID, fromUserID
 	;`
 
 	n := Notification{}
-	err := c.Pool().QueryRow(ctx, query, userID, fromUserID).
+	err := db.pool.QueryRow(ctx, query, userID, fromUserID).
 		Scan(
 			&n.ID,
 			&n.UserID,
@@ -61,7 +61,7 @@ func (c *dbClient) GetFollowNotification(ctx context.Context, userID, fromUserID
 	return &n, err
 }
 
-func (c *dbClient) GetNotification(ctx context.Context, ID uuid.UUID) (*Notification, error) {
+func (db *dbHandler) GetNotification(ctx context.Context, ID uuid.UUID) (*Notification, error) {
 
 	query := `
 	SELECT *
@@ -70,7 +70,7 @@ func (c *dbClient) GetNotification(ctx context.Context, ID uuid.UUID) (*Notifica
 	;`
 
 	n := Notification{}
-	err := c.Pool().QueryRow(ctx, query, ID).
+	err := db.pool.QueryRow(ctx, query, ID).
 		Scan(
 			&n.ID,
 			&n.UserID,
@@ -86,7 +86,7 @@ func (c *dbClient) GetNotification(ctx context.Context, ID uuid.UUID) (*Notifica
 	return &n, err
 }
 
-func (c *dbClient) GetNotificationsByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*Notification, error) {
+func (db *dbHandler) GetNotificationsByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*Notification, error) {
 
 	query := `
 	SELECT *
@@ -98,7 +98,7 @@ func (c *dbClient) GetNotificationsByUser(ctx context.Context, userID uuid.UUID,
 	;`
 
 	notifs := []*Notification{}
-	rows, err := c.Pool().Query(ctx, query, userID, limit, offset)
+	rows, err := db.pool.Query(ctx, query, userID, limit, offset)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return notifs, nil
@@ -129,7 +129,7 @@ func (c *dbClient) GetNotificationsByUser(ctx context.Context, userID uuid.UUID,
 	return notifs, nil
 }
 
-func (c *dbClient) UpdateNotificationRead(ctx context.Context, ID uuid.UUID) error {
+func (db *dbHandler) UpdateNotificationRead(ctx context.Context, ID uuid.UUID) error {
 
 	query := `
 	UPDATE notifications
@@ -137,17 +137,17 @@ func (c *dbClient) UpdateNotificationRead(ctx context.Context, ID uuid.UUID) err
 	WHERE id = $1
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, ID)
+	_, err := db.pool.Exec(ctx, query, ID)
 	return err
 }
 
-func (c *dbClient) DeleteNotification(ctx context.Context, ID uuid.UUID) error {
+func (db *dbHandler) DeleteNotification(ctx context.Context, ID uuid.UUID) error {
 
 	query := `
 	DELETE FROM notifications
 	WHERE id = $1
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, ID)
+	_, err := db.pool.Exec(ctx, query, ID)
 	return err
 }

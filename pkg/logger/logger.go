@@ -1,46 +1,78 @@
 package logger
 
 import (
-	"log"
+	"fmt"
+	"log/slog"
 	"os"
+	"strings"
+
+	"github.com/Anacardo89/lenic/config"
+	"github.com/natefinch/lumberjack"
 )
 
-var (
-	Debug *log.Logger
-	Error *log.Logger
-	Info  *log.Logger
-	Warn  *log.Logger
-)
-
-func CreateLogger() error {
-	makeLogsDir()
-	debugFile, err := os.OpenFile("logs/debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
-	if err != nil {
-		log.Fatal("Cannot access DEBUG log file:", err)
-	}
-	errorFile, err := os.OpenFile("logs/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
-	if err != nil {
-		log.Fatal("Cannot access ERROR log file:", err)
-	}
-	infoFile, err := os.OpenFile("logs/info.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
-	if err != nil {
-		log.Fatal("Cannot access INFO log file:", err)
-	}
-	warnFile, err := os.OpenFile("logs/warn.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
-	if err != nil {
-		log.Fatal("Cannot access WARN log file:", err)
-	}
-	Debug = log.New(debugFile, "DEBUG:", log.Ldate|log.Ltime|log.Lshortfile)
-	Error = log.New(errorFile, "ERROR:", log.Ldate|log.Ltime|log.Lshortfile)
-	Info = log.New(infoFile, "INFO:", log.Ldate|log.Ltime|log.Lshortfile)
-	Warn = log.New(warnFile, "INFO:", log.Ldate|log.Ltime|log.Lshortfile)
-	return nil
+type Logger struct {
+	log   *slog.Logger
+	level slog.Level
 }
 
-func makeLogsDir() {
-	if _, err := os.Stat("./logs"); err != nil {
-		if os.IsNotExist(err) {
-			os.Mkdir("./logs", 0777)
+func NewLogger(cfg config.Log) *Logger {
+	level := slog.LevelInfo
+	switch strings.ToLower(cfg.Level) {
+	case "debug":
+		level = slog.LevelDebug
+	case "info":
+		level = slog.LevelInfo
+	case "warn":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	case "fatal":
+		level = slog.LevelError
+	}
+	lj := &lumberjack.Logger{
+		Filename:   fmt.Sprintf("%s/%s", cfg.Path, cfg.File),
+		MaxSize:    cfg.MaxSize,
+		MaxBackups: cfg.MaxBackups,
+		MaxAge:     cfg.MaxAge,
+		Compress:   cfg.Compress,
+	}
+	fileJSONHandler := slog.NewJSONHandler(lj, &slog.HandlerOptions{AddSource: true})
+	stderrHandler := slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{AddSource: true})
+	multiHandler := NewMultiHandler(fileJSONHandler, stderrHandler)
+	return &Logger{
+		log:   slog.New(multiHandler),
+		level: level,
+	}
+}
+
+func (l *Logger) logWithLevel(lvl slog.Level, msg string, args ...any) {
+	if lvl >= l.level {
+		switch lvl {
+		case slog.LevelDebug:
+			l.log.Debug(msg, args...)
+		case slog.LevelInfo:
+			l.log.Info(msg, args...)
+		case slog.LevelWarn:
+			l.log.Warn(msg, args...)
+		case slog.LevelError:
+			l.log.Error(msg, args...)
 		}
 	}
+}
+
+func (l *Logger) Info(msg string, args ...any) {
+	l.logWithLevel(slog.LevelInfo, msg, args...)
+}
+func (l *Logger) Error(msg string, args ...any) {
+	l.logWithLevel(slog.LevelError, msg, args...)
+}
+func (l *Logger) Debug(msg string, args ...any) {
+	l.logWithLevel(slog.LevelDebug, msg, args...)
+}
+func (l *Logger) Warn(msg string, args ...any) {
+	l.logWithLevel(slog.LevelWarn, msg, args...)
+}
+func (l *Logger) Fatal(msg string, args ...any) {
+	l.logWithLevel(slog.LevelError, msg, args...)
+	os.Exit(1)
 }
