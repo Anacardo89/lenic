@@ -3,16 +3,12 @@ package api
 import (
 	"database/sql"
 	"encoding/base64"
-	"encoding/json"
 	"net/http"
 
 	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/internal/models"
-	"github.com/Anacardo89/lenic/internal/models/mqmodel"
-	"github.com/Anacardo89/lenic/internal/rabbit"
 	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
 	"github.com/Anacardo89/lenic/pkg/logger"
-	"github.com/Anacardo89/lenic/pkg/rabbitmq"
 	"github.com/gorilla/mux"
 )
 
@@ -60,32 +56,19 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send Regsiter Mail to Queue
-	msg := mqmodel.Register{
-		Email: u.Email,
-		User:  u.UserName,
-		Link:  helpers.MakeActivateUserLink(h.cfg.Host, h.cfg.HTTPSPort, u.UserName),
-	}
-	data, err := json.Marshal(msg)
-	if err != nil {
-		logger.Error.Println("/action/register - Could not marshal JSON: ", err)
-		redirect.RedirectToError(w, r, err.Error())
-		return
-	}
-
-	err = rabbit.MQSendRegisterMail(rabbitmq.RMQ, rabbitmq.RCh, data)
-	if err != nil {
-		logger.Error.Println("/action/register - Could not send MQ msg: ", err)
-		redirect.RedirectToError(w, r, err.Error())
-		return
-	}
-
 	// Insert User in DB
 	uDB := models.ToDBUser(u)
 	_, err = h.db.CreateUser(h.ctx, uDB)
 	if err != nil {
 		logger.Error.Println("/action/register - Could not create user: ", err)
 		redirect.RedirectToError(w, r, err.Error())
+		return
+	}
+
+	mailSubject, mailBody := helpers.BuildActivateAccountMail(h.mail.Host, string(h.mail.Port), u.UserName)
+	errs := h.mail.Send([]string{u.Email}, mailSubject, mailBody)
+	if len(errs) != 0 {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

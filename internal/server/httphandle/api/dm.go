@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Anacardo89/lenic/internal/db"
 	"github.com/Anacardo89/lenic/internal/models"
+	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -54,7 +54,7 @@ func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 	fromU := models.FromDBUserNotif(dbFromUser)
 
 	exists := true
-	var dbConvo *db.Conversation
+	var dbConvo *repo.Conversation
 	dbConvo, err = h.db.GetConversationByUsers(h.ctx, u.ID, fromU.ID)
 	if err == sql.ErrNoRows {
 		exists = false
@@ -63,7 +63,7 @@ func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if exists {
-		convo := &db.Conversation{
+		convo := &repo.Conversation{
 			User1ID: u.ID,
 			User2ID: fromU.ID,
 		}
@@ -290,7 +290,7 @@ func (h *APIHandler) SendDM(w http.ResponseWriter, r *http.Request) {
 		senderID = dbConvo.User2ID
 	}
 
-	m := &db.DMessage{
+	m := &repo.DMessage{
 		ConversationID: cID,
 		SenderID:       senderID,
 		Content:        msg.Msg,

@@ -1,4 +1,4 @@
-package db
+package repo
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 )
 
 // Conversations
-func (c *dbClient) CreateConversation(ctx context.Context, conv *Conversation) (uuid.UUID, error) {
+func (db *dbHandler) CreateConversation(ctx context.Context, conv *Conversation) (uuid.UUID, error) {
 
 	query := `
 	INSERT INTO conversations (
@@ -21,14 +21,14 @@ func (c *dbClient) CreateConversation(ctx context.Context, conv *Conversation) (
 	;`
 
 	var ID uuid.UUID
-	err := c.Pool().QueryRow(ctx, query,
+	err := db.pool.QueryRow(ctx, query,
 		conv.User1ID,
 		conv.User2ID,
 	).Scan(&ID)
 	return ID, err
 }
 
-func (c *dbClient) GetConversation(ctx context.Context, ID uuid.UUID) (*Conversation, error) {
+func (db *dbHandler) GetConversation(ctx context.Context, ID uuid.UUID) (*Conversation, error) {
 
 	query := `
 	SELECT * 
@@ -37,7 +37,7 @@ func (c *dbClient) GetConversation(ctx context.Context, ID uuid.UUID) (*Conversa
 	;`
 
 	conv := Conversation{}
-	err := c.Pool().QueryRow(ctx, query, ID).
+	err := db.pool.QueryRow(ctx, query, ID).
 		Scan(
 			&conv.ID,
 			&conv.User1ID,
@@ -48,7 +48,7 @@ func (c *dbClient) GetConversation(ctx context.Context, ID uuid.UUID) (*Conversa
 	return &conv, err
 }
 
-func (c *dbClient) GetConversationByUsers(ctx context.Context, user1ID, user2ID uuid.UUID) (*Conversation, error) {
+func (db *dbHandler) GetConversationByUsers(ctx context.Context, user1ID, user2ID uuid.UUID) (*Conversation, error) {
 
 	query := `
 	SELECT *
@@ -58,7 +58,7 @@ func (c *dbClient) GetConversationByUsers(ctx context.Context, user1ID, user2ID 
 
 	min, max := helpers.OrderUUIDs(user1ID, user2ID)
 	conv := Conversation{}
-	err := c.Pool().QueryRow(ctx, query, min, max).
+	err := db.pool.QueryRow(ctx, query, min, max).
 		Scan(
 			&conv.ID,
 			&conv.User1ID,
@@ -69,7 +69,7 @@ func (c *dbClient) GetConversationByUsers(ctx context.Context, user1ID, user2ID 
 	return &conv, err
 }
 
-func (c *dbClient) GetConversationsByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*Conversation, error) {
+func (db *dbHandler) GetConversationsByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*Conversation, error) {
 
 	query := `
 	SELECT *
@@ -81,7 +81,7 @@ func (c *dbClient) GetConversationsByUser(ctx context.Context, userID uuid.UUID,
 	;`
 
 	convos := []*Conversation{}
-	rows, err := c.Pool().Query(ctx, query, userID, limit, offset)
+	rows, err := db.pool.Query(ctx, query, userID, limit, offset)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return convos, nil
@@ -106,7 +106,7 @@ func (c *dbClient) GetConversationsByUser(ctx context.Context, userID uuid.UUID,
 	return convos, nil
 }
 
-func (c *dbClient) UpdateConversation(ctx context.Context, ID uuid.UUID) error {
+func (db *dbHandler) UpdateConversation(ctx context.Context, ID uuid.UUID) error {
 
 	query := `
 	UPDATE conversations
@@ -114,12 +114,12 @@ func (c *dbClient) UpdateConversation(ctx context.Context, ID uuid.UUID) error {
 	WHERE id = $1
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, ID)
+	_, err := db.pool.Exec(ctx, query, ID)
 	return err
 }
 
 // DMs
-func (c *dbClient) CreateDM(ctx context.Context, dm *DMessage) (uuid.UUID, error) {
+func (db *dbHandler) CreateDM(ctx context.Context, dm *DMessage) (uuid.UUID, error) {
 
 	query := `
 	INSERT INTO dmessages (
@@ -132,7 +132,7 @@ func (c *dbClient) CreateDM(ctx context.Context, dm *DMessage) (uuid.UUID, error
 	;`
 
 	var ID uuid.UUID
-	err := c.Pool().QueryRow(ctx, query,
+	err := db.pool.QueryRow(ctx, query,
 		dm.ConversationID,
 		dm.SenderID,
 		dm.Content,
@@ -140,7 +140,7 @@ func (c *dbClient) CreateDM(ctx context.Context, dm *DMessage) (uuid.UUID, error
 	return ID, err
 }
 
-func (c *dbClient) GetDM(ctx context.Context, ID uuid.UUID) (*DMessage, error) {
+func (db *dbHandler) GetDM(ctx context.Context, ID uuid.UUID) (*DMessage, error) {
 
 	query := `
 	SELECT *
@@ -149,7 +149,7 @@ func (c *dbClient) GetDM(ctx context.Context, ID uuid.UUID) (*DMessage, error) {
 	;`
 
 	dm := DMessage{}
-	err := c.Pool().QueryRow(ctx, query, ID).
+	err := db.pool.QueryRow(ctx, query, ID).
 		Scan(
 			&dm.ID,
 			&dm.ConversationID,
@@ -161,7 +161,7 @@ func (c *dbClient) GetDM(ctx context.Context, ID uuid.UUID) (*DMessage, error) {
 	return &dm, err
 }
 
-func (c *dbClient) GetConvoLastDMBySender(ctx context.Context, conversationID, senderID uuid.UUID) (*DMessage, error) {
+func (db *dbHandler) GetConvoLastDMBySender(ctx context.Context, conversationID, senderID uuid.UUID) (*DMessage, error) {
 
 	query := `
 	SELECT *
@@ -172,7 +172,7 @@ func (c *dbClient) GetConvoLastDMBySender(ctx context.Context, conversationID, s
 	;`
 
 	dm := DMessage{}
-	err := c.Pool().QueryRow(ctx, query, conversationID, senderID).
+	err := db.pool.QueryRow(ctx, query, conversationID, senderID).
 		Scan(
 			&dm.ID,
 			&dm.ConversationID,
@@ -184,7 +184,7 @@ func (c *dbClient) GetConvoLastDMBySender(ctx context.Context, conversationID, s
 	return &dm, err
 }
 
-func (c *dbClient) GetDMsByConversation(ctx context.Context, conersationID uuid.UUID, limit, offset int) ([]*DMessage, error) {
+func (db *dbHandler) GetDMsByConversation(ctx context.Context, conersationID uuid.UUID, limit, offset int) ([]*DMessage, error) {
 
 	query := `
 	SELECT *
@@ -196,7 +196,7 @@ func (c *dbClient) GetDMsByConversation(ctx context.Context, conersationID uuid.
 	;`
 
 	dms := []*DMessage{}
-	rows, err := c.Pool().Query(ctx, query, conersationID, limit, offset)
+	rows, err := db.pool.Query(ctx, query, conersationID, limit, offset)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return dms, nil
@@ -223,7 +223,7 @@ func (c *dbClient) GetDMsByConversation(ctx context.Context, conersationID uuid.
 	return dms, nil
 }
 
-func (c *dbClient) UpdateDMRead(ctx context.Context, ID uuid.UUID) error {
+func (db *dbHandler) UpdateDMRead(ctx context.Context, ID uuid.UUID) error {
 
 	query := `
 	UPDATE dmessages
@@ -231,6 +231,6 @@ func (c *dbClient) UpdateDMRead(ctx context.Context, ID uuid.UUID) error {
 	WHERE id = $1
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, ID)
+	_, err := db.pool.Exec(ctx, query, ID)
 	return err
 }

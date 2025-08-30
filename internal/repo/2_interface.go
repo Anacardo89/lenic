@@ -1,15 +1,13 @@
-package db
+package repo
 
 import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type DBRepository interface {
 	// Convenience Methods
-	Pool() *pgxpool.Pool
 	Close()
 
 	// User
@@ -17,9 +15,10 @@ type DBRepository interface {
 	GetUserByID(ctx context.Context, ID uuid.UUID) (*User, error)
 	GetUserByUserName(ctx context.Context, userName string) (*User, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
+	SearchUsersByUserName(ctx context.Context, username string) ([]*User, error)
 	SearchUsersByDisplayName(ctx context.Context, displayName string) ([]*User, error)
 	SetUserActive(ctx context.Context, userName string) error
-	SetNewPassword(ctx context.Context, userName, pass string) error
+	SetNewPassword(ctx context.Context, userName, passHash string) error
 	UpdateProfilePic(ctx context.Context, userName string, profilePic string) error
 
 	// Follows
@@ -90,12 +89,4 @@ type DBRepository interface {
 	GetConvoLastDMBySender(ctx context.Context, conversationID, senderID uuid.UUID) (*DMessage, error)
 	GetDMsByConversation(ctx context.Context, conersationID uuid.UUID, limit, offset int) ([]*DMessage, error)
 	UpdateDMRead(ctx context.Context, ID uuid.UUID) error
-}
-
-func (c *dbClient) Pool() *pgxpool.Pool {
-	return c.pool
-}
-
-func (c *dbClient) Close() {
-	c.pool.Close()
 }

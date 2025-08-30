@@ -1,4 +1,4 @@
-package db
+package repo
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 )
 
 // UserTags
-func (c *dbClient) CreateUserTag(ctx context.Context, t *UserTag) error {
+func (db *dbHandler) CreateUserTag(ctx context.Context, t *UserTag) error {
 
 	query := `
 	INSERT INTO user_tags (
@@ -18,7 +18,7 @@ func (c *dbClient) CreateUserTag(ctx context.Context, t *UserTag) error {
 	VALUES ($1, $2, $3)
 	;`
 
-	_, err := c.Pool().Exec(ctx, query,
+	_, err := db.pool.Exec(ctx, query,
 		t.UserID,
 		t.TargetID,
 		t.ResourceTpe,
@@ -26,7 +26,7 @@ func (c *dbClient) CreateUserTag(ctx context.Context, t *UserTag) error {
 	return err
 }
 
-func (c *dbClient) GetUserTagByTarget(ctx context.Context, userID, targetID uuid.UUID) (*UserTag, error) {
+func (db *dbHandler) GetUserTagByTarget(ctx context.Context, userID, targetID uuid.UUID) (*UserTag, error) {
 	query := `
 	SELECT *
 	FROM user_tags
@@ -34,7 +34,7 @@ func (c *dbClient) GetUserTagByTarget(ctx context.Context, userID, targetID uuid
 	;`
 
 	t := UserTag{}
-	err := c.Pool().QueryRow(ctx, query, userID, targetID).
+	err := db.pool.QueryRow(ctx, query, userID, targetID).
 		Scan(
 			&t.UserID,
 			&t.TargetID,
@@ -43,19 +43,19 @@ func (c *dbClient) GetUserTagByTarget(ctx context.Context, userID, targetID uuid
 	return &t, err
 }
 
-func (c *dbClient) DeleteUserTag(ctx context.Context, userID uuid.UUID, targetID uuid.UUID) error {
+func (db *dbHandler) DeleteUserTag(ctx context.Context, userID uuid.UUID, targetID uuid.UUID) error {
 
 	query := `
 	DELETE FROM user_tags
 	WHERE user_id = $1 AND target_id = $2
 	;`
 
-	_, err := c.Pool().Exec(ctx, query, userID, targetID)
+	_, err := db.pool.Exec(ctx, query, userID, targetID)
 	return err
 }
 
 // HashTags
-func (c *dbClient) CreateHashtag(ctx context.Context, t *HashTag) (uuid.UUID, error) {
+func (db *dbHandler) CreateHashtag(ctx context.Context, t *HashTag) (uuid.UUID, error) {
 	query := `
 	INSERT INTO hashtags (tag_name)
 	VALUES ($1)
@@ -64,13 +64,13 @@ func (c *dbClient) CreateHashtag(ctx context.Context, t *HashTag) (uuid.UUID, er
 	;`
 
 	var ID uuid.UUID
-	err := c.Pool().QueryRow(ctx, query,
+	err := db.pool.QueryRow(ctx, query,
 		t.TagName,
 	).Scan(&ID)
 	return ID, err
 }
 
-func (c *dbClient) GetHashTagByName(ctx context.Context, tagName string) (*HashTag, error) {
+func (db *dbHandler) GetHashTagByName(ctx context.Context, tagName string) (*HashTag, error) {
 
 	query := `
 	SELECT *
@@ -79,7 +79,7 @@ func (c *dbClient) GetHashTagByName(ctx context.Context, tagName string) (*HashT
 	;`
 
 	t := HashTag{}
-	err := c.Pool().QueryRow(ctx, query, tagName).
+	err := db.pool.QueryRow(ctx, query, tagName).
 		Scan(
 			&t.ID,
 			&t.TagName,
@@ -89,7 +89,7 @@ func (c *dbClient) GetHashTagByName(ctx context.Context, tagName string) (*HashT
 }
 
 // HashTag Resources
-func (c *dbClient) CreateHashTagResource(ctx context.Context, t *HashTagResource) error {
+func (db *dbHandler) CreateHashTagResource(ctx context.Context, t *HashTagResource) error {
 
 	query := `
 	INSERT INTO hashtag_resources (
@@ -100,7 +100,7 @@ func (c *dbClient) CreateHashTagResource(ctx context.Context, t *HashTagResource
 	VALUES ($1, $2, $3)
 	;`
 
-	_, err := c.Pool().Exec(ctx, query,
+	_, err := db.pool.Exec(ctx, query,
 		t.TagID,
 		t.TargetID,
 		t.ResourceTpe,
@@ -108,7 +108,7 @@ func (c *dbClient) CreateHashTagResource(ctx context.Context, t *HashTagResource
 	return err
 }
 
-func (c *dbClient) GetHashTagResourceByTarget(ctx context.Context, tagID, targetID uuid.UUID) (*HashTagResource, error) {
+func (db *dbHandler) GetHashTagResourceByTarget(ctx context.Context, tagID, targetID uuid.UUID) (*HashTagResource, error) {
 
 	query := `
 	SELECT *
@@ -117,7 +117,7 @@ func (c *dbClient) GetHashTagResourceByTarget(ctx context.Context, tagID, target
 	;`
 
 	t := HashTagResource{}
-	err := c.Pool().QueryRow(ctx, query, tagID, targetID).
+	err := db.pool.QueryRow(ctx, query, tagID, targetID).
 		Scan(
 			&t.TagID,
 			&t.TargetID,

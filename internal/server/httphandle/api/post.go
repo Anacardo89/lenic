@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Anacardo89/lenic/internal/db"
 	"github.com/Anacardo89/lenic/internal/helpers"
+	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/internal/server/wshandle"
 	"github.com/Anacardo89/lenic/pkg/fsops"
 	"github.com/Anacardo89/lenic/pkg/logger"
@@ -34,7 +34,7 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 		isPublic = true
 	}
 
-	pDB := db.Post{
+	pDB := &repo.Post{
 		Title:    r.FormValue("title"),
 		Content:  r.FormValue("content"),
 		AuthorID: session.User.ID,
@@ -53,14 +53,14 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		pID, err := h.db.CreatePost(h.ctx, &pDB)
+		pID, err := h.db.CreatePost(h.ctx, pDB)
 		if err != nil {
 			logger.Error.Println("/action/post - Could not create post: ", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		pDB, err = h.db.GetPost(h.ctx, pID)
+		pDB, err := h.db.GetPost(h.ctx, pID)
 		if err != nil {
 			logger.Error.Println("/action/post - Could not get post: ", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -81,7 +81,7 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 				}
 				err = h.db.CreateUserTag(h.ctx, ut)
 				if err != nil {
-					logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", postID, err)
+					logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", pID, err)
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
@@ -113,7 +113,7 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 	fsops.SaveImg(imgData, fsops.PostImgPath, fileName)
 
 	// Insert post with image data
-	pID, err := h.db.CreatePost(h.ctx, &pDB)
+	pID, err := h.db.CreatePost(h.ctx, pDB)
 	if err != nil {
 		logger.Error.Println("/action/post - Could not not create post: ", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -141,7 +141,7 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 			}
 			err = h.db.CreateUserTag(h.ctx, ut)
 			if err != nil {
-				logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", postID, err)
+				logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", pID, err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
@@ -186,7 +186,7 @@ func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 		isPublic = true
 	}
 
-	p := db.Post{
+	p := repo.Post{
 		ID:       pID,
 		Title:    r.FormValue("title"),
 		Content:  r.FormValue("content"),
@@ -205,13 +205,13 @@ func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mentions := helpers.ParseAtString(p.Content)
-	titleMentions := helpers.ParseAtString(pDB.Title)
+	titleMentions := helpers.ParseAtString(p.Title)
 	mentions = append(mentions, titleMentions...)
 	if len(mentions) > 0 {
 		for _, mention := range mentions {
 			mention = strings.TrimLeft(mention, "@")
 			userDB, err := h.db.GetUserByUserName(h.ctx, mention)
-			ut := &db.UserTag{
+			ut := &repo.UserTag{
 				UserID:      userDB.ID,
 				TargetID:    p.ID,
 				ResourceTpe: db.ResourcePost.String(),

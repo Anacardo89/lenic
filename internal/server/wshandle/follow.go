@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 
-	"github.com/Anacardo89/lenic/internal/db"
 	"github.com/Anacardo89/lenic/internal/models"
+	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
@@ -37,7 +37,7 @@ func (h *WSHandler) handleFollowRequest(msg Message) {
 	u := models.FromDBUserNotif(dbUser)
 	fromU := models.FromDBUserNotif(fromUser)
 
-	n := &db.Notification{
+	n := &repo.Notification{
 		UserID:     u.ID,
 		FromUserID: fromUser.ID,
 		NotifType:  msg.Type,
@@ -99,7 +99,7 @@ func (h *WSHandler) handleFollowAccept(msg Message) {
 	u := models.FromDBUserNotif(dbUser)
 	fromU := models.FromDBUserNotif(fromUser)
 
-	n := &db.Notification{
+	n := &repo.Notification{
 		UserID:     u.ID,
 		FromUserID: fromUser.ID,
 		NotifType:  msg.Type,

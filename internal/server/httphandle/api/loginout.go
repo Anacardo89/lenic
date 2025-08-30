@@ -6,9 +6,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
+	"github.com/Anacardo89/lenic/pkg/crypto"
 	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
@@ -53,7 +53,7 @@ func (h *APIHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.Pass = loginReq.UserPassword
-	if !helpers.CheckPasswordHash(u.Pass, u.PasswordHash) {
+	if !crypto.ValidatePassword(u.PasswordHash, u.Pass) {
 		http.Error(w, "Password does not match", http.StatusBadRequest)
 		return
 	}

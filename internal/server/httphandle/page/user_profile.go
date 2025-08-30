@@ -6,8 +6,8 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/Anacardo89/lenic/internal/db"
 	"github.com/Anacardo89/lenic/internal/models"
+	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
 	"github.com/Anacardo89/lenic/internal/session"
 	"github.com/Anacardo89/lenic/pkg/logger"
@@ -65,7 +65,7 @@ func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 		pp.Follows = models.StatusPending.String()
 	}
 
-	var dbPosts []*db.Post
+	var dbPosts []*repo.Post
 	if (session.User.ID == u.ID) || (dbFollow != nil && dbFollow.FollowStatus == models.StatusAccepted.String()) {
 		dbPosts, err = h.db.GetUserPosts(h.ctx, u.ID)
 		if err != nil {
