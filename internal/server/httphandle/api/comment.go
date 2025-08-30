@@ -2,13 +2,13 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/internal/server/wshandle"
-	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
@@ -19,250 +19,288 @@ type Response struct {
 
 // POST /action/post/{Post_GUID}/comment
 func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	postIDstr := vars["post_id"]
-	logger.Info.Printf("POST /action/post/%s/comment %s\n", postIDstr, r.RemoteAddr)
-	session := h.sessionStore.ValidateSession(w, r)
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
 
-	postID, err := uuid.Parse(postIDstr)
+	// Execution
+	vars := mux.Vars(r)
+	session := h.sessionStore.ValidateSession(w, r)
+	if !session.IsAuthenticated {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	postID, err := uuid.Parse(vars["post_id"])
 	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/comment - Could not create comment: %s\n", postID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		fail("parsing post uuid from URL", err, true, http.StatusBadRequest, "invalid path")
 		return
 	}
 	c := repo.Comment{
 		PostID:   postID,
 		AuthorID: session.User.ID,
 		Content:  r.FormValue("comment_text"),
-		Rating:   0,
-		IsActive: true,
 	}
-	cID, err := h.db.CreateComment(h.ctx, &c)
-	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/comment - Could not create comment: %s\n", postID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := h.db.CreateComment(r.Context(), &c); err != nil {
+		fail("dberr - could not insert comment", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
 
-	dbComment, err := h.db.GetComment(h.ctx, cID)
-	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/comment - Could not get comment Id: %s\n", postID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
+	// Handle user mentions
 	mentions := helpers.ParseAtString(c.Content)
 	if len(mentions) > 0 {
-		for _, mention := range mentions {
-			mention = strings.TrimLeft(mention, "@")
-			userDB, err := h.db.GetUserByUserName(h.ctx, mention)
-			ut := &repo.UserTag{
-				UserID:      userDB.ID,
-				TargetID:    cID,
-				ResourceTpe: repo.ResourceComment.String(),
+		go func() {
+			for _, mention := range mentions {
+				mention = strings.TrimLeft(mention, "@")
+				u, err := h.db.GetUserByUserName(h.ctx, mention)
+				if err != nil {
+					continue
+				}
+				ut := &repo.UserTag{
+					UserID:      u.ID,
+					TargetID:    c.ID,
+					ResourceTpe: repo.ResourceComment.String(),
+				}
+				err = h.db.CreateUserTag(h.ctx, ut)
+				if err != nil {
+					fail("dberr - could not insert usertag", err, false, http.StatusInternalServerError, "")
+					continue
+				}
+				wsMsg := wshandle.Message{
+					FromUserName: session.User.UserName,
+					Type:         "comment_tag",
+					Msg:          " has tagged you in their comment",
+					ResourceID:   c.ID.String(),
+					ParentID:     c.PostID.String(),
+				}
+				h.wsHandler.HandleCommentTag(wsMsg, mention)
 			}
-			err = h.db.CreateUserTag(h.ctx, ut)
-			if err != nil {
-				logger.Error.Printf("POST /action/post/%s/comment - Could not create UserTag: %s\n", postID, err)
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			wsMsg := wshandle.Message{
-				FromUserName: session.User.UserName,
-				Type:         "comment_tag",
-				Msg:          " has tagged you in their comment",
-				ResourceID:   dbComment.ID.String(),
-				ParentID:     postID,
-			}
-
-			h.wsHandler.HandleCommentTag(wsMsg, mention)
-		}
+		}()
 	}
 
+	// Response
 	resp := Response{
-		Data: cID,
+		Data: c.ID.String(),
 	}
 	data, err := json.Marshal(&resp)
 	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/comment - Could not marshal JSON: %s\n", postID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		fail("failed to marshal response body", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
-
-	logger.Info.Printf("OK - POST /action/post/%s/comment %s\n", postID, r.RemoteAddr)
 	w.Header().Set("Content-Type", "application/json")
-	logger.Debug.Println(string(data))
 	w.Write(data)
 }
 
 // PUT /action/post/{Post_GUID}/comment/{comment_id}
 func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	postIDstr := vars["post_id"]
-	cIDstr := vars["comment_id"]
-	logger.Info.Printf("PUT /action/post/%s/comment/%s %s\n", postIDstr, cIDstr, r.RemoteAddr)
-	session := h.sessionStore.ValidateSession(w, r)
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
 
-	cID, err := uuid.Parse(cIDstr)
-	if err != nil {
-		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not convert id to string: %s\n", postIDstr, cID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	// Execution
+	vars := mux.Vars(r)
+	session := h.sessionStore.ValidateSession(w, r)
+	if !session.IsAuthenticated {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	postID, err := uuid.Parse(postIDstr)
+	cID, err := uuid.Parse(vars["comment_id"])
 	if err != nil {
-		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not convert id to string: %s\n", postIDstr, cID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		fail("parsing comment uuid from URL", err, true, http.StatusBadRequest, "invalid path")
 		return
 	}
 	if r.FormValue("comment") == "" {
-		http.Error(w, "All form fields must be filled out", http.StatusBadRequest)
+		fail("comment is empty", errors.New("comment is empty"), true, http.StatusBadRequest, "comment cannot be empty")
+		return
+	}
+	c := repo.Comment{
+		ID:      cID,
+		Content: r.FormValue("comment"),
+	}
+	if err := h.db.UpdateComment(r.Context(), &c); err != nil {
+		fail("dberr - could not update comment", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
 
-	err = h.db.UpdateCommentContent(h.ctx, cID, r.FormValue("comment"))
-	if err != nil {
-		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not update comment: %s\n", postIDstr, cID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	dbComment, err := h.db.GetComment(h.ctx, cID)
-	if err != nil {
-		logger.Error.Printf("PUT /action/post/%s/comment - Could not get comment Id: %s\n", postIDstr, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	mentions := helpers.ParseAtString(dbComment.Content)
+	// Handle user mentions
+	mentions := helpers.ParseAtString(c.Content)
 	if len(mentions) > 0 {
-		for _, mention := range mentions {
-			mention = strings.TrimLeft(mention, "@")
-			userDB, err := h.db.GetUserByUserName(h.ctx, mention)
-			ut := &repo.UserTag{
-				UserID:      userDB.ID,
-				TargetID:    cID,
-				ResourceTpe: db.ResourceComment.String(),
+		go func() {
+			for _, mention := range mentions {
+				mention = strings.TrimLeft(mention, "@")
+				u, err := h.db.GetUserByUserName(h.ctx, mention)
+				if err != nil {
+					continue
+				}
+				ut := &repo.UserTag{
+					UserID:      u.ID,
+					TargetID:    c.ID,
+					ResourceTpe: repo.ResourceComment.String(),
+				}
+				err = h.db.CreateUserTag(h.ctx, ut)
+				if err != nil {
+					fail("dberr - could not insert usertag", err, false, http.StatusInternalServerError, "")
+					continue
+				}
+				wsMsg := wshandle.Message{
+					FromUserName: session.User.UserName,
+					Type:         "comment_tag",
+					Msg:          " has tagged you in their comment",
+					ResourceID:   c.ID.String(),
+					ParentID:     c.PostID.String(),
+				}
+				h.wsHandler.HandleCommentTag(wsMsg, mention)
 			}
-			err = h.db.CreateUserTag(h.ctx, ut)
-			if err != nil {
-				logger.Error.Printf("PUT /action/post/%s/comment - Could not create UserTag: %s\n", postIDstr, err)
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			wsMsg := wshandle.Message{
-				FromUserName: session.User.UserName,
-				Type:         "comment_tag",
-				Msg:          " has tagged you in their comment",
-				ResourceID:   dbComment.ID.String(),
-				ParentID:     postID,
-			}
-
-			h.wsHandler.HandleCommentTag(wsMsg, mention)
-		}
+		}()
 	}
 
-	logger.Info.Printf("OK - PUT /action/post/%s/comment/%s %s\n", postIDstr, cIDstr, r.RemoteAddr)
+	// Response
 	w.WriteHeader(http.StatusOK)
 }
 
 // DELETE /action/post/{Post_GUID}/comment/{comment_id}
 func (h *APIHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	postIDstr := vars["post_id"]
-	cIDstr := vars["comment_id"]
-	logger.Info.Printf("DELETE /action/post/%s/comment/%s %s\n", postIDstr, cIDstr, r.RemoteAddr)
-
-	cID, err := uuid.Parse(cIDstr)
-	if err != nil {
-		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not convert id to string: %s\n", postIDstr, cIDstr, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = h.db.DisableComment(h.ctx, cID)
-	if err != nil {
-		logger.Error.Printf("DELETE /action/post/%s/comment/%s - Could not update comment: %s\n", postIDstr, cIDstr, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	dbC, err := h.db.GetComment(h.ctx, cID)
-	if err != nil {
-		logger.Error.Printf("DELETE /action/post/%s/comment/%s - Could not get comment: %s\n", postIDstr, cIDstr, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	mentions := helpers.ParseAtString(dbC.Content)
-	if len(mentions) > 0 {
-		for _, mention := range mentions {
-			mention = strings.TrimLeft(mention, "@")
-			userDB, err := h.db.GetUserByUserName(h.ctx, mention)
-			if err != nil {
-				logger.Error.Printf("DELETE /action/post/%s/comment - Could not get user By Id: %s\n", postIDstr, err)
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			err = h.db.DeleteUserTag(h.ctx, userDB.ID, cID)
-			if err != nil {
-				logger.Error.Printf("DELETE /action/post/%s/comment - Could not delete tag By Id: %s\n", postIDstr, err)
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
 		}
 	}
+	//
 
-	logger.Info.Printf("OK - DELETE /action/post/%s/comment/%s %s\n", postIDstr, cIDstr, r.RemoteAddr)
+	// Execution
+	vars := mux.Vars(r)
+	session := h.sessionStore.ValidateSession(w, r)
+	if !session.IsAuthenticated {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	cID, err := uuid.Parse(vars["comment_id"])
+	if err != nil {
+		fail("parsing comment uuid from URL", err, true, http.StatusBadRequest, "invalid path")
+		return
+	}
+	c, err := h.db.DisableComment(r.Context(), cID)
+	if err != nil {
+		fail("dberr - could not disable comment", err, true, http.StatusInternalServerError, "internal error")
+		return
+	}
+
+	// delete user mentions
+	mentions := helpers.ParseAtString(c.Content)
+	if len(mentions) > 0 {
+		go func() {
+			for _, mention := range mentions {
+				mention = strings.TrimLeft(mention, "@")
+				userDB, err := h.db.GetUserByUserName(h.ctx, mention)
+				if err != nil {
+					continue
+				}
+				err = h.db.DeleteUserTag(h.ctx, userDB.ID, cID)
+				if err != nil {
+					fail("dberr - could not delete usertag", err, false, http.StatusInternalServerError, "")
+					continue
+				}
+			}
+		}()
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
 // POST /action/post/{Post_GUID}/comment/{comment_id}/up
 func (h *APIHandler) RateCommentUp(w http.ResponseWriter, r *http.Request) {
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
 	vars := mux.Vars(r)
-	postIDstr := vars["post_id"]
-	cIDstr := vars["comment_id"]
-	logger.Info.Printf("POST /action/post/%s/comment/%s/up %s\n", postIDstr, cIDstr, r.RemoteAddr)
 	session := h.sessionStore.ValidateSession(w, r)
-
-	cID, err := uuid.Parse(cIDstr)
-	if err != nil {
-		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not convert id to string: %s\n", postIDstr, cID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if !session.IsAuthenticated {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-
-	err = h.db.RateCommentUp(h.ctx, cID, session.User.ID)
+	cID, err := uuid.Parse(vars["comment_id"])
 	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/comment/%s/up - Could not update comment rating: %s\n", postIDstr, cIDstr, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		fail("parsing comment uuid from URL", err, true, http.StatusBadRequest, "invalid path")
 		return
 	}
-	logger.Info.Printf("OK - POST /action/post/%s/comment/%s/up %s\n", postIDstr, cIDstr, r.RemoteAddr)
+	err = h.db.RateCommentUp(r.Context(), cID, session.User.ID)
+	if err != nil {
+		fail("dberr - ould not update comment rating", err, true, http.StatusInternalServerError, "internal error")
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
 // POST /action/post/{Post_GUID}/comment/{comment_id}/down
 func (h *APIHandler) RateCommentDown(w http.ResponseWriter, r *http.Request) {
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
 	vars := mux.Vars(r)
-	postIDstr := vars["post_id"]
-	cIDstr := vars["comment_id"]
-	logger.Info.Printf("POST /action/post/%s/comment/%s/down %s\n", postIDstr, cIDstr, r.RemoteAddr)
 	session := h.sessionStore.ValidateSession(w, r)
-
-	cID, err := uuid.Parse(cIDstr)
-	if err != nil {
-		logger.Error.Printf("PUT /action/post/%s/comment/%s - Could not convert id to string: %s\n", postIDstr, cID, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if !session.IsAuthenticated {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-
-	err = h.db.RateCommentDown(h.ctx, cID, session.User.ID)
+	cID, err := uuid.Parse(vars["comment_id"])
 	if err != nil {
-		logger.Error.Printf("POST /action/post/%s/comment/%s/down - Could not update comment rating: %s\n", postIDstr, cIDstr, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		fail("parsing comment uuid from URL", err, true, http.StatusBadRequest, "invalid path")
 		return
 	}
-	logger.Info.Printf("OK - POST /action/post/%s/comment/%s/down %s\n", postIDstr, cIDstr, r.RemoteAddr)
+	err = h.db.RateCommentDown(r.Context(), cID, session.User.ID)
+	if err != nil {
+		fail("dberr - ould not update comment rating", err, true, http.StatusInternalServerError, "internal error")
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }

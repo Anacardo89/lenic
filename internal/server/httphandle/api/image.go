@@ -19,7 +19,6 @@ import (
 
 // /action/image
 func (h *APIHandler) PostImage(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/action/image ", r.RemoteAddr)
 	pIDstr := r.URL.Query().Get("post_id")
 	if pIDstr == "" {
 		return
@@ -61,13 +60,11 @@ func (h *APIHandler) PostImage(w http.ResponseWriter, r *http.Request) {
 		mimeType = "application/octet-stream"
 	}
 	w.Header().Set("Content-Type", mimeType)
-	logger.Info.Println("OK - /action/image ", r.RemoteAddr)
 	w.Write(imgData)
 }
 
 // /action/profile-pic
 func (h *APIHandler) ProfilePic(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/action/profile-pic ", r.RemoteAddr)
 	encoded := r.URL.Query().Get("encoded_username")
 	if encoded == "" {
 		return
@@ -109,7 +106,6 @@ func (h *APIHandler) ProfilePic(w http.ResponseWriter, r *http.Request) {
 		mimeType = "application/octet-stream"
 	}
 	w.Header().Set("Content-Type", mimeType)
-	logger.Info.Println("OK - /action/profile-pic ", r.RemoteAddr)
 	w.Write(imgData)
 }
 
@@ -117,7 +113,6 @@ func (h *APIHandler) ProfilePic(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) PostProfilePic(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
-	logger.Info.Printf("/action/user/%s/profile-pic  %s\n", encoded, r.RemoteAddr)
 
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
@@ -159,6 +154,5 @@ func (h *APIHandler) PostProfilePic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fsops.SaveImg(imgData, fsops.ProfilePicPath, fileName)
-	logger.Info.Printf("/action/user/%s/profile-pic  %s\n", encoded, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }

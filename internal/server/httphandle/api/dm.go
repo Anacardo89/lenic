@@ -22,7 +22,6 @@ type JSON_Convo struct {
 func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
-	logger.Info.Printf("POST /action/user/%s/conversations %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -30,18 +29,16 @@ func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("POST /action/user/%s/conversations %s %s\n", encoded, r.RemoteAddr, userName)
+	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
+	if err != nil {
+		logger.Error.Printf("POST /action/user/%s/conversations - Could not get user: %s\n", encoded, err)
+		return
+	}
 
 	var msg JSON_Convo
 	err = json.NewDecoder(r.Body).Decode(&msg)
 	if err != nil {
 		logger.Error.Printf("POST /action/user/%s/conversations - Could not parse Json Data: %s\n", encoded, err)
-		return
-	}
-
-	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
-	if err != nil {
-		logger.Error.Printf("POST /action/user/%s/conversations - Could not get user: %s\n", encoded, err)
 		return
 	}
 	u := models.FromDBUserNotif(dbUser)
@@ -94,7 +91,6 @@ func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
-	logger.Info.Printf("GET /action/user/%s/conversations %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -102,7 +98,6 @@ func (h *APIHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("GET /action/user/%s/conversations %s %s\n", encoded, r.RemoteAddr, userName)
 
 	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
@@ -175,7 +170,6 @@ func (h *APIHandler) GetDMs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
 	cIDstr := vars["conversation_id"]
-	logger.Info.Printf("GET /action/user/%s/conversations/%s/dms %s\n", encoded, cIDstr, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -183,7 +177,6 @@ func (h *APIHandler) GetDMs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("GET /action/user/%s/conversations/%s/dms %s %s\n", encoded, cIDstr, r.RemoteAddr, userName)
 
 	cID, err := uuid.Parse(cIDstr)
 	if err != nil {
@@ -249,7 +242,6 @@ func (h *APIHandler) SendDM(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
 	cIDstr := vars["conversation_id"]
-	logger.Info.Printf("POST /action/user/%s/conversations/%s/dms %s\n", encoded, cIDstr, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -257,7 +249,6 @@ func (h *APIHandler) SendDM(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("POST /action/user/%s/conversations/%s/dms %s %s\n", encoded, cIDstr, r.RemoteAddr, userName)
 
 	cID, err := uuid.Parse(cIDstr)
 	if err != nil {
@@ -302,7 +293,6 @@ func (h *APIHandler) SendDM(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info.Printf("OK - POST /action/user/%s/conversations/%s/dms\n", encoded, cIDstr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -311,7 +301,6 @@ func (h *APIHandler) ReadConversation(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
 	cIDstr := vars["conversation_id"]
-	logger.Info.Printf("PUT /action/user/%s/conversations/%s/read %s\n", encoded, cIDstr, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -319,7 +308,6 @@ func (h *APIHandler) ReadConversation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("PUT /action/user/%s/conversations/%s/read %s %s\n", encoded, cIDstr, r.RemoteAddr, userName)
 
 	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
@@ -350,6 +338,5 @@ func (h *APIHandler) ReadConversation(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	logger.Info.Printf("OK - PUT /action/user/%s/conversations/%s/read\n", encoded, cIDstr)
 	w.WriteHeader(http.StatusOK)
 }

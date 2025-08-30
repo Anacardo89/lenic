@@ -17,8 +17,6 @@ type Message struct {
 }
 
 func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/ws ", r.RemoteAddr)
-
 	conn, err := h.wsConnMann.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logger.Error.Println("/ws - Failed to upgrade to websocket:", err)

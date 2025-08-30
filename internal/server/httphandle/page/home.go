@@ -16,7 +16,6 @@ type HomePage struct {
 }
 
 func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/home ", r.RemoteAddr)
 	feed := HomePage{}
 	feed.Session = h.sessionStore.ValidateSession(w, r)
 	t, err := template.ParseFiles("templates/home.html")
@@ -29,7 +28,6 @@ func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PageHandler) Login(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/login ", r.RemoteAddr)
 	body, err := os.ReadFile("templates/login.html")
 	if err != nil {
 		logger.Error.Println("/login - Could not parse template: ", err)
@@ -40,7 +38,6 @@ func (h *PageHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PageHandler) Register(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/register ", r.RemoteAddr)
 	body, err := os.ReadFile("templates/register.html")
 	if err != nil {
 		logger.Error.Println("/register - Could not parse template: ", err)

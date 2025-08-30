@@ -12,7 +12,6 @@ type ErrorPage struct {
 }
 
 func (h *PageHandler) Error(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/error ", r.RemoteAddr)
 
 	queryParams := r.URL.Query()
 	msg := queryParams.Get("message")

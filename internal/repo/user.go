@@ -69,24 +69,23 @@ func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*U
 	;`
 
 	u := User{}
-	err := db.pool.QueryRow(ctx, query, userName).
-		Scan(
-			&u.ID,
-			&u.UserName,
-			&u.DisplayName,
-			&u.Email,
-			&u.PasswordHash,
-			&u.ProfilePic,
-			&u.Bio,
-			&u.Followers,
-			&u.Following,
-			&u.IsActive,
-			&u.IsVerified,
-			&u.UserRole,
-			&u.CreatedAt,
-			&u.UpdatedAt,
-			&u.DeletedAt,
-		)
+	err := db.pool.QueryRow(ctx, query, userName).Scan(
+		&u.ID,
+		&u.UserName,
+		&u.DisplayName,
+		&u.Email,
+		&u.PasswordHash,
+		&u.ProfilePic,
+		&u.Bio,
+		&u.Followers,
+		&u.Following,
+		&u.IsActive,
+		&u.IsVerified,
+		&u.UserRole,
+		&u.CreatedAt,
+		&u.UpdatedAt,
+		&u.DeletedAt,
+	)
 	return &u, err
 }
 

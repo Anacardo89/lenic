@@ -27,7 +27,6 @@ type FollowingPage struct {
 func (h *PageHandler) UserFollowers(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
-	logger.Info.Printf("/user/%s/followers %s\n", encoded, r.RemoteAddr)
 
 	fp := FollowersPage{
 		Session: h.sessionStore.ValidateSession(w, r),
@@ -40,7 +39,6 @@ func (h *PageHandler) UserFollowers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("/user/%s/followers %s %s\n", encoded, r.RemoteAddr, userName)
 
 	dbFollowed, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
@@ -81,7 +79,6 @@ func (h *PageHandler) UserFollowers(w http.ResponseWriter, r *http.Request) {
 func (h *PageHandler) UserFollowing(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
-	logger.Info.Printf("/user/%s/following %s\n", encoded, r.RemoteAddr)
 
 	fp := FollowingPage{
 		Session: h.sessionStore.ValidateSession(w, r),
@@ -94,7 +91,6 @@ func (h *PageHandler) UserFollowing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("/user/%s/following %s %s\n", encoded, r.RemoteAddr, userName)
 
 	dbFollower, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {

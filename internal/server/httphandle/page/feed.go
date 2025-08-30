@@ -20,7 +20,6 @@ type FeedPage struct {
 func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
-	logger.Info.Printf("/user/%s/feed %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -29,7 +28,6 @@ func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("/user/%s/feed %s %s\n", encoded, r.RemoteAddr, userName)
 
 	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
