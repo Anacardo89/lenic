@@ -8,26 +8,38 @@ import (
 )
 
 // Comments
-func (db *dbHandler) CreateComment(ctx context.Context, comment *Comment) (uuid.UUID, error) {
+func (db *dbHandler) CreateComment(ctx context.Context, c *Comment) error {
 	query := `
 	INSERT INTO comments (
 		post_id,
 		author_id,
-		content,
-		is_active
+		content
 	)
-	VALUES ($1, $2, $3, $4)
-	RETURNING id
+	VALUES ($1, $2, $3)
+	RETURNING
+		id,
+		post_id,
+		author_id,
+		content,
+		rating,
+		is_active,
+		created_at
 	;`
 
-	var ID uuid.UUID
 	err := db.pool.QueryRow(ctx, query,
-		comment.PostID,
-		comment.AuthorID,
-		comment.Content,
-		comment.IsActive,
-	).Scan(&ID)
-	return ID, err
+		c.PostID,
+		c.AuthorID,
+		c.Content,
+	).Scan(
+		&c.ID,
+		&c.PostID,
+		&c.AuthorID,
+		&c.Content,
+		&c.Rating,
+		&c.IsActive,
+		&c.CreatedAt,
+	)
+	return err
 }
 
 func (db *dbHandler) GetComment(ctx context.Context, ID uuid.UUID) (*Comment, error) {
@@ -55,7 +67,6 @@ func (db *dbHandler) GetComment(ctx context.Context, ID uuid.UUID) (*Comment, er
 }
 
 func (db *dbHandler) GetCommentsByPost(ctx context.Context, postID uuid.UUID) ([]*Comment, error) {
-
 	query := `
 	SELECT *
 	FROM comments
@@ -72,7 +83,6 @@ func (db *dbHandler) GetCommentsByPost(ctx context.Context, postID uuid.UUID) ([
 		return nil, err
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		comment := Comment{}
 		err = rows.Scan(
@@ -94,29 +104,54 @@ func (db *dbHandler) GetCommentsByPost(ctx context.Context, postID uuid.UUID) ([
 	return comments, nil
 }
 
-func (db *dbHandler) UpdateCommentContent(ctx context.Context, ID uuid.UUID, content string) error {
-
+func (db *dbHandler) UpdateComment(ctx context.Context, c *Comment) error {
 	query := `
 	UPDATE comments
 	SET content = $2
 	WHERE id = $1
+	RETURNING
+		id,
+		post_id,
+		author_id,
+		content,
+		rating,
+		is_active,
+		created_at
 	;`
 
-	_, err := db.pool.Exec(ctx, query, ID, content)
+	err := db.pool.QueryRow(ctx, query,
+		c.ID,
+		c.Content,
+	).Scan(
+		&c.ID,
+		&c.PostID,
+		&c.AuthorID,
+		&c.Content,
+		&c.Rating,
+		&c.IsActive,
+		&c.CreatedAt,
+	)
 	return err
 }
 
-func (db *dbHandler) DisableComment(ctx context.Context, ID uuid.UUID) error {
+func (db *dbHandler) DisableComment(ctx context.Context, ID uuid.UUID) (*Comment, error) {
 
 	query := `
 	UPDATE comments
 	SET active = FALSE,
 		deleted_at = NOW()
 	WHERE id = $1
+	RETURNING
+		id,
+		content
 	;`
 
-	_, err := db.pool.Exec(ctx, query, ID)
-	return err
+	var c Comment
+	err := db.pool.QueryRow(ctx, query, ID).Scan(
+		&c.ID,
+		&c.Content,
+	)
+	return &c, err
 }
 
 // Comment Ratings

@@ -44,11 +44,11 @@ type DBRepository interface {
 	GetPostUserRating(ctx context.Context, targetID, userID uuid.UUID) (*PostRatings, error)
 
 	// Comments
-	CreateComment(ctx context.Context, comment *Comment) (uuid.UUID, error)
+	CreateComment(ctx context.Context, comment *Comment) error
 	GetComment(ctx context.Context, ID uuid.UUID) (*Comment, error)
 	GetCommentsByPost(ctx context.Context, postID uuid.UUID) ([]*Comment, error)
-	UpdateCommentContent(ctx context.Context, ID uuid.UUID, content string) error
-	DisableComment(ctx context.Context, ID uuid.UUID) error
+	UpdateComment(ctx context.Context, comment *Comment) error
+	DisableComment(ctx context.Context, ID uuid.UUID) (*Comment, error)
 
 	// CommentRatings
 	RateCommentUp(ctx context.Context, targetID, userID uuid.UUID) error

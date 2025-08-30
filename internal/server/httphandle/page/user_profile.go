@@ -24,7 +24,6 @@ type ProfilePage struct {
 func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
-	logger.Info.Printf("/user/%s %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -33,7 +32,6 @@ func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("/user/%s %s %s\n", encoded, r.RemoteAddr, userName)
 
 	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {

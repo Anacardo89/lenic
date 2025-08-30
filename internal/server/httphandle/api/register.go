@@ -14,7 +14,6 @@ import (
 
 // /action/register
 func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/action/register ", r.RemoteAddr)
 	// Parse Form
 	err := r.ParseForm()
 	if err != nil {
@@ -72,13 +71,11 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info.Printf("OK - /action/register %s %s\n", r.RemoteAddr, uDB.UserName)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
 // /action/activate
 func (h *APIHandler) ActivateUser(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/action/activate ", r.RemoteAddr)
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
@@ -88,13 +85,11 @@ func (h *APIHandler) ActivateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("/action/activate %s %s\n", r.RemoteAddr, userName)
 	err = h.db.SetUserActive(h.ctx, userName)
 	if err != nil {
 		logger.Error.Println("/action/activate - Could not activate user: ", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	logger.Info.Printf("OK - /action/activate %s %s\n", r.RemoteAddr, userName)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }

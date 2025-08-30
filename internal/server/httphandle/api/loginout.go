@@ -19,7 +19,6 @@ type LoginRequest struct {
 
 // /action/login
 func (h *APIHandler) Login(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/action/login ", r.RemoteAddr)
 	var (
 		err      error
 		loginReq LoginRequest
@@ -40,8 +39,6 @@ func (h *APIHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	logger.Info.Printf("/action/login %s %s\n", r.RemoteAddr, loginReq.UserName)
-
 	uDB, err := h.db.GetUserByUserName(h.ctx, loginReq.UserName)
 	if err == sql.ErrNoRows {
 		http.Error(w, "User does not exist", http.StatusBadRequest)
@@ -59,15 +56,11 @@ func (h *APIHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	h.sessionStore.CreateSession(w, r, u.ID)
 
-	logger.Info.Println("OK - /action/login ", r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
 // /action/logout
 func (h *APIHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/action/logout ", r.RemoteAddr)
 	h.sessionStore.DeleteSession(r)
-
-	logger.Info.Println("OK - /action/logout ", r.RemoteAddr)
 	redirect.RedirIndex(w, r)
 }

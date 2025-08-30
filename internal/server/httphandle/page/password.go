@@ -14,7 +14,6 @@ import (
 )
 
 func (h *PageHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/forgot-password ", r.RemoteAddr)
 	body, err := os.ReadFile("templates/forgot-password.html")
 	if err != nil {
 		logger.Error.Println("/forgot-password - Could not parse template: ", err)
@@ -30,7 +29,6 @@ type RecoverPasswdPage struct {
 }
 
 func (h *PageHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/recover-password ", r.RemoteAddr)
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
@@ -40,7 +38,6 @@ func (h *PageHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("/recover-password %s %s", r.RemoteAddr, userName)
 
 	token := r.URL.Query().Get("token")
 	if token == "" {
@@ -68,7 +65,6 @@ func (h *PageHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PageHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/change-password ", r.RemoteAddr)
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
@@ -78,7 +74,6 @@ func (h *PageHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("/change-password %s %s", r.RemoteAddr, userName)
 
 	session := h.sessionStore.ValidateSession(w, r)
 	t, err := template.ParseFiles("templates/authorized/change-password.html")

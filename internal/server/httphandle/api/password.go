@@ -11,7 +11,6 @@ import (
 
 // POST /action/forgot-password
 func (h *APIHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("POST /action/forgot-password ", r.RemoteAddr)
 	// Parse Form
 	err := r.ParseForm()
 	if err != nil {
@@ -20,7 +19,6 @@ func (h *APIHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mail := r.FormValue("user_email")
-	logger.Info.Printf("POST /action/forgot-password %s %s\n", r.RemoteAddr, mail)
 	// Get user from DB
 	dbuser, err := h.db.GetUserByEmail(h.ctx, mail)
 	if err == sql.ErrNoRows {
@@ -41,13 +39,11 @@ func (h *APIHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	logger.Info.Println("OK - POST /action/forgot-password ", r.RemoteAddr)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
 // /action/recover-password
 func (h *APIHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/action/recover-password ", r.RemoteAddr)
 	// Parse Form
 	err := r.ParseForm()
 	if err != nil {
@@ -91,13 +87,11 @@ func (h *APIHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info.Println("OK - /action/recover-password ", r.RemoteAddr)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
 // /action/change-password
 func (h *APIHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/action/change-password ", r.RemoteAddr)
 	// Parse Form
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
@@ -141,6 +135,5 @@ func (h *APIHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	logger.Info.Println("OK - /action/change-password ", r.RemoteAddr)
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }

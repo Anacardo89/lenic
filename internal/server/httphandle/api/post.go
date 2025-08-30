@@ -19,7 +19,6 @@ import (
 
 // POST /action/post
 func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/action/post ", r.RemoteAddr)
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		logger.Error.Println("/action/post - Could not parse Form: ", err)
@@ -155,7 +154,6 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	logger.Info.Println("OK - /action/post ", r.RemoteAddr)
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -163,7 +161,6 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	pIDstr := vars["post_id"]
-	logger.Info.Printf("PUT /action/post/%s %s\n", pIDstr, r.RemoteAddr)
 	session := h.sessionStore.ValidateSession(w, r)
 
 	err := r.ParseForm()
@@ -232,7 +229,6 @@ func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	logger.Info.Printf("OK - PUT /action/post/%s %s\n", pIDstr, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -240,7 +236,6 @@ func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	pIDstr := vars["post_id"]
-	logger.Info.Printf("DELETE /action/post/%s %s\n", pIDstr, r.RemoteAddr)
 
 	pID, err := uuid.Parse(pIDstr)
 	if err != nil {
@@ -285,7 +280,6 @@ func (h *APIHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	logger.Info.Printf("OK - DELETE /action/post/%s %s\n", pIDstr, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -293,7 +287,6 @@ func (h *APIHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) RatePostUp(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	pIDstr := vars["post_id"]
-	logger.Info.Printf("POST /action/post/%s/up %s\n", pIDstr, r.RemoteAddr)
 
 	session := h.sessionStore.ValidateSession(w, r)
 
@@ -318,7 +311,6 @@ func (h *APIHandler) RatePostUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info.Printf("OK - POST /action/post/%s/up %s\n", pIDstr, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -326,7 +318,6 @@ func (h *APIHandler) RatePostUp(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) RatePostDown(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	pIDstr := vars["post_id"]
-	logger.Info.Printf("POST /action/post/%s/down %s\n", pIDstr, r.RemoteAddr)
 
 	session := h.sessionStore.ValidateSession(w, r)
 
@@ -351,6 +342,5 @@ func (h *APIHandler) RatePostDown(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info.Printf("OK - POST /action/post/%s/down %s\n", pIDstr, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }

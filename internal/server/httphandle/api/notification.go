@@ -16,7 +16,6 @@ import (
 func (h *APIHandler) GetNotifs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
-	logger.Info.Printf("GET /action/user/%s/notifications %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -24,7 +23,6 @@ func (h *APIHandler) GetNotifs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("GET /action/user/%s/notifications %s %s\n", encoded, r.RemoteAddr, userName)
 
 	uDB, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
@@ -81,7 +79,6 @@ func (h *APIHandler) UpdateNotif(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_user_name"]
 	nIDstr := vars["notif_id"]
-	logger.Info.Printf("PUT /action/user/%s/notifications/%s/read %s\n", encoded, nIDstr, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -89,7 +86,6 @@ func (h *APIHandler) UpdateNotif(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userName := string(bytes)
-	logger.Info.Printf("PUT /action/user/%s/notifications/%s/read %s %s\n", encoded, nIDstr, r.RemoteAddr, userName)
 
 	nID, err := uuid.Parse(nIDstr)
 	if err != nil {

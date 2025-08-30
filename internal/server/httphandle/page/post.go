@@ -18,7 +18,6 @@ type PostPage struct {
 }
 
 func (h *PageHandler) NewPost(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("/newPost ", r.RemoteAddr)
 	postp := PostPage{
 		Session: h.sessionStore.ValidateSession(w, r),
 		Post:    &models.Post{},
@@ -35,7 +34,6 @@ func (h *PageHandler) NewPost(w http.ResponseWriter, r *http.Request) {
 func (h *PageHandler) Post(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postID := vars["post_id"]
-	logger.Info.Printf("/post/%s %s\n", postID, r.RemoteAddr)
 	pp := PostPage{}
 	dbPost, err := h.db.GetPost(h.ctx, postID)
 	if err != nil {

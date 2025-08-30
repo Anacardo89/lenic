@@ -13,10 +13,8 @@ import (
 
 // GET /action/search/user
 func (h *APIHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
-	logger.Info.Println("GET /action/search/user", r.RemoteAddr)
 	queryParams := r.URL.Query()
 	username := queryParams.Get("username")
-	logger.Info.Printf("GET /action/search/user %s %s\n", r.RemoteAddr, username)
 
 	dbusers, err := h.db.SearchUsersByUserName(h.ctx, username)
 	if err != nil {
@@ -43,7 +41,6 @@ func (h *APIHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info.Printf("OK - GET /action/search/user %s %s\n", r.RemoteAddr, username)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
 }
@@ -52,7 +49,6 @@ func (h *APIHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
-	logger.Info.Printf("POST /action/user/%s/follow %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -61,7 +57,6 @@ func (h *APIHandler) RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := string(bytes)
-	logger.Info.Printf("POST /action/user/%s/follow %s %s\n", encoded, r.RemoteAddr, userName)
 
 	dbuser, err := h.db.GetUserByUserName(h.ctx, username)
 	if err != nil {
@@ -78,7 +73,6 @@ func (h *APIHandler) RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	logger.Info.Printf("OK - POST /action/user/%s/follow %s\n", encoded, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -86,7 +80,6 @@ func (h *APIHandler) RequestFollowUser(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
-	logger.Info.Printf("DELETE /action/user/%s/unfollow %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -95,7 +88,6 @@ func (h *APIHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := string(bytes)
-	logger.Info.Printf("DELETE /action/user/%s/unfollow %s %s\n", encoded, r.RemoteAddr, userName)
 
 	dbuser, err := h.db.GetUserByUserName(h.ctx, username)
 	if err != nil {
@@ -135,8 +127,6 @@ func (h *APIHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info.Printf("OK - DELETE /action/user/%s/unfollow %s\n", encoded, r.RemoteAddr)
-
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -144,7 +134,6 @@ func (h *APIHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) AcceptFollowRequest(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	encoded := vars["encoded_username"]
-	logger.Info.Printf("PUT /action/user/%s/accept %s\n", encoded, r.RemoteAddr)
 
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -153,7 +142,6 @@ func (h *APIHandler) AcceptFollowRequest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	username := string(bytes)
-	logger.Info.Printf("PUT /action/user/%s/accept %s %s\n", encoded, r.RemoteAddr, userName)
 
 	err = r.ParseForm()
 	if err != nil {
@@ -198,6 +186,5 @@ func (h *APIHandler) AcceptFollowRequest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	logger.Info.Printf("OK - PUT /action/user/%s/accept %s\n", encoded, r.RemoteAddr)
 	w.WriteHeader(http.StatusOK)
 }

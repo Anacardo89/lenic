@@ -8,8 +8,6 @@ import (
 )
 
 func (h *WSHandler) handleDM(msg Message) {
-	logger.Info.Println("/ws handling DM")
-	logger.Debug.Println(msg)
 
 	dbUser, err := h.db.GetUserByUserName(h.ctx, msg.ResourceID)
 	if err != nil {
