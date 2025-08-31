@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 
 	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/google/uuid"
@@ -46,6 +47,178 @@ func (db *dbHandler) GetConversation(ctx context.Context, ID uuid.UUID) (*Conver
 			&conv.UpdatedAt,
 		)
 	return &conv, err
+}
+
+func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 string) (*Conversation, []*User, error) {
+	query := `
+	WITH u AS (
+		SELECT id
+		FROM users
+		WHERE username = ANY($1::text[])
+	),
+	sorted AS (
+		SELECT
+			u1.id AS user1_id,
+			u2.id AS user2_id
+		FROM u u1
+		CROSS JOIN u u2
+		WHERE u1.id < u2.id
+	),
+	ins AS (
+		INSERT INTO conversations (
+			user1_id,
+			user2_id
+		)
+		SELECT 
+			user1_id,
+			user2_id
+		FROM sorted
+		ON CONFLICT (user1_id, user2_id)
+		DO UPDATE SET user1_id = EXCLUDED.user1_id
+		RETURNING id
+	)
+	SELECT
+		c.id,
+		c.user1_id,
+		c.user2_id,
+		c.created_at,
+		u1.id,
+		u1.username,
+		u1.profile_pic,
+		u2.id,
+		u2.username,
+		u2.profile_pic
+	FROM sorted
+	LEFT JOIN ins
+		ON true
+	LEFT JOIN conversations c 
+		ON c.id = ins.id
+	JOIN users u1
+		ON u1.id = sorted.user1_id
+	JOIN users u2
+		ON u2.id = sorted.user2_id
+	;`
+
+	usersIn := []string{user1, user2}
+	var c Conversation
+	users := make([]*User, 2)
+	err := db.pool.QueryRow(ctx, query, usersIn).Scan(
+		&c.ID,
+		&c.User1ID,
+		&c.User2ID,
+		&c.CreatedAt,
+		&users[0].ID,
+		&users[0].UserName,
+		&users[0].ProfilePic,
+		&users[1].ID,
+		&users[1].UserName,
+		&users[1].ProfilePic,
+	)
+	return &c, users, err
+}
+
+func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, limit, offset int) (*User, []*ConversationsWithDMs, error) {
+
+	query := `
+	WITH u AS (
+		SELECT
+			id,
+			username,
+			profile_pic
+		FROM users
+		WHERE username = $1
+	),
+	user_convos AS (
+		SELECT *
+		FROM conversations c
+		WHERE c.user1_id = (SELECT id FROM u)
+			OR c.user2_id = (SELECT id FROM u)
+		ORDER BY c.created_at DESC
+		LIMIT $2
+		OFFSET $3
+	),
+	convos_with_other AS (
+		SELECT
+			c.id,
+			CASE
+				WHEN c.user1_id = u.id
+				THEN c.user2_id
+				ELSE c.user1_id
+			END AS other_user_id,
+			c.created_at
+		FROM user_convos c
+		CROSS JOIN u
+	)
+	SELECT
+		u.id,
+		u.username,
+		u.profile_pic,
+		COALESCE(
+			json_agg(
+				json_build_object(
+					'id', c.convo_id,
+					'created_at', c.created_at,
+					'other_user', json_build_object(
+						'id', ou.id,
+						'username', ou.username,
+						'profile_pic', ou.profile_pic
+					),
+					'messages', COALESCE(
+						(
+							SELECT json_agg(json_build_object(
+								'id', m.id,
+								'conversation_id', m.conversation_id,
+								'sender_id', m.sender_id,
+								'content', m.content,
+								'is_read', m.is_read,
+								'created_at', m.created_at
+							) ORDER BY m.created_at DESC)
+							FROM (
+								SELECT *
+								FROM dmessages
+								WHERE conversation_id = c.convo_id
+								ORDER BY created_at DESC
+								LIMIT 1000
+							) m
+						),
+						'[]'
+					)
+				)
+			) FILTER (WHERE c.convo_id IS NOT NULL),
+			'[]'
+		) AS conversations
+	FROM u
+	LEFT JOIN convos_with_other c
+		ON true
+	LEFT JOIN users ou
+		ON ou.id = c.other_user_id
+	GROUP BY u.id;
+	;`
+
+	rows, err := db.pool.Query(ctx, query, user, limit, offset)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+	var u User
+	var convos []*ConversationsWithDMs
+	var convosJSON []byte
+	if rows.Next() {
+		if err := rows.Scan(
+			&u.ID,
+			&u.UserName,
+			&u.ProfilePic,
+			&convosJSON,
+		); err != nil {
+			return nil, nil, err
+		}
+		if err := json.Unmarshal(convosJSON, &convos); err != nil {
+			return &u, nil, err
+		}
+	} else {
+		return nil, nil, sql.ErrNoRows
+	}
+	return &u, convos, nil
 }
 
 func (db *dbHandler) GetConversationByUsers(ctx context.Context, user1ID, user2ID uuid.UUID) (*Conversation, error) {
@@ -184,36 +357,45 @@ func (db *dbHandler) GetConvoLastDMBySender(ctx context.Context, conversationID,
 	return &dm, err
 }
 
-func (db *dbHandler) GetDMsByConversation(ctx context.Context, conersationID uuid.UUID, limit, offset int) ([]*DMessage, error) {
+func (db *dbHandler) GetDMsByConversation(ctx context.Context, conersationID uuid.UUID, limit, offset int) ([]*DMessageWithUser, error) {
 
 	query := `
-	SELECT *
-	FROM dmessages
-	WHERE conversation_id = $1
-	ORDER BY created_at
+	SELECT 
+		m.id,
+		m.conversation_id,
+		m.content,
+		m.is_read,
+		m.created_at,
+		u.id,
+		u.username,
+		u.profile_pic
+	FROM dmessages m
+	JOIN users u
+		ON u.id = m.sender_id
+	WHERE m.conversation_id = $1
+	ORDER BY m.created_at DESC
 	LIMIT $2
 	OFFSET $3
 	;`
 
-	dms := []*DMessage{}
+	var dms []*DMessageWithUser
 	rows, err := db.pool.Query(ctx, query, conersationID, limit, offset)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return dms, nil
-		}
 		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		dm := DMessage{}
+		dm := DMessageWithUser{}
 		err = rows.Scan(
 			&dm.ID,
 			&dm.ConversationID,
-			&dm.SenderID,
 			&dm.Content,
 			&dm.IsRead,
 			&dm.CreatedAt,
+			&dm.Sender.ID,
+			&dm.Sender.UserName,
+			&dm.Sender.ProfilePic,
 		)
 		if err != nil {
 			return nil, err

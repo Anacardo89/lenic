@@ -89,6 +89,51 @@ func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*U
 	return &u, err
 }
 
+func (db *dbHandler) GetConversationUsers(ctx context.Context, user1, user2 string) ([]*User, error) {
+
+	query := `
+	SELECT * 
+	FROM users
+	WHERE username = $1 OR username = $2
+	;`
+
+	users := []*User{}
+	rows, err := db.pool.Query(ctx, query, user1, user2)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return users, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		u := User{}
+		err = rows.Scan(
+			&u.ID,
+			&u.UserName,
+			&u.DisplayName,
+			&u.Email,
+			&u.PasswordHash,
+			&u.ProfilePic,
+			&u.Bio,
+			&u.Followers,
+			&u.Following,
+			&u.IsActive,
+			&u.IsVerified,
+			&u.UserRole,
+			&u.CreatedAt,
+			&u.UpdatedAt,
+			&u.DeletedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, &u)
+	}
+	return users, nil
+}
+
 func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 
 	query := `

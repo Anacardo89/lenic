@@ -98,6 +98,16 @@ func FromDBConversation(c *repo.Conversation, u1, u2 UserNotif, isRead bool) *Co
 	}
 }
 
+func FromDBConversationWithUser(c *repo.ConversationsWithDMs, u1 UserNotif, isRead bool) *Conversation {
+	return &Conversation{
+		ID:        c.ID,
+		User1:     u1,
+		User2:     *FromDBUserNotif(c.OtherUser),
+		IsRead:    isRead,
+		CreatedAt: c.CreatedAt,
+	}
+}
+
 func FromDBDMessage(m *repo.DMessage, u UserNotif) *DMessage {
 	return &DMessage{
 		ID:             m.ID,
