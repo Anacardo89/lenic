@@ -13,8 +13,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Response struct {
-	Data string `json:"data"`
+type AddCommentResponse struct {
+	ID string `json:"id"`
 }
 
 // POST /action/post/{Post_GUID}/comment
@@ -34,17 +34,20 @@ func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	vars := mux.Vars(r)
+	// Auth
 	session := h.sessionStore.ValidateSession(w, r)
 	if !session.IsAuthenticated {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
 		return
 	}
+	// Input validation
+	vars := mux.Vars(r)
 	postID, err := uuid.Parse(vars["post_id"])
 	if err != nil {
 		fail("parsing post uuid from URL", err, true, http.StatusBadRequest, "invalid path")
 		return
 	}
+	// DB operations
 	c := repo.Comment{
 		PostID:   postID,
 		AuthorID: session.User.ID,
@@ -54,7 +57,6 @@ func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 		fail("dberr - could not insert comment", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
-
 	// Handle user mentions
 	mentions := helpers.ParseAtString(c.Content)
 	if len(mentions) > 0 {
@@ -86,10 +88,9 @@ func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 			}
 		}()
 	}
-
 	// Response
-	resp := Response{
-		Data: c.ID.String(),
+	resp := AddCommentResponse{
+		ID: c.ID.String(),
 	}
 	data, err := json.Marshal(&resp)
 	if err != nil {
@@ -117,12 +118,14 @@ func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	vars := mux.Vars(r)
+	// Auth
 	session := h.sessionStore.ValidateSession(w, r)
 	if !session.IsAuthenticated {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
 		return
 	}
+	// Input validation
+	vars := mux.Vars(r)
 	cID, err := uuid.Parse(vars["comment_id"])
 	if err != nil {
 		fail("parsing comment uuid from URL", err, true, http.StatusBadRequest, "invalid path")
@@ -132,6 +135,7 @@ func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 		fail("comment is empty", errors.New("comment is empty"), true, http.StatusBadRequest, "comment cannot be empty")
 		return
 	}
+	// DB operations
 	c := repo.Comment{
 		ID:      cID,
 		Content: r.FormValue("comment"),
@@ -140,7 +144,6 @@ func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 		fail("dberr - could not update comment", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
-
 	// Handle user mentions
 	mentions := helpers.ParseAtString(c.Content)
 	if len(mentions) > 0 {
@@ -172,7 +175,6 @@ func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 			}
 		}()
 	}
-
 	// Response
 	w.WriteHeader(http.StatusOK)
 }
@@ -194,23 +196,25 @@ func (h *APIHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	vars := mux.Vars(r)
+	// Auth
 	session := h.sessionStore.ValidateSession(w, r)
 	if !session.IsAuthenticated {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
 		return
 	}
+	// Input validation
+	vars := mux.Vars(r)
 	cID, err := uuid.Parse(vars["comment_id"])
 	if err != nil {
 		fail("parsing comment uuid from URL", err, true, http.StatusBadRequest, "invalid path")
 		return
 	}
+	// DB operations
 	c, err := h.db.DisableComment(r.Context(), cID)
 	if err != nil {
 		fail("dberr - could not disable comment", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
-
 	// delete user mentions
 	mentions := helpers.ParseAtString(c.Content)
 	if len(mentions) > 0 {
@@ -229,7 +233,7 @@ func (h *APIHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 			}
 		}()
 	}
-
+	// Response
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -250,22 +254,26 @@ func (h *APIHandler) RateCommentUp(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	vars := mux.Vars(r)
+	// Auth
 	session := h.sessionStore.ValidateSession(w, r)
 	if !session.IsAuthenticated {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
 		return
 	}
+	// Input validation
+	vars := mux.Vars(r)
 	cID, err := uuid.Parse(vars["comment_id"])
 	if err != nil {
 		fail("parsing comment uuid from URL", err, true, http.StatusBadRequest, "invalid path")
 		return
 	}
+	// DB operations
 	err = h.db.RateCommentUp(r.Context(), cID, session.User.ID)
 	if err != nil {
 		fail("dberr - ould not update comment rating", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
+	// Response
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -286,21 +294,25 @@ func (h *APIHandler) RateCommentDown(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	vars := mux.Vars(r)
+	// Auth
 	session := h.sessionStore.ValidateSession(w, r)
 	if !session.IsAuthenticated {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
 		return
 	}
+	// Input validation
+	vars := mux.Vars(r)
 	cID, err := uuid.Parse(vars["comment_id"])
 	if err != nil {
 		fail("parsing comment uuid from URL", err, true, http.StatusBadRequest, "invalid path")
 		return
 	}
+	// DB operations
 	err = h.db.RateCommentDown(r.Context(), cID, session.User.ID)
 	if err != nil {
 		fail("dberr - ould not update comment rating", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
+	// Response
 	w.WriteHeader(http.StatusOK)
 }

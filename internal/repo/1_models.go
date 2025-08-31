@@ -152,3 +152,19 @@ type DMessage struct {
 	IsRead         bool
 	CreatedAt      time.Time
 }
+
+type ConversationsWithDMs struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+	OtherUser *User
+	Messages  []*DMessage
+}
+
+type DMessageWithUser struct {
+	ID             uuid.UUID
+	ConversationID uuid.UUID
+	Sender         *User
+	Content        string
+	IsRead         bool
+	CreatedAt      time.Time
+}
