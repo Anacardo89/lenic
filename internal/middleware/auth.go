@@ -3,22 +3,19 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"strings"
 )
 
-type ClaimsKey string
+type CtxKey string
 
 const (
-	UserIDKey ClaimsKey = "user_id"
+	CtxKeySession CtxKey = "session"
 )
 
 func (m *MiddlewareHandler) Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tokenStr := extractToken(r)
-		claims, err := m.tokenManager.ValidateToken(tokenStr)
-		if err != nil {
-			m.log.Error("token validation",
-				"error", err,
+		session := m.sm.ValidateSession(w, r)
+		if !session.IsAuthenticated {
+			m.log.Info("unauthorized action attempt",
 				"method", r.Method,
 				"path", r.URL.Path,
 				"client_ip", r.RemoteAddr,
@@ -26,19 +23,7 @@ func (m *MiddlewareHandler) Auth(next http.Handler) http.Handler {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		ctx := context.WithValue(r.Context(), UserIDKey, claims.UserID)
+		ctx := context.WithValue(r.Context(), CtxKeySession, session)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-func extractToken(r *http.Request) string {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		return ""
-	}
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-		return ""
-	}
-	return parts[1]
 }

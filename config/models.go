@@ -47,8 +47,8 @@ type Log struct {
 }
 
 type Mail struct {
-	Host string `yaml:"host"`
-	Port int    `yaml:"port"`
-	User string `env:"MAIL_USER" envDefault:"info"`
-	Pass string `env:"MAIL_PASS" envDefault:"info"`
+	Host string `env:"MAIL_HOST" envDefault:"smtp.gmail.com"`
+	Port int    `env:"MAIL_PORT" envDefault:"587"`
+	User string `env:"MAIL_USER" envDefault:"user"`
+	Pass string `env:"MAIL_PASS" envDefault:"passs"`
 }

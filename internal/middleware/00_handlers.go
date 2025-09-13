@@ -4,20 +4,20 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Anacardo89/lenic/internal/auth"
+	"github.com/Anacardo89/lenic/internal/session"
 	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
 type MiddlewareHandler struct {
-	tokenManager *auth.TokenManager
 	log          *logger.Logger
+	sm           *session.SessionManager
 	writeTimeout time.Duration
 }
 
-func NewMiddlewareHandler(tm *auth.TokenManager, l *logger.Logger, wto time.Duration) *MiddlewareHandler {
+func NewMiddlewareHandler(sm *session.SessionManager, l *logger.Logger, wto time.Duration) *MiddlewareHandler {
 	return &MiddlewareHandler{
-		tokenManager: tm,
 		log:          l,
+		sm:           sm,
 		writeTimeout: wto - time.Second,
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -35,12 +34,6 @@ func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	// Auth
-	session := h.sessionStore.ValidateSession(w, r)
-	if !session.IsAuthenticated {
-		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
-		return
-	}
 	// Input validation
 	vars := mux.Vars(r)
 	userBytes, err := base64.URLEncoding.DecodeString(vars["encoded_username"])
@@ -96,12 +89,6 @@ func (h *APIHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	// Auth
-	session := h.sessionStore.ValidateSession(w, r)
-	if !session.IsAuthenticated {
-		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
-		return
-	}
 	// Input validation
 	vars := mux.Vars(r)
 	userBytes, err := base64.URLEncoding.DecodeString(vars["encoded_username"])
@@ -165,12 +152,6 @@ func (h *APIHandler) GetDMs(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	// Auth
-	session := h.sessionStore.ValidateSession(w, r)
-	if !session.IsAuthenticated {
-		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
-		return
-	}
 	// Input validation
 	vars := mux.Vars(r)
 	cID, err := uuid.Parse(vars["conversation_id"])
@@ -238,12 +219,6 @@ func (h *APIHandler) SendDM(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	// Auth
-	session := h.sessionStore.ValidateSession(w, r)
-	if !session.IsAuthenticated {
-		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
-		return
-	}
 	// Input validation
 	vars := mux.Vars(r)
 	bytes, err := base64.URLEncoding.DecodeString(vars["encoded_username"])
@@ -305,12 +280,6 @@ func (h *APIHandler) ReadConversation(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	// Auth
-	session := h.sessionStore.ValidateSession(w, r)
-	if !session.IsAuthenticated {
-		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
-		return
-	}
 	// Input validation
 	vars := mux.Vars(r)
 	bytes, err := base64.URLEncoding.DecodeString(vars["encoded_username"])

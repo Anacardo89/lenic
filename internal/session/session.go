@@ -16,22 +16,22 @@ import (
 
 // TODO - Get this to Redis
 
-type SessionStore struct {
+type SessionManager struct {
 	ctx      context.Context
 	cfg      config.Session
 	mu       sync.Mutex
 	db       repo.DBRepository
 	store    *sessions.CookieStore
-	sessions map[string]*Session
+	sessions map[uuid.UUID]*Session
 }
 
-func NewSessionStore(ctx context.Context, cfg config.Session, db repo.DBRepository) *SessionStore {
-	return &SessionStore{
+func NewSessionStore(ctx context.Context, cfg config.Session, db repo.DBRepository) *SessionManager {
+	return &SessionManager{
 		ctx:      ctx,
 		cfg:      cfg,
 		db:       db,
 		store:    sessions.NewCookieStore([]byte(cfg.Secret)),
-		sessions: make(map[string]*Session),
+		sessions: make(map[uuid.UUID]*Session),
 	}
 }
 
@@ -44,26 +44,11 @@ type Session struct {
 	UpdatedAt       time.Time              `json:"updated_at"`
 }
 
-func (s *SessionStore) Store() *sessions.CookieStore {
+func (s *SessionManager) Store() *sessions.CookieStore {
 	return s.store
 }
 
-func (s *SessionStore) DeleteSession(w http.ResponseWriter, r *http.Request) error {
-	lenicSession, err := s.store.Get(r, "lenic_session")
-	if err != nil {
-		return err
-	}
-	sessionID := lenicSession.Values["session_id"]
-	s.mu.Lock()
-	delete(s.sessions, sessionID.(uuid.UUID).String())
-	s.mu.Unlock()
-
-	lenicSession.Options.MaxAge = -1
-	err = lenicSession.Save(r, w)
-	return err
-}
-
-func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request, userID uuid.UUID) (*Session, error) {
+func (s *SessionManager) CreateSession(w http.ResponseWriter, r *http.Request, userID uuid.UUID) (*Session, error) {
 	lenicSession, err := s.store.Get(r, "lenic_session")
 	if err != nil {
 		return nil, err
@@ -87,14 +72,14 @@ func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request, use
 		UpdatedAt:       time.Now(),
 	}
 	s.mu.Lock()
-	s.sessions[userID.String()] = session
+	s.sessions[sessionID] = session
 	s.mu.Unlock()
 	return session, nil
 }
 
-func (s *SessionStore) ValidateSession(w http.ResponseWriter, r *http.Request) *Session {
+func (s *SessionManager) ValidateSession(w http.ResponseWriter, r *http.Request) *Session {
 	// Error handling
-	deleteSession := func(sessionID string) {
+	deleteSession := func(sessionID uuid.UUID) {
 		s.mu.Lock()
 		delete(s.sessions, sessionID)
 		s.mu.Unlock()
@@ -107,25 +92,29 @@ func (s *SessionStore) ValidateSession(w http.ResponseWriter, r *http.Request) *
 	if err != nil {
 		return nil
 	}
-	sessionID, ok := lenicSession.Values["session_id"]
+	sessionIDVal, ok := lenicSession.Values["session_id"]
 	if !ok {
 		return session
 	}
+	sessionID, err := uuid.Parse(sessionIDVal.(string))
+	if err != nil {
+		return session
+	}
 	s.mu.Lock()
-	session, ok = s.sessions[sessionID.(uuid.UUID).String()]
+	session, ok = s.sessions[sessionID]
 	s.mu.Unlock()
 	if !ok {
 		return session
 	}
-	if time.Now().After(session.UpdatedAt.Add(time.Duration(24) * time.Hour)) {
-		deleteSession(sessionID.(uuid.UUID).String())
+	if time.Now().After(session.UpdatedAt.Add(s.cfg.Duration)) {
+		deleteSession(sessionID)
 		lenicSession.Options.MaxAge = -1
 		lenicSession.Save(r, w)
 		return session
 	}
 	dbUser, err := s.db.GetUserByID(r.Context(), session.User.ID)
 	if err != nil {
-		deleteSession(sessionID.(uuid.UUID).String())
+		deleteSession(sessionID)
 		lenicSession.Options.MaxAge = -1
 		lenicSession.Save(r, w)
 		return session
@@ -136,7 +125,26 @@ func (s *SessionStore) ValidateSession(w http.ResponseWriter, r *http.Request) *
 	session.UpdatedAt = time.Now()
 
 	s.mu.Lock()
-	s.sessions[sessionID.(uuid.UUID).String()] = session
+	s.sessions[sessionID] = session
 
 	return session
+}
+
+func (s *SessionManager) DeleteSession(w http.ResponseWriter, r *http.Request) error {
+	lenicSession, err := s.store.Get(r, "lenic_session")
+	if err != nil {
+		return err
+	}
+	sessionIDVal := lenicSession.Values["session_id"]
+	sessionID, err := uuid.Parse(sessionIDVal.(string))
+	if err != nil {
+		return err
+	}
+	s.mu.Lock()
+	delete(s.sessions, sessionID)
+	s.mu.Unlock()
+
+	lenicSession.Options.MaxAge = -1
+	err = lenicSession.Save(r, w)
+	return err
 }

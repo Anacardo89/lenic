@@ -77,7 +77,7 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 // /action/activate
 func (h *APIHandler) ActivateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	encoded := vars["encoded_user_name"]
+	encoded := vars["encoded_username"]
 	bytes, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
 		logger.Error.Println("/action/activate - Could not decode user: ", err)

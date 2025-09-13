@@ -53,12 +53,12 @@ func (h *APIHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	h.sessionStore.CreateSession(w, r, uDB.ID)
+	h.sm.CreateSession(w, r, uDB.ID)
 	w.WriteHeader(http.StatusOK)
 }
 
 // /action/logout
 func (h *APIHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	h.sessionStore.DeleteSession(w, r)
+	h.sm.DeleteSession(w, r)
 	redirect.RedirIndex(w, r)
 }

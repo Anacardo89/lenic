@@ -14,37 +14,52 @@ import (
 
 // GET /action/user/{user_encoded}/notifications
 func (h *APIHandler) GetNotifs(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	encoded := vars["encoded_username"]
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
 
-	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	// Execution
+	// Input validation
+	vars := mux.Vars(r)
+	bytes, err := base64.URLEncoding.DecodeString(vars["encoded_username"])
 	if err != nil {
-		logger.Error.Printf("GET /action/user/%s/notifications - Could not decode user: %s\n", encoded, err)
+		fail("could not decode user", err, true, http.StatusBadRequest, "invalid user")
 		return
 	}
-	userName := string(bytes)
+	username := string(bytes)
+	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+	if err != nil {
+		fail("could not decode offset", err, true, http.StatusBadRequest, "invalid params")
+		return
+	}
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil {
+		fail("could not decode limit", err, true, http.StatusBadRequest, "invalid params")
+		return
+	}
 
-	uDB, err := h.db.GetUserByUserName(h.ctx, userName)
+	//
+	//
+	// Continue working here
+	//
+	//
+
+	uDB, err := h.db.GetUserByUserName(h.ctx, username)
 	if err != nil {
 		logger.Error.Printf("GET /action/user/%s/notifications - Could not get user: %s\n", encoded, err)
 		return
 	}
 	u := models.FromDBUserNotif(uDB)
-
-	queryParams := r.URL.Query()
-	offsetStr := queryParams.Get("offset")
-	offset, err := strconv.Atoi(offsetStr)
-	if err != nil {
-		logger.Error.Printf("GET /action/user/%s/notifications - Could not parse offset to int: %s\n", encoded, err)
-		return
-	}
-
-	limitStr := queryParams.Get("limit")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		logger.Error.Printf("GET /action/user/%s/notifications - Could not parse limit to int: %s\n", encoded, err)
-		return
-	}
 
 	dbNotifs, err := h.db.GetNotificationsByUser(h.ctx, u.ID, limit, offset)
 	if err != nil {

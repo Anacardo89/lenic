@@ -9,18 +9,18 @@ import (
 )
 
 type PageHandler struct {
-	ctx          context.Context
-	db           repo.DBRepository
-	sessionStore *session.SessionStore
-	log          *logger.Logger
+	ctx context.Context
+	log *logger.Logger
+	db  repo.DBRepository
+	sm  *session.SessionManager
 }
 
-func NewHandler(ctx context.Context, l *logger.Logger, db repo.DBRepository, sessionStore *session.SessionStore) *PageHandler {
+func NewHandler(ctx context.Context, l *logger.Logger, db repo.DBRepository, sm *session.SessionManager) *PageHandler {
 	return &PageHandler{
-		ctx:          ctx,
-		log:          l,
-		db:           db,
-		sessionStore: sessionStore,
+		ctx: ctx,
+		log: l,
+		db:  db,
+		sm:  sm,
 	}
 }
 

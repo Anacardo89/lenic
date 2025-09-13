@@ -17,7 +17,7 @@ type APIHandler struct {
 	cfg          *config.Server
 	db           repo.DBRepository
 	tokenManager *auth.TokenManager
-	sessionStore *session.SessionStore
+	sm           *session.SessionManager
 	wsHandler    *wshandle.WSHandler
 	mail         *mail.Client
 	log          *logger.Logger
@@ -29,7 +29,7 @@ func NewHandler(
 	cfg *config.Server,
 	db repo.DBRepository,
 	tm *auth.TokenManager,
-	sessionStore *session.SessionStore,
+	sm *session.SessionManager,
 	wsHandler *wshandle.WSHandler,
 	mail *mail.Client,
 ) *APIHandler {
@@ -39,7 +39,7 @@ func NewHandler(
 		log:          l,
 		db:           db,
 		tokenManager: tm,
-		sessionStore: sessionStore,
+		sm:           sm,
 		wsHandler:    wsHandler,
 		mail:         mail,
 	}

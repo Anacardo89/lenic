@@ -7,8 +7,10 @@ import (
 	"strings"
 
 	"github.com/Anacardo89/lenic/internal/helpers"
+	"github.com/Anacardo89/lenic/internal/middleware"
 	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/internal/server/wshandle"
+	"github.com/Anacardo89/lenic/internal/session"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
@@ -34,10 +36,10 @@ func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	// Auth
-	session := h.sessionStore.ValidateSession(w, r)
-	if !session.IsAuthenticated {
-		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
+	// Get Session
+	session, ok := r.Context().Value(middleware.CtxKeySession).(*session.Session)
+	if !ok {
+		fail("session type mismatch", errors.New("session type mismatch"), true, http.StatusUnauthorized, "invalid session")
 		return
 	}
 	// Input validation
@@ -118,10 +120,10 @@ func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	// Auth
-	session := h.sessionStore.ValidateSession(w, r)
-	if !session.IsAuthenticated {
-		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
+	// Get session
+	session, ok := r.Context().Value(middleware.CtxKeySession).(*session.Session)
+	if !ok {
+		fail("session type mismatch", errors.New("session type mismatch"), true, http.StatusUnauthorized, "invalid session")
 		return
 	}
 	// Input validation
@@ -196,12 +198,6 @@ func (h *APIHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	// Auth
-	session := h.sessionStore.ValidateSession(w, r)
-	if !session.IsAuthenticated {
-		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
-		return
-	}
 	// Input validation
 	vars := mux.Vars(r)
 	cID, err := uuid.Parse(vars["comment_id"])
@@ -254,10 +250,10 @@ func (h *APIHandler) RateCommentUp(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	// Auth
-	session := h.sessionStore.ValidateSession(w, r)
-	if !session.IsAuthenticated {
-		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
+	// Get session
+	session, ok := r.Context().Value(middleware.CtxKeySession).(*session.Session)
+	if !ok {
+		fail("session type mismatch", errors.New("session type mismatch"), true, http.StatusUnauthorized, "invalid session")
 		return
 	}
 	// Input validation
@@ -294,10 +290,10 @@ func (h *APIHandler) RateCommentDown(w http.ResponseWriter, r *http.Request) {
 	//
 
 	// Execution
-	// Auth
-	session := h.sessionStore.ValidateSession(w, r)
-	if !session.IsAuthenticated {
-		fail("unauthorized", errors.New("unauthorized"), true, http.StatusUnauthorized, "unauthorized")
+	// Get session
+	session, ok := r.Context().Value(middleware.CtxKeySession).(*session.Session)
+	if !ok {
+		fail("session type mismatch", errors.New("session type mismatch"), true, http.StatusUnauthorized, "invalid session")
 		return
 	}
 	// Input validation
