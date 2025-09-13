@@ -3,7 +3,6 @@ module github.com/Anacardo89/lenic
 go 1.25.0
 
 require (
-	github.com/Anacardo89/fizzbuzz-api v0.0.0-20250824160135-98cafbb05c0d
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0

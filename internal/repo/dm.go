@@ -49,6 +49,38 @@ func (db *dbHandler) GetConversation(ctx context.Context, ID uuid.UUID) (*Conver
 	return &conv, err
 }
 
+func (db *dbHandler) GetConversationAndSender(ctx context.Context, conversationID uuid.UUID, username string) (*Conversation, *User, error) {
+	query := `
+		SELECT 
+		c.id AS conversation_id,
+		c.user1_id,
+		c.user2_id,
+		c.created_at,
+		c.updated_at,
+		u.id AS user_id,
+		u.username,
+		u.profile_pic
+	FROM conversations c
+	JOIN users u
+		ON u.username = $2
+	WHERE c.id = $1
+		AND (u.id = c.user1_id OR u.id = c.user2_id);
+	;`
+
+	var c Conversation
+	var u User
+	err := db.pool.QueryRow(ctx, query, conversationID, username).Scan(
+		&c.ID,
+		&c.User1ID,
+		&c.User2ID,
+		&c.CreatedAt,
+		&u.ID,
+		&u.UserName,
+		&u.ProfilePic,
+	)
+	return &c, &u, err
+}
+
 func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 string) (*Conversation, []*User, error) {
 	query := `
 	WITH u AS (
@@ -403,6 +435,21 @@ func (db *dbHandler) GetDMsByConversation(ctx context.Context, conersationID uui
 		dms = append(dms, &dm)
 	}
 	return dms, nil
+}
+
+func (db *dbHandler) ReadAllReceivedDMsInConvo(ctx context.Context, conversationID uuid.UUID, username string) error {
+	query := `
+		UPDATE dmessages m
+		SET is_read = TRUE
+		FROM users u
+		WHERE u.username = $2
+			AND m.conversation_id = $1
+			AND m.sender_id != u.id
+			AND m.is_read = FALSE;
+	;`
+
+	_, err := db.pool.Exec(ctx, query, conversationID, username)
+	return err
 }
 
 func (db *dbHandler) UpdateDMRead(ctx context.Context, ID uuid.UUID) error {

@@ -3,64 +3,62 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
-	"io"
 	"net/http"
 
-	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
 	"github.com/Anacardo89/lenic/pkg/crypto"
-	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
 type LoginRequest struct {
-	UserName     string `json:"user_name"`
-	UserPassword string `json:"user_password"`
+	Username string `json:"name"`
+	Password string `json:"password"`
 }
 
 // /action/login
 func (h *APIHandler) Login(w http.ResponseWriter, r *http.Request) {
-	var (
-		err      error
-		loginReq LoginRequest
-	)
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
 
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		logger.Error.Println("/action/login - Error reading body:", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	// Execution
+	// Input validation
+	var body LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		fail("could not parse JSON from body", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-
-	err = json.Unmarshal(body, &loginReq)
-	if err != nil {
-		logger.Error.Println("/action/login - Could not decode JSON: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
-
-	uDB, err := h.db.GetUserByUserName(h.ctx, loginReq.UserName)
+	// DB operations
+	uDB, err := h.db.GetUserByUserName(h.ctx, body.Username)
 	if err == sql.ErrNoRows {
-		http.Error(w, "User does not exist", http.StatusBadRequest)
+		fail("dberr - could not get user", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-	u := models.FromDBUser(uDB)
-	if !u.IsActive {
-		http.Error(w, "User is not active, check your mail", http.StatusBadRequest)
+	// Validation
+	if !uDB.IsActive {
+		fail("user is inactive", err, true, http.StatusUnauthorized, "inactive user")
 		return
 	}
-	u.Pass = loginReq.UserPassword
-	if !crypto.ValidatePassword(u.PasswordHash, u.Pass) {
-		http.Error(w, "Password does not match", http.StatusBadRequest)
+	if !crypto.ValidatePassword(uDB.PasswordHash, body.Password) {
+		fail("wrong password", err, true, http.StatusUnauthorized, "wring password")
 		return
 	}
-	h.sessionStore.CreateSession(w, r, u.ID)
-
+	// Response
+	h.sessionStore.CreateSession(w, r, uDB.ID)
 	w.WriteHeader(http.StatusOK)
 }
 
 // /action/logout
 func (h *APIHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	h.sessionStore.DeleteSession(r)
+	h.sessionStore.DeleteSession(w, r)
 	redirect.RedirIndex(w, r)
 }

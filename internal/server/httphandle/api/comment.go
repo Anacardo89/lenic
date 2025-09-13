@@ -17,7 +17,7 @@ type AddCommentResponse struct {
 	ID string `json:"id"`
 }
 
-// POST /action/post/{Post_GUID}/comment
+// POST /action/post/{post_id}/comment
 func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -101,7 +101,7 @@ func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-// PUT /action/post/{Post_GUID}/comment/{comment_id}
+// PUT /action/post/{post_id}/comment/{comment_id}
 func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -179,7 +179,7 @@ func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// DELETE /action/post/{Post_GUID}/comment/{comment_id}
+// DELETE /action/post/{post_id}/comment/{comment_id}
 func (h *APIHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -237,7 +237,7 @@ func (h *APIHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// POST /action/post/{Post_GUID}/comment/{comment_id}/up
+// POST /action/post/{post_id}/comment/{comment_id}/up
 func (h *APIHandler) RateCommentUp(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -277,7 +277,7 @@ func (h *APIHandler) RateCommentUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// POST /action/post/{Post_GUID}/comment/{comment_id}/down
+// POST /action/post/{post_id}/comment/{comment_id}/down
 func (h *APIHandler) RateCommentDown(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {

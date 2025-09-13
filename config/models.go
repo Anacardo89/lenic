@@ -37,8 +37,8 @@ type DB struct {
 }
 
 type Log struct {
-	Path       string `env:"LOG_PATH" envDefault:"/fizzbuzz-api/logs"`
-	File       string `env:"LOG_FILE" envDefault:"fizzbuzz-api.log"`
+	Path       string `env:"LOG_PATH" envDefault:"/lenic/logs"`
+	File       string `env:"LOG_FILE" envDefault:"lenic.log"`
 	Level      string `env:"LOG_LEVEL" envDefault:"info"`
 	MaxSize    int    `yaml:"max_size"` // MB
 	MaxBackups int    `yaml:"max_backups"`

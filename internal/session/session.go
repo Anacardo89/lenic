@@ -10,10 +10,11 @@ import (
 	"github.com/Anacardo89/lenic/internal/repo"
 
 	"github.com/Anacardo89/lenic/internal/models"
-	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 )
+
+// TODO - Get this to Redis
 
 type SessionStore struct {
 	ctx      context.Context
@@ -27,6 +28,7 @@ type SessionStore struct {
 func NewSessionStore(ctx context.Context, cfg config.Session, db repo.DBRepository) *SessionStore {
 	return &SessionStore{
 		ctx:      ctx,
+		cfg:      cfg,
 		db:       db,
 		store:    sessions.NewCookieStore([]byte(cfg.Secret)),
 		sessions: make(map[string]*Session),
@@ -46,39 +48,35 @@ func (s *SessionStore) Store() *sessions.CookieStore {
 	return s.store
 }
 
-func (s *SessionStore) DeleteSession(r *http.Request) {
+func (s *SessionStore) DeleteSession(w http.ResponseWriter, r *http.Request) error {
 	lenicSession, err := s.store.Get(r, "lenic_session")
 	if err != nil {
-		logger.Error.Println(err)
+		return err
 	}
 	sessionID := lenicSession.Values["session_id"]
 	s.mu.Lock()
-	delete(s.sessions, sessionID)
+	delete(s.sessions, sessionID.(uuid.UUID).String())
 	s.mu.Unlock()
 
 	lenicSession.Options.MaxAge = -1
 	err = lenicSession.Save(r, w)
-	if err != nil {
-		logger.Error.Println(err)
-	}
-
-	return
+	return err
 }
 
-func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request, userID uuid.UUID) *Session {
+func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request, userID uuid.UUID) (*Session, error) {
 	lenicSession, err := s.store.Get(r, "lenic_session")
 	if err != nil {
-		logger.Error.Println(err)
+		return nil, err
 	}
 	sessionID := uuid.New()
 	lenicSession.Values["session_id"] = sessionID
 	err = lenicSession.Save(r, w)
 	if err != nil {
-		logger.Error.Println(err)
+		return nil, err
 	}
 	dbUser, err := s.db.GetUserByID(s.ctx, userID)
 	if err != nil {
-		logger.Error.Println(err)
+		return nil, err
 	}
 	u := models.FromDBUser(dbUser)
 
@@ -89,9 +87,9 @@ func (s *SessionStore) CreateSession(w http.ResponseWriter, r *http.Request, use
 		UpdatedAt:       time.Now(),
 	}
 	s.mu.Lock()
-	s.sessions[userID] = session
+	s.sessions[userID.String()] = session
 	s.mu.Unlock()
-	return session
+	return session, nil
 }
 
 func (s *SessionStore) ValidateSession(w http.ResponseWriter, r *http.Request) *Session {
@@ -107,27 +105,27 @@ func (s *SessionStore) ValidateSession(w http.ResponseWriter, r *http.Request) *
 	session := &Session{IsAuthenticated: false}
 	lenicSession, err := s.store.Get(r, "lenic_session")
 	if err != nil {
-		logger.Error.Println(err)
+		return nil
 	}
 	sessionID, ok := lenicSession.Values["session_id"]
 	if !ok {
 		return session
 	}
 	s.mu.Lock()
-	session, ok = s.sessions[sessionID]
+	session, ok = s.sessions[sessionID.(uuid.UUID).String()]
 	s.mu.Unlock()
 	if !ok {
 		return session
 	}
 	if time.Now().After(session.UpdatedAt.Add(time.Duration(24) * time.Hour)) {
-		deleteSession(sessionID)
+		deleteSession(sessionID.(uuid.UUID).String())
 		lenicSession.Options.MaxAge = -1
 		lenicSession.Save(r, w)
 		return session
 	}
-	dbUser, err := s.db.GetUserByID(s.ctx, &session.User.ID)
+	dbUser, err := s.db.GetUserByID(r.Context(), session.User.ID)
 	if err != nil {
-		deleteSession(sessionID)
+		deleteSession(sessionID.(uuid.UUID).String())
 		lenicSession.Options.MaxAge = -1
 		lenicSession.Save(r, w)
 		return session
@@ -138,7 +136,7 @@ func (s *SessionStore) ValidateSession(w http.ResponseWriter, r *http.Request) *
 	session.UpdatedAt = time.Now()
 
 	s.mu.Lock()
-	s.sessions[sessionID] = session
+	s.sessions[sessionID.(uuid.UUID).String()] = session
 
 	return session
 }

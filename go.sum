@@ -1,5 +1,3 @@
-github.com/Anacardo89/fizzbuzz-api v0.0.0-20250824160135-98cafbb05c0d h1:HNfaTW4eR2a9AnSpMH34C4LcxSJutnvj5vFiJk18B0Q=
-github.com/Anacardo89/fizzbuzz-api v0.0.0-20250824160135-98cafbb05c0d/go.mod h1:UOqCU7IOkvo5C2QoZUsD3hC4xHtL3VxtuhoXWoIeapw=
 github.com/BurntSushi/toml v1.5.0 h1:W5quZX/G/csjUnuI8SUYlsHs9M38FC7znL0lIO+DvMg=
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/caarlos0/env/v9 v9.0.0 h1:SI6JNsOA+y5gj9njpgybykATIylrRMklbs5ch6wO6pc=
