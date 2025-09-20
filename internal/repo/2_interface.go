@@ -18,13 +18,13 @@ type DBRepository interface {
 	SearchUsersByUserName(ctx context.Context, username string) ([]*User, error)
 	SearchUsersByDisplayName(ctx context.Context, displayName string) ([]*User, error)
 	SetUserActive(ctx context.Context, userName string) error
-	SetNewPassword(ctx context.Context, userName, passHash string) error
+	SetNewPassword(ctx context.Context, userID uuid.UUID, passHash string) error
 	UpdateProfilePic(ctx context.Context, userName string, profilePic string) error
 
 	// Follows
-	FollowUser(ctx context.Context, followerID, followedID uuid.UUID) error
-	AcceptFollow(ctx context.Context, followerID, followedID uuid.UUID) error
-	UnfollowUser(ctx context.Context, followerID, followedID uuid.UUID) error
+	FollowUser(ctx context.Context, followerID uuid.UUID, followedUsername string) error
+	AcceptFollow(ctx context.Context, followerName, followedName string) error
+	UnfollowUser(ctx context.Context, followerName, followedName string) error
 	GetUserFollows(ctx context.Context, followerID, followedID uuid.UUID) (*Follows, error)
 	GetFollowers(ctx context.Context, followedID uuid.UUID) ([]*Follows, error)
 	GetFollowing(ctx context.Context, followerID uuid.UUID) ([]*Follows, error)
@@ -36,7 +36,7 @@ type DBRepository interface {
 	GetUserPublicPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error)
 	GetPost(ctx context.Context, ID uuid.UUID) (*Post, error)
 	UpdatePost(ctx context.Context, post *Post) error
-	DisablePost(ctx context.Context, ID uuid.UUID) error
+	DisablePost(ctx context.Context, ID uuid.UUID) (*Post, error)
 
 	// Post Ratings
 	RatePostUp(ctx context.Context, targetID, userID uuid.UUID) error
@@ -58,7 +58,9 @@ type DBRepository interface {
 	// Notifications
 	CreateNotification(ctx context.Context, n *Notification) (uuid.UUID, error)
 	GetFollowNotification(ctx context.Context, userID, fromUserID uuid.UUID) (*Notification, error)
+	DeleteFollowNotification(ctx context.Context, username, fromUsername string) error
 	GetNotification(ctx context.Context, ID uuid.UUID) (*Notification, error)
+	GetUserNotifs(ctx context.Context, username string, limit, offset int) ([]*NotificationWithUsers, error)
 	GetNotificationsByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*Notification, error)
 	UpdateNotificationRead(ctx context.Context, ID uuid.UUID) error
 	DeleteNotification(ctx context.Context, ID uuid.UUID) error

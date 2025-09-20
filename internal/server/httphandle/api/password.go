@@ -2,138 +2,160 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/pkg/crypto"
-	"github.com/Anacardo89/lenic/pkg/logger"
+	"github.com/google/uuid"
 )
 
 // POST /action/forgot-password
 func (h *APIHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
-	// Parse Form
-	err := r.ParseForm()
-	if err != nil {
-		logger.Error.Println("POST /action/forgot-password - Could not parse Form: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
+	// Input validation
+	if err := r.ParseForm(); err != nil {
+		fail("could not parse form", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-	mail := r.FormValue("user_email")
-	// Get user from DB
-	dbuser, err := h.db.GetUserByEmail(h.ctx, mail)
+	// DB operations
+	uDB, err := h.db.GetUserByEmail(h.ctx, r.FormValue("user_email"))
 	if err == sql.ErrNoRows {
-		http.Error(w, "No user with that email", http.StatusBadRequest)
+		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-
-	token, err := h.tokenManager.GenerateToken(dbuser.ID)
+	// Generate token
+	token, err := h.tokenManager.GenerateToken(uDB.ID.String())
 	if err != nil {
-		logger.Error.Println("POST /action/forgot-password - Could not generate token: ", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		fail("could not generate token", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
-
-	mailSubject, mailBody := helpers.BuildPasswordRecoveryMail(h.mail.Host, string(h.mail.Port), dbuser.UserName, token)
-	errs := h.mail.Send([]string{dbuser.Email}, mailSubject, mailBody)
+	// Send recovery email
+	mailSubject, mailBody := helpers.BuildPasswordRecoveryMail(h.mail.Host, string(h.mail.Port), uDB.UserName, token)
+	errs := h.mail.Send([]string{uDB.Email}, mailSubject, mailBody)
 	if len(errs) != 0 {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		for _, err := range errs {
+			fail("could not send password recovery email", err, true, http.StatusInternalServerError, "internal error")
+		}
 		return
 	}
+	// Response
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
 // /action/recover-password
 func (h *APIHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
-	// Parse Form
-	err := r.ParseForm()
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
+	// Input validation
+	if err := r.ParseForm(); err != nil {
+		fail("could not parse form", err, true, http.StatusBadRequest, "invalid params")
+		return
+	}
+	if r.FormValue("password") != r.FormValue("password2") {
+		fail("passwords do not match", errors.New("passwords do not match"), true, http.StatusBadRequest, "passwords do not match")
+		return
+	}
+	claims, err := h.tokenManager.ValidateToken(r.FormValue("token"))
 	if err != nil {
-		logger.Error.Println("/action/recover-password - Could not parse Form: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		fail("invalid token", err, true, http.StatusUnauthorized, "invalid token")
 		return
 	}
-	token := r.FormValue("token")
-	password := r.FormValue("password")
-	password2 := r.FormValue("password2")
-
-	claims, err := h.tokenManager.ValidateToken(token)
+	uID, err := uuid.Parse(claims.UserID)
 	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		fail("could not decode user", err, true, http.StatusBadRequest, "invalid user")
 		return
 	}
-
-	dbuser, err := h.db.GetUserByID(h.ctx, claims.UserID)
+	// Hash password
+	hashed, err := crypto.HashPassword(r.FormValue("password"))
 	if err != nil {
-		logger.Error.Println("/action/recover-password - Could not get db user: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		fail("could not hash password", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
-
-	if password != password2 {
-		http.Error(w, "Password strings don't match", http.StatusBadRequest)
+	// DB operations
+	if err := h.db.SetNewPassword(h.ctx, uID, hashed); err != nil {
+		fail("dberr: could not set password", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
-
-	hashed, err := crypto.HashPassword(password)
-	if err != nil {
-		logger.Error.Println("/action/recover-password - Could not hash password: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = h.db.SetNewPassword(h.ctx, dbuser.UserName, hashed)
-	if err != nil {
-		logger.Error.Println("/action/recover-password - Could not set new password: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
+	// Response
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }
 
 // /action/change-password
 func (h *APIHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
-	// Parse Form
-	err := r.ParseMultipartForm(10 << 20)
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
+	// Input validation
+	if err := r.ParseForm(); err != nil {
+		fail("could not parse form", err, true, http.StatusBadRequest, "invalid params")
+		return
+	}
+	if r.FormValue("password") != r.FormValue("password2") {
+		fail("passwords do not match", errors.New("passwords do not match"), true, http.StatusBadRequest, "passwords do not match")
+		return
+	}
+	// Get user from DB
+	uDB, err := h.db.GetUserByUserName(r.Context(), r.FormValue("user_name"))
 	if err != nil {
-		logger.Error.Println("/action/change-password - Could not parse form: ", err)
-		http.Error(w, "Unable to parse form", http.StatusBadRequest)
+		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid user")
 		return
 	}
-	username := r.FormValue("user_name")
-	old_password := r.FormValue("old_password")
-	password := r.FormValue("password")
-	password2 := r.FormValue("password2")
-
-	dbUser, err := h.db.GetUserByUserName(h.ctx, username)
+	// Validate old password
+	if !crypto.ValidatePassword(uDB.PasswordHash, r.FormValue("old_password")) {
+		fail("wrong password", err, true, http.StatusUnauthorized, "wrong password")
+		return
+	}
+	// Hash new password
+	hashed, err := crypto.HashPassword(r.FormValue("password"))
 	if err != nil {
-		logger.Error.Println("/action/change-password - Could not get user: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		fail("could not hash password", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
-
-	if !crypto.ValidatePassword(dbUser.PasswordHash, old_password) {
-		logger.Error.Println("/action/change-password - old password doesn't match, User: ", username)
-		http.Error(w, "old password doesn't match", http.StatusBadRequest)
+	// Set new password
+	if err := h.db.SetNewPassword(h.ctx, uDB.ID, hashed); err != nil {
+		fail("dberr: could not set password", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
-
-	if password != password2 {
-		http.Error(w, "Password strings don't match", http.StatusBadRequest)
-		return
-	}
-
-	hashed, err := crypto.HashPassword(password)
-	if err != nil {
-		logger.Error.Println("/action/change-password - Could not hash password: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = h.db.SetNewPassword(h.ctx, username, hashed)
-	if err != nil {
-		logger.Error.Println("/action/change-password - Could not set new password: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// Response
 	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
 }

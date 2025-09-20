@@ -67,6 +67,7 @@ func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 				mention = strings.TrimLeft(mention, "@")
 				u, err := h.db.GetUserByUserName(h.ctx, mention)
 				if err != nil {
+					fail("dberr: could not get user", err, false, http.StatusInternalServerError, "")
 					continue
 				}
 				ut := &repo.UserTag{
@@ -76,7 +77,7 @@ func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 				}
 				err = h.db.CreateUserTag(h.ctx, ut)
 				if err != nil {
-					fail("dberr - could not insert usertag", err, false, http.StatusInternalServerError, "")
+					fail("dberr: could not insert usertag", err, false, http.StatusInternalServerError, "")
 					continue
 				}
 				wsMsg := wshandle.Message{
@@ -208,10 +209,10 @@ func (h *APIHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	// DB operations
 	c, err := h.db.DisableComment(r.Context(), cID)
 	if err != nil {
-		fail("dberr - could not disable comment", err, true, http.StatusInternalServerError, "internal error")
+		fail("dberr: could not disable comment", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-	// delete user mentions
+	// Delete user mentions
 	mentions := helpers.ParseAtString(c.Content)
 	if len(mentions) > 0 {
 		go func() {
@@ -266,7 +267,7 @@ func (h *APIHandler) RateCommentUp(w http.ResponseWriter, r *http.Request) {
 	// DB operations
 	err = h.db.RateCommentUp(r.Context(), cID, session.User.ID)
 	if err != nil {
-		fail("dberr - ould not update comment rating", err, true, http.StatusInternalServerError, "internal error")
+		fail("dberr: could not update comment rating", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
 	// Response
@@ -306,7 +307,7 @@ func (h *APIHandler) RateCommentDown(w http.ResponseWriter, r *http.Request) {
 	// DB operations
 	err = h.db.RateCommentDown(r.Context(), cID, session.User.ID)
 	if err != nil {
-		fail("dberr - ould not update comment rating", err, true, http.StatusInternalServerError, "internal error")
+		fail("dberr - ould not update comment rating", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
 	// Response

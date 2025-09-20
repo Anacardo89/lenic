@@ -61,6 +61,27 @@ func (db *dbHandler) GetFollowNotification(ctx context.Context, userID, fromUser
 	return &n, err
 }
 
+func (db *dbHandler) DeleteFollowNotification(ctx context.Context, username, fromUsername string) error {
+	query := `
+	DELETE FROM notifications
+	WHERE notif_type = 'follow_request'
+		AND user_id = 
+			(
+				SELECT id 
+				FROM users 
+				WHERE username = $1
+			)
+		AND from_user_id = 
+			(
+				SELECT id 
+				FROM users 
+				WHERE username = $2
+			)
+	;`
+	_, err := db.pool.Exec(ctx, query, username, fromUsername)
+	return err
+}
+
 func (db *dbHandler) GetNotification(ctx context.Context, ID uuid.UUID) (*Notification, error) {
 
 	query := `
@@ -84,6 +105,70 @@ func (db *dbHandler) GetNotification(ctx context.Context, ID uuid.UUID) (*Notifi
 			&n.UpdatedAt,
 		)
 	return &n, err
+}
+
+func (db *dbHandler) GetUserNotifs(ctx context.Context, username string, limit, offset int) ([]*NotificationWithUsers, error) {
+
+	query := `
+	SELECT 
+		n.id,
+		n.notif_type,
+		n.notif_text,
+		n.resource_id,
+		n.parent_id,
+		n.is_read,
+		n.created_at,
+		n.updated_at,
+		u.id          AS user_id,
+		u.username    AS user_username,
+		u.profile_pic AS user_profile_pic,
+		fu.id          AS from_user_id,
+		fu.username    AS from_user_username,
+		fu.profile_pic AS from_user_profile_pic
+	FROM notifications n
+	JOIN users u 
+		ON n.user_id = u.id
+	JOIN users fu 
+		ON n.from_user_id = fu.id
+	WHERE u.username = $1
+	ORDER BY n.created_at DESC
+	LIMIT $2 OFFSET $3
+	;`
+
+	notifs := []*NotificationWithUsers{}
+	rows, err := db.pool.Query(ctx, query, username, limit, offset)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return notifs, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		n := NotificationWithUsers{}
+		err = rows.Scan(
+			&n.Notification.ID,
+			&n.Notification.NotifType,
+			&n.Notification.NotifText,
+			&n.Notification.ResourceID,
+			&n.Notification.ParentID,
+			&n.Notification.IsRead,
+			&n.Notification.CreatedAt,
+			&n.Notification.UpdatedAt,
+			&n.User.ID,
+			&n.User.UserName,
+			&n.User.ProfilePic,
+			&n.FromUser.ID,
+			&n.FromUser.UserName,
+			&n.FromUser.ProfilePic,
+		)
+		if err != nil {
+			return nil, err
+		}
+		notifs = append(notifs, &n)
+	}
+	return notifs, nil
 }
 
 func (db *dbHandler) GetNotificationsByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*Notification, error) {

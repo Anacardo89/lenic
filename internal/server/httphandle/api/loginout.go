@@ -39,9 +39,14 @@ func (h *APIHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	// DB operations
 	uDB, err := h.db.GetUserByUserName(h.ctx, body.Username)
-	if err == sql.ErrNoRows {
-		fail("dberr - could not get user", err, true, http.StatusBadRequest, "invalid params")
-		return
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid params")
+			return
+		} else {
+			fail("dberr: could not get user", err, true, http.StatusInternalServerError, "internal error")
+			return
+		}
 	}
 	// Validation
 	if !uDB.IsActive {
@@ -49,7 +54,7 @@ func (h *APIHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !crypto.ValidatePassword(uDB.PasswordHash, body.Password) {
-		fail("wrong password", err, true, http.StatusUnauthorized, "wring password")
+		fail("wrong password", err, true, http.StatusUnauthorized, "wrong password")
 		return
 	}
 	// Response

@@ -219,17 +219,24 @@ func (db *dbHandler) UpdatePost(ctx context.Context, post *Post) error {
 	return err
 }
 
-func (db *dbHandler) DisablePost(ctx context.Context, ID uuid.UUID) error {
-
+func (db *dbHandler) DisablePost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 	query := `
 	UPDATE posts
-	SET is_active = FALSE,
+	SET active = FALSE,
 		deleted_at = NOW()
 	WHERE id = $1
+	RETURNING
+		id,
+		title,
+		content
 	;`
-
-	_, err := db.pool.Exec(ctx, query, ID)
-	return err
+	var p Post
+	err := db.pool.QueryRow(ctx, query, ID).Scan(
+		&p.ID,
+		&p.Title,
+		&p.Content,
+	)
+	return &p, err
 }
 
 // Post Ratings
