@@ -31,7 +31,7 @@ type DBRepository interface {
 
 	// Posts
 	CreatePost(ctx context.Context, p *Post) (uuid.UUID, error)
-	GetFeed(ctx context.Context, userID uuid.UUID) ([]*Post, error)
+	GetFeed(ctx context.Context, username string) ([]*Post, error)
 	GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error)
 	GetUserPublicPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error)
 	GetPost(ctx context.Context, ID uuid.UUID) (*Post, error)
