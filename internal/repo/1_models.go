@@ -97,6 +97,12 @@ type Notification struct {
 	UpdatedAt  time.Time
 }
 
+type NotificationWithUsers struct {
+	Notification Notification
+	User         User
+	FromUser     User
+}
+
 // Tags
 type ResourceType int
 

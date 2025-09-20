@@ -3,31 +3,42 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
+)
+
+var (
+	ErrUserExists   = errors.New("user already exists")
+	ErrUserNotFound = errors.New("user not found")
 )
 
 // User
 func (db *dbHandler) CreateUser(ctx context.Context, u *User) (uuid.UUID, error) {
 	query := `
 	INSERT INTO users (
-		username, 
-		display_name, 
+		username,
 		email, 
 		password_hash
 	)
-	VALUES ($1, $2, $3, $4)
+	VALUES ($1, $2, $3)
 	RETURNING id
 	;`
 
 	var ID uuid.UUID
-	err := db.pool.QueryRow(ctx, query,
+	if err := db.pool.QueryRow(ctx, query,
 		u.UserName,
-		u.DisplayName,
 		u.Email,
 		u.PasswordHash,
-	).Scan(&ID)
-	return ID, err
+	).Scan(&ID); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" { // unique_violation
+			return uuid.Nil, ErrUserExists
+		}
+		return uuid.Nil, err
+	}
+	return ID, nil
 }
 
 func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, error) {
@@ -167,7 +178,10 @@ func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, e
 func (db *dbHandler) SearchUsersByUserName(ctx context.Context, username string) ([]*User, error) {
 
 	query := `
-	SELECT * 
+	SELECT
+		id,
+		username,
+		profile_pic
 	FROM users
 	WHERE username LIKE $1
 	;`
@@ -182,25 +196,12 @@ func (db *dbHandler) SearchUsersByUserName(ctx context.Context, username string)
 		return nil, err
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		u := User{}
 		err = rows.Scan(
 			&u.ID,
 			&u.UserName,
-			&u.DisplayName,
-			&u.Email,
-			&u.PasswordHash,
 			&u.ProfilePic,
-			&u.Bio,
-			&u.Followers,
-			&u.Following,
-			&u.IsActive,
-			&u.IsVerified,
-			&u.UserRole,
-			&u.CreatedAt,
-			&u.UpdatedAt,
-			&u.DeletedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -268,15 +269,13 @@ func (db *dbHandler) SetUserActive(ctx context.Context, userName string) error {
 	return err
 }
 
-func (db *dbHandler) SetNewPassword(ctx context.Context, userName, passHash string) error {
-
+func (db *dbHandler) SetNewPassword(ctx context.Context, userID uuid.UUID, passHash string) error {
 	query := `
 	UPDATE users
 	SET password_hash = $2
-	WHERE username = $1
+	WHERE id = $1
 	;`
-
-	_, err := db.pool.Exec(ctx, query, userName, passHash)
+	_, err := db.pool.Exec(ctx, query, userID, passHash)
 	return err
 }
 
@@ -293,41 +292,64 @@ func (db *dbHandler) UpdateProfilePic(ctx context.Context, userName string, prof
 }
 
 // Follow
-func (db *dbHandler) FollowUser(ctx context.Context, followerID, followedID uuid.UUID) error {
-
+func (db *dbHandler) FollowUser(ctx context.Context, followerID uuid.UUID, followedUsername string) error {
 	query := `
 	INSERT INTO follows (
 		follower_id,
 		followed_id
 	)
-	VALUES ($1, $2)
+	VALUES (
+		$1,
+		(
+			SELECT id
+			FROM users 
+			WHERE username = $2
+		)
+	)
+	ON CONFLICT (follower_id, followed_id) DO NOTHING;
 	;`
-
-	_, err := db.pool.Exec(ctx, query, followerID, followedID)
+	_, err := db.pool.Exec(ctx, query, followerID, followedUsername)
 	return err
 }
 
-func (db *dbHandler) AcceptFollow(ctx context.Context, followerID, followedID uuid.UUID) error {
-
+func (db *dbHandler) AcceptFollow(ctx context.Context, followerName, followedName string) error {
 	query := `
 	UPDATE follows
 	SET follow_status = 'accepted'
-	WHERE follower_id = $1 AND followed_id = $2
+	WHERE follower_id = 
+		(
+			SELECT id
+			FROM users 
+			WHERE username = $1
+		)
+		AND followed_id = 
+			(
+			SELECT id
+			FROM users 
+			WHERE username = $2
+		)
 	;`
-
-	_, err := db.pool.Exec(ctx, query, followerID, followedID)
+	_, err := db.pool.Exec(ctx, query, followerName, followedName)
 	return err
-
 }
 
-func (db *dbHandler) UnfollowUser(ctx context.Context, followerID, followedID uuid.UUID) error {
-
+func (db *dbHandler) UnfollowUser(ctx context.Context, followerName, followedName string) error {
 	query := `
 	DELETE FROM follows
-	WHERE follower_id = $1 AND followed_id = $2
+	WHERE follower_id = 
+		(
+			SELECT id 
+			FROM users 
+			WHERE username = $1
+		)
+		AND followed_id = 
+			(
+				SELECT id 
+				FROM users 
+				WHERE username = $2
+			)
 	;`
-
-	_, err := db.pool.Exec(ctx, query, followerID, followedID)
+	_, err := db.pool.Exec(ctx, query, followerName, followedName)
 	return err
 }
 
