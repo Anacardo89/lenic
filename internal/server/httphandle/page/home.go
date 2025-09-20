@@ -8,7 +8,6 @@ import (
 
 	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
 	"github.com/Anacardo89/lenic/internal/session"
-	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
 type HomePage struct {
@@ -16,11 +15,12 @@ type HomePage struct {
 }
 
 func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
-	feed := HomePage{}
-	feed.Session = h.sessionStore.ValidateSession(w, r)
+	feed := HomePage{
+		Session: h.sm.ValidateSession(w, r),
+	}
 	t, err := template.ParseFiles("templates/home.html")
 	if err != nil {
-		logger.Error.Println("/home - Could not parse template: ", err)
+		h.log.Error("/home - Could not parse template: ", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
@@ -30,7 +30,7 @@ func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
 func (h *PageHandler) Login(w http.ResponseWriter, r *http.Request) {
 	body, err := os.ReadFile("templates/login.html")
 	if err != nil {
-		logger.Error.Println("/login - Could not parse template: ", err)
+		h.log.Error("/login - Could not parse template: ", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
@@ -40,7 +40,7 @@ func (h *PageHandler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *PageHandler) Register(w http.ResponseWriter, r *http.Request) {
 	body, err := os.ReadFile("templates/register.html")
 	if err != nil {
-		logger.Error.Println("/register - Could not parse template: ", err)
+		h.log.Error("/register - Could not parse template: ", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}

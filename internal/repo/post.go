@@ -35,31 +35,46 @@ func (db *dbHandler) CreatePost(ctx context.Context, p *Post) (uuid.UUID, error)
 	return ID, err
 }
 
-func (db *dbHandler) GetFeed(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
+func (db *dbHandler) GetFeed(ctx context.Context, username string) ([]*Post, error) {
 	query := `
-	SELECT p.* 
+	WITH current_user AS (
+		SELECT id AS user_id 
+		FROM users 
+		WHERE username = $1
+	)
+	SELECT 
+		p.id,
+		p.author_id,
+		p.title,
+		p.content,
+		p.post_image,
+		p.rating,
+		p.is_public,
+		p.is_active,
+		p.created_at,
+		p.updated_at
 	FROM posts p
-	LEFT JOIN follows f 
-		ON p.author_id = f.followed_id AND f.follower_id = $1
+	LEFT JOIN follows f
+		ON p.author_id = f.followed_id
+		AND f.follower_id = (SELECT user_id FROM current_user)
 	WHERE
-		p.is_active = TRUE AND (
-			p.author_id = $1 OR
-			p.is_public = TRUE OR
-			(f.follower_id = $1 AND f.follow_status = 'accepted')
+		p.is_active = TRUE
+		AND (
+			p.author_id = (SELECT user_id FROM current_user)
+			OR p.is_public = TRUE
+			OR (f.follower_id = (SELECT user_id FROM current_user) AND f.follow_status = 'accepted')
 		)
 	ORDER BY 
 		CASE 
-			WHEN p.created_at >= NOW() - INTERVAL '24 hours' 
-			THEN 1 
-			ELSE 2 
-		END
-		ASC,
+			WHEN p.created_at >= NOW() - INTERVAL '24 hours' THEN 1
+			ELSE 2
+		END ASC,
 		p.rating DESC,
 		p.created_at DESC
 	;`
 
 	posts := []*Post{}
-	rows, err := db.pool.Query(ctx, query, userID)
+	rows, err := db.pool.Query(ctx, query, username)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return posts, nil
@@ -80,7 +95,6 @@ func (db *dbHandler) GetFeed(ctx context.Context, userID uuid.UUID) ([]*Post, er
 			&p.IsActive,
 			&p.CreatedAt,
 			&p.UpdatedAt,
-			&p.DeletedAt,
 		)
 		if err != nil {
 			return nil, err

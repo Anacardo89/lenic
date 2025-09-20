@@ -3,8 +3,6 @@ package page
 import (
 	"html/template"
 	"net/http"
-
-	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
 type ErrorPage struct {
@@ -21,7 +19,7 @@ func (h *PageHandler) Error(w http.ResponseWriter, r *http.Request) {
 	}
 	t, err := template.ParseFiles("templates/error.html")
 	if err != nil {
-		logger.Error.Println("/error - Could not parse template: ", err)
+		h.log.Error("/error - Could not parse template: ", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
