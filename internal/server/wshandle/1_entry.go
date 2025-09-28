@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/gorilla/websocket"
 )
 
@@ -19,13 +18,13 @@ type Message struct {
 func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 	conn, err := h.wsConnMann.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logger.Error.Println("/ws - Failed to upgrade to websocket:", err)
+		h.log.Error("failed to upgrade conn to websocket:", err)
 		return
 	}
 
-	username := r.URL.Query().Get("user_name")
+	username := r.URL.Query().Get("username")
 	if username == "" {
-		logger.Error.Println("/ws - No user ID provided", err)
+		h.log.Error("no user provided", err)
 		return
 	}
 
@@ -46,9 +45,9 @@ func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-				logger.Info.Println("/ws - Connection closed normally:", err)
+				h.log.Info("connection closed normally:", err)
 			} else {
-				logger.Error.Println("/ws - Could not read message:", err)
+				h.log.Error("could not read message:", err)
 			}
 			break
 		}
@@ -56,11 +55,11 @@ func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 		var msg Message
 		err = json.Unmarshal(message, &msg)
 		if err != nil {
-			logger.Error.Println("/ws - Could not unmarshal message:", err)
+			h.log.Error("could not unmarshal message:", err)
 			continue
 		}
 
-		logger.Info.Printf("/ws - Received message from user %s: %s\n", username, string(message))
+		h.log.Info("received message from user %s: %s\n", username, string(message))
 
 		switch msg.Type {
 		case "rate_comment":
@@ -76,7 +75,7 @@ func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 		case "dm":
 			h.handleDM(msg)
 		default:
-			logger.Warn.Printf("/ws - Unknown message type: %s\n", msg.Type)
+			h.log.Warn("unknown message type:", msg.Type)
 		}
 	}
 }

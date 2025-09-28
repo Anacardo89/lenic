@@ -55,7 +55,7 @@ func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 	}
 	// Response
 	var u, fromU *models.UserNotif
-	if users[0].UserName == msg.User {
+	if users[0].Username == msg.User {
 		fromU = models.FromDBUserNotif(users[0])
 		u = models.FromDBUserNotif(users[1])
 	} else {

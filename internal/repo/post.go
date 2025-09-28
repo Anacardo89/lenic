@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 
 	"github.com/google/uuid"
 )
@@ -212,6 +213,95 @@ func (db *dbHandler) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 			&p.DeletedAt,
 		)
 	return &p, err
+}
+
+func (db *dbHandler) GetPostForPage(ctx context.Context, ID, userID uuid.UUID) (*PostWithComments, error) {
+	query := `
+	SELECT 
+		p.id AS post_id,
+		p.author_id,
+		p.title,
+		p.content,
+		p.post_image,
+		p.rating,
+		p.is_public,
+		p.is_active,
+		p.created_at,
+		p.updated_at,
+		-- Post rating for the specific user
+		COALESCE(pr.rating_value, 0) AS user_post_rating,
+		-- Post author
+		json_build_object(
+			'id', u.id,
+			'username', u.username,
+			'profile_pic', u.profile_pic
+		) AS author,
+		-- Comments array
+		COALESCE(
+			json_agg(
+				json_build_object(
+					'id', c.id,
+					'post_id', c.post_id,
+					'author_id', c.author_id,
+					'content', c.content,
+					'rating', c.rating,
+					'is_active', c.is_active,
+					'created_at', c.created_at,
+					'updated_at', c.updated_at,
+					'user_rating', COALESCE(cr.rating_value, 0),
+					'author', json_build_object(
+						'id', cu.id,
+						'username', cu.username,
+						'profile_pic', cu.profile_pic
+					)
+				)
+			) FILTER (WHERE c.id IS NOT NULL),
+			'[]'
+		) AS comments
+	FROM posts p
+	JOIN users u
+		ON u.id = p.author_id
+	LEFT JOIN post_ratings pr 
+		ON pr.target_id = p.id AND pr.user_id = $2
+	LEFT JOIN comments c
+		ON c.post_id = p.id AND c.is_active = TRUE
+	LEFT JOIN users cu
+		ON cu.id = c.author_id
+	LEFT JOIN comment_ratings cr 
+		ON cr.target_id = c.id AND cr.user_id = $2
+	WHERE p.id = $1 AND p.is_active = TRUE
+	GROUP BY p.id, u.id
+	;`
+	var (
+		p     PostWithComments
+		uJSON []byte
+		cJSON []byte
+	)
+	if err := db.pool.QueryRow(ctx, query, ID, userID).
+		Scan(
+			&p.ID,
+			&p.AuthorID,
+			&p.Title,
+			&p.Content,
+			&p.PostImage,
+			&p.Rating,
+			&p.IsPublic,
+			&p.IsActive,
+			&p.CreatedAt,
+			&p.UpdatedAt,
+			&p.UserRating,
+			&uJSON,
+			&cJSON,
+		); err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(uJSON, &p.Author); err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(cJSON, &p.Comments); err != nil {
+		return nil, err
+	}
+	return &p, nil
 }
 
 func (db *dbHandler) UpdatePost(ctx context.Context, post *Post) error {

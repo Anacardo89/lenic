@@ -81,7 +81,7 @@ func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 				wsMsg := wshandle.Message{
-					FromUserName: session.User.UserName,
+					FromUserName: session.User.Username,
 					Type:         "comment_tag",
 					Msg:          " has tagged you in their comment",
 					ResourceID:   c.ID.String(),
@@ -168,7 +168,7 @@ func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 				wsMsg := wshandle.Message{
-					FromUserName: session.User.UserName,
+					FromUserName: session.User.Username,
 					Type:         "comment_tag",
 					Msg:          " has tagged you in their comment",
 					ResourceID:   c.ID.String(),

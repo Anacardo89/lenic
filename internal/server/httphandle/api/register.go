@@ -45,7 +45,7 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var u = &models.User{
-		UserName:     r.FormValue("username"),
+		Username:     r.FormValue("username"),
 		Email:        r.FormValue("email"),
 		Pass:         r.FormValue("password"),
 		PasswordHash: hashed,
@@ -63,7 +63,7 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Send account activation email
-	mailSubject, mailBody := helpers.BuildActivateAccountMail(h.mail.Host, string(h.mail.Port), u.UserName)
+	mailSubject, mailBody := helpers.BuildActivateAccountMail(h.mail.Host, string(h.mail.Port), u.Username)
 	errs := h.mail.Send([]string{u.Email}, mailSubject, mailBody)
 	if len(errs) != 0 {
 		for _, err := range errs {

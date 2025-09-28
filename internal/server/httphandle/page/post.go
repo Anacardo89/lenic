@@ -1,14 +1,14 @@
 package page
 
 import (
-	"database/sql"
+	"errors"
 	"html/template"
 	"net/http"
 
+	"github.com/Anacardo89/lenic/internal/middleware"
 	"github.com/Anacardo89/lenic/internal/models"
-	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
 	"github.com/Anacardo89/lenic/internal/session"
-	"github.com/Anacardo89/lenic/pkg/logger"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -18,92 +18,95 @@ type PostPage struct {
 }
 
 func (h *PageHandler) NewPost(w http.ResponseWriter, r *http.Request) {
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
+	// Get session
+	session, ok := r.Context().Value(middleware.CtxKeySession).(*session.Session)
+	if !ok {
+		fail("session type mismatch", errors.New("session type mismatch"), true, http.StatusUnauthorized, "invalid session")
+		return
+	}
+	// Response
 	postp := PostPage{
-		Session: h.sessionStore.ValidateSession(w, r),
+		Session: session,
 		Post:    &models.Post{},
 	}
 	t, err := template.ParseFiles("templates/authorized/newPost.html")
 	if err != nil {
-		logger.Error.Println("/newPost - Could not parse template: ", err)
-		redirect.RedirectToError(w, r, err.Error())
+		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
 	t.Execute(w, postp)
 }
 
 func (h *PageHandler) Post(w http.ResponseWriter, r *http.Request) {
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
+	// Get session
+	session, ok := r.Context().Value(middleware.CtxKeySession).(*session.Session)
+	if !ok {
+		fail("session type mismatch", errors.New("session type mismatch"), true, http.StatusUnauthorized, "invalid session")
+		return
+	}
+	// Input validation
 	vars := mux.Vars(r)
-	postID := vars["post_id"]
-	pp := PostPage{}
-	dbPost, err := h.db.GetPost(h.ctx, postID)
+	pID, err := uuid.Parse(vars["post_id"])
 	if err != nil {
-		logger.Error.Printf("/post/%s - Could not get Post: %s\n", postID, err)
-		redirect.RedirectToError(w, r, err.Error())
+		fail("could not decode post_id", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-	dbUser, err := h.db.GetUserByID(h.ctx, dbPost.AuthorID)
+	// DB operations
+	pDB, err := h.db.GetPostForPage(r.Context(), pID, session.User.ID)
 	if err != nil {
-		logger.Error.Printf("/post/%s - Could not get Author: %s\n", postID, err)
-		redirect.RedirectToError(w, r, err.Error())
+		fail("dberr: could not get post", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-
-	u := models.FromDBUser(dbUser)
-	p := models.FromDBPost(dbPost, u)
-
-	pp.Session = h.sessionStore.ValidateSession(w, r)
-	pr, err := h.db.GetPostUserRating(h.ctx, dbPost.ID, pp.Session.User.ID)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			logger.Error.Printf("/post/%s - Could not get rating: %s\n", postID, err)
-			redirect.RedirectToError(w, r, err.Error())
-			return
-		}
-	}
-	if pr != nil {
-		p.UserRating = pr.RatingValue
-	} else {
-		p.UserRating = 0
-	}
+	// Response
+	u := models.FromDBUserNotif(&pDB.Author)
+	p := models.FromDBPost(&pDB.Post, *u)
+	p.UserRating = pDB.UserRating
 	p.Content = template.HTML(p.RawContent)
-	p.Comments = []*models.Comment{}
-
-	dbComments, err := h.db.GetCommentsByPost(h.ctx, p.ID)
-	if err != nil {
-		logger.Error.Println(err)
+	var comments []*models.Comment
+	for _, comment := range pDB.Comments {
+		cu := models.FromDBUserNotif(&comment.Author)
+		c := models.FromDBComment(&comment.Comment, *cu)
+		c.UserRating = comment.UserRating
+		comments = append(comments, c)
 	}
-	for _, dbComment := range dbComments {
-		dbUser, err := h.db.GetUserByID(h.ctx, dbComment.AuthorID)
-		if err != nil {
-			logger.Error.Printf("/post/%s - Could not get Comment Author: %s\n", postID, err)
-			redirect.RedirectToError(w, r, err.Error())
-			return
-		}
-
-		u := models.FromDBUser(dbUser)
-		c := models.FromDBComment(dbComment, u)
-
-		cr, err := h.db.GetCommentUserRating(h.ctx, dbComment.ID, pp.Session.User.ID)
-		if err != nil {
-			if err != sql.ErrNoRows {
-				logger.Error.Printf("/post/%s - Could not get comment rating: %s\n", postID, err)
-				redirect.RedirectToError(w, r, err.Error())
-				return
-			}
-		}
-
-		if cr != nil {
-			c.UserRating = cr.RatingValue
-		} else {
-			c.UserRating = 0
-		}
-		p.Comments = append(p.Comments, c)
+	p.Comments = comments
+	pp := PostPage{
+		Post:    p,
+		Session: session,
 	}
-	pp.Post = p
 	t, err := template.ParseFiles("templates/authorized/post.html")
 	if err != nil {
-		logger.Error.Printf("/post/%s - Could not parse template: %s\n", postID, err)
-		redirect.RedirectToError(w, r, err.Error())
+		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
 	t.Execute(w, pp)

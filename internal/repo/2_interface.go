@@ -35,6 +35,7 @@ type DBRepository interface {
 	GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error)
 	GetUserPublicPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error)
 	GetPost(ctx context.Context, ID uuid.UUID) (*Post, error)
+	GetPostForPage(ctx context.Context, ID, userID uuid.UUID) (*PostWithComments, error)
 	UpdatePost(ctx context.Context, post *Post) error
 	DisablePost(ctx context.Context, ID uuid.UUID) (*Post, error)
 

@@ -75,7 +75,7 @@ func (db *dbHandler) GetConversationAndSender(ctx context.Context, conversationI
 		&c.User2ID,
 		&c.CreatedAt,
 		&u.ID,
-		&u.UserName,
+		&u.Username,
 		&u.ProfilePic,
 	)
 	return &c, &u, err
@@ -140,10 +140,10 @@ func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 s
 		&c.User2ID,
 		&c.CreatedAt,
 		&users[0].ID,
-		&users[0].UserName,
+		&users[0].Username,
 		&users[0].ProfilePic,
 		&users[1].ID,
-		&users[1].UserName,
+		&users[1].Username,
 		&users[1].ProfilePic,
 	)
 	return &c, users, err
@@ -238,7 +238,7 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 	if rows.Next() {
 		if err := rows.Scan(
 			&u.ID,
-			&u.UserName,
+			&u.Username,
 			&u.ProfilePic,
 			&convosJSON,
 		); err != nil {
@@ -426,7 +426,7 @@ func (db *dbHandler) GetDMsByConversation(ctx context.Context, conersationID uui
 			&dm.IsRead,
 			&dm.CreatedAt,
 			&dm.Sender.ID,
-			&dm.Sender.UserName,
+			&dm.Sender.Username,
 			&dm.Sender.ProfilePic,
 		)
 		if err != nil {

@@ -63,8 +63,8 @@ func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 			fail("dberr: could not get user", err, true, http.StatusInternalServerError, "internal error")
 			return
 		}
-		u := models.FromDBUser(uDB)
-		post := models.FromDBPost(p, u)
+		u := models.FromDBUserNotif(uDB)
+		post := models.FromDBPost(p, *u)
 		post.Content = template.HTML(post.RawContent)
 		feed.Posts = append(feed.Posts, post)
 	}
