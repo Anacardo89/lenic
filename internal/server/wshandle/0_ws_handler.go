@@ -10,18 +10,23 @@ import (
 )
 
 type WSHandler struct {
-	ctx          context.Context
-	db           repo.DBRepository
-	log          *logger.Logger
-	sessionStore *session.SessionStore
-	wsConnMann   *wsconnman.WSConnMan
+	ctx        context.Context
+	db         repo.DBRepository
+	log        *logger.Logger
+	sm         *session.SessionManager
+	wsConnMann *wsconnman.WSConnMan
 }
 
-func NewHandler(db repo.DBRepository, l *logger.Logger, sessionStore *session.SessionStore, wsConnMan *wsconnman.WSConnMan) *WSHandler {
+func NewHandler(
+	db repo.DBRepository,
+	l *logger.Logger,
+	sm *session.SessionManager,
+	wsConnMan *wsconnman.WSConnMan,
+) *WSHandler {
 	return &WSHandler{
-		db:           db,
-		log:          l,
-		sessionStore: sessionStore,
-		wsConnMann:   wsConnMan,
+		db:         db,
+		log:        l,
+		sm:         sm,
+		wsConnMann: wsConnMan,
 	}
 }

@@ -108,7 +108,7 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 				wsMsg := wshandle.Message{
-					FromUserName: session.User.UserName,
+					FromUserName: session.User.Username,
 					Type:         "post_tag",
 					Msg:          " has tagged you in their post",
 					ResourceID:   pID.String(),
@@ -198,7 +198,7 @@ func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 				wsMsg := wshandle.Message{
-					FromUserName: session.User.UserName,
+					FromUserName: session.User.Username,
 					Type:         "post_tag",
 					Msg:          " has tagged you in their post",
 					ResourceID:   pID.String(),

@@ -15,7 +15,12 @@ type PageHandler struct {
 	sm  *session.SessionManager
 }
 
-func NewHandler(ctx context.Context, l *logger.Logger, db repo.DBRepository, sm *session.SessionManager) *PageHandler {
+func NewHandler(
+	ctx context.Context,
+	l *logger.Logger,
+	db repo.DBRepository,
+	sm *session.SessionManager,
+) *PageHandler {
 	return &PageHandler{
 		ctx: ctx,
 		log: l,

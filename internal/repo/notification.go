@@ -157,10 +157,10 @@ func (db *dbHandler) GetUserNotifs(ctx context.Context, username string, limit, 
 			&n.Notification.CreatedAt,
 			&n.Notification.UpdatedAt,
 			&n.User.ID,
-			&n.User.UserName,
+			&n.User.Username,
 			&n.User.ProfilePic,
 			&n.FromUser.ID,
-			&n.FromUser.UserName,
+			&n.FromUser.Username,
 			&n.FromUser.ProfilePic,
 		)
 		if err != nil {

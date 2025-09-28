@@ -9,22 +9,22 @@ import (
 // Users
 
 type User struct {
-	ID           uuid.UUID
-	UserName     string
-	DisplayName  string
-	Email        string
-	PasswordHash string
-	ProfilePic   string
-	Bio          string
-	Followers    int
-	Following    int
-	IsActive     bool
-	IsVerified   bool
-	UserRole     string
-	LastLogin    time.Time
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	DeletedAt    *time.Time
+	ID           uuid.UUID  `json:"id"`
+	Username     string     `json:"username"`
+	DisplayName  string     `json:"display_name"`
+	Email        string     `json:"email"`
+	PasswordHash string     `json:"password_hash"`
+	ProfilePic   string     `json:"profile_pic"`
+	Bio          string     `json:"bio"`
+	Followers    int        `json:"user_followers"`
+	Following    int        `json:"user_following"`
+	IsActive     bool       `json:"is_active"`
+	IsVerified   bool       `json:"is_verified"`
+	UserRole     string     `json:"user_role"`
+	LastLogin    time.Time  `json:"last_login"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+	DeletedAt    *time.Time `json:"deleted_at"`
 }
 
 // Follows
@@ -38,17 +38,17 @@ type Follows struct {
 
 // Posts
 type Post struct {
-	ID        uuid.UUID
-	AuthorID  uuid.UUID
-	Title     string
-	Content   string
-	PostImage string
-	Rating    int
-	IsPublic  bool
-	IsActive  bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time
+	ID        uuid.UUID  `json:"id"`
+	AuthorID  uuid.UUID  `json:"author_id"`
+	Title     string     `json:"title"`
+	Content   string     `json:"content"`
+	PostImage string     `json:"post_image"`
+	Rating    int        `json:"rating"`
+	IsPublic  bool       `json:"is_public"`
+	IsActive  bool       `json:"is_active"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at"`
 }
 
 // Post Ratings
@@ -62,15 +62,15 @@ type PostRatings struct {
 
 // Comments
 type Comment struct {
-	ID        uuid.UUID
-	PostID    uuid.UUID
-	AuthorID  uuid.UUID
-	Content   string
-	Rating    int
-	IsActive  bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time
+	ID        uuid.UUID  `json:"id"`
+	PostID    uuid.UUID  `json:"post_id"`
+	AuthorID  uuid.UUID  `json:"author_id"`
+	Content   string     `json:"content"`
+	Rating    int        `json:"rating"`
+	IsActive  bool       `json:"is_active"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at"`
 }
 
 // Comment Ratings
@@ -80,6 +80,19 @@ type CommentRatings struct {
 	RatingValue int
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+}
+
+type PostWithComments struct {
+	Post
+	UserRating int
+	Author     User                 `json:"author"`
+	Comments   []CommentsWithAuthor `json:"comments"`
+}
+
+type CommentsWithAuthor struct {
+	Comment
+	UserRating int  `json:"user_rating"`
+	Author     User `json:"author"`
 }
 
 // Notifications

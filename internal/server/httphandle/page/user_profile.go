@@ -3,14 +3,14 @@ package page
 import (
 	"database/sql"
 	"encoding/base64"
+	"errors"
 	"html/template"
 	"net/http"
 
+	"github.com/Anacardo89/lenic/internal/middleware"
 	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/internal/repo"
-	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
 	"github.com/Anacardo89/lenic/internal/session"
-	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
@@ -22,81 +22,89 @@ type ProfilePage struct {
 }
 
 func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
+	// Get session
+	session, ok := r.Context().Value(middleware.CtxKeySession).(*session.Session)
+	if !ok {
+		fail("session type mismatch", errors.New("session type mismatch"), true, http.StatusUnauthorized, "invalid session")
+		return
+	}
+	// Input validation
 	vars := mux.Vars(r)
-	encoded := vars["encoded_user_name"]
-
-	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	bytes, err := base64.URLEncoding.DecodeString(vars["encoded_username"])
 	if err != nil {
-		logger.Error.Printf("/user/%s - Could not decode user: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		fail("could not decode user", err, true, http.StatusBadRequest, "invalid user")
 		return
 	}
-	userName := string(bytes)
-
-	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
+	username := string(bytes)
+	// DB operations
+	uDB, err := h.db.GetUserByUserName(r.Context(), username)
 	if err != nil {
-		logger.Error.Printf("/user/%s - Could not get user: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid user")
 		return
 	}
-
-	u := models.FromDBUser(dbUser)
-	session := h.sessionStore.ValidateSession(w, r)
-
-	pp := ProfilePage{
-		User:    u,
-		Session: session,
-	}
-
-	dbFollow, err := h.db.GetUserFollows(h.ctx, session.User.ID, u.ID)
+	fDB, err := h.db.GetUserFollows(r.Context(), session.User.ID, uDB.ID)
 	if err != nil {
 		if err != sql.ErrNoRows {
-			logger.Error.Printf("/user/%s - Could not get follows: %s\n", encoded, err)
-			redirect.RedirectToError(w, r, err.Error())
+			fail("dberr: could not get follows", err, true, http.StatusInternalServerError, "internal error")
 			return
-		} else {
-			pp.Follows = models.StatusPending.String()
 		}
-	} else if dbFollow != nil {
-		pp.Follows = dbFollow.FollowStatus
-	} else {
-		pp.Follows = models.StatusPending.String()
 	}
-
-	var dbPosts []*repo.Post
-	if (session.User.ID == u.ID) || (dbFollow != nil && dbFollow.FollowStatus == models.StatusAccepted.String()) {
-		dbPosts, err = h.db.GetUserPosts(h.ctx, u.ID)
+	var pDB []*repo.Post
+	if (session.User.ID == uDB.ID) ||
+		(fDB != nil && fDB.FollowStatus == models.StatusAccepted.String()) {
+		pDB, err = h.db.GetUserPosts(r.Context(), uDB.ID)
 		if err != nil {
-			logger.Error.Printf("/user/%s - Could not get Posts: %s\n", encoded, err)
-			redirect.RedirectToError(w, r, err.Error())
+			fail("dberr: could not get posts", err, true, http.StatusInternalServerError, "internal error")
 			return
 		}
 	} else {
-		dbPosts, err = h.db.GetUserPublicPosts(h.ctx, u.ID)
+		pDB, err = h.db.GetUserPublicPosts(r.Context(), uDB.ID)
 		if err != nil {
-			logger.Error.Printf("/user/%s - Could not get Posts: %s\n", encoded, err)
-			redirect.RedirectToError(w, r, err.Error())
+			fail("dberr: could not get posts", err, true, http.StatusInternalServerError, "internal error")
 			return
 		}
 	}
-
-	for _, p := range dbPosts {
-		dbUser, err := h.db.GetUserByID(h.ctx, p.AuthorID)
-		if err != nil {
-			logger.Error.Printf("/post/%s - Could not get Comment Author: %s\n", p.ID, err)
-			redirect.RedirectToError(w, r, err.Error())
-			return
-		}
-		u := models.FromDBUser(dbUser)
-		post := models.FromDBPost(p, u)
-		post.Content = template.HTML(post.RawContent)
-		pp.Posts = append(pp.Posts, post)
+	// Response
+	var (
+		followStatus string
+		posts        []*models.Post
+	)
+	u := models.FromDBUser(uDB)
+	un := models.FromDBUserNotif(uDB)
+	if fDB != nil {
+		followStatus = fDB.FollowStatus
+	} else {
+		followStatus = models.StatusPending.String()
 	}
-
+	for _, post := range pDB {
+		p := models.FromDBPost(post, *un)
+		p.Content = template.HTML(p.RawContent)
+		posts = append(posts, p)
+	}
+	pp := ProfilePage{
+		Session: session,
+		User:    u,
+		Posts:   posts,
+		Follows: followStatus,
+	}
 	t, err := template.ParseFiles("templates/authorized/user-profile.html")
 	if err != nil {
-		logger.Error.Printf("/user/%s - Could not parse template: %s\n", encoded, err)
-		redirect.RedirectToError(w, r, err.Error())
+		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
 	t.Execute(w, pp)

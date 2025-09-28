@@ -26,7 +26,7 @@ func (r UserRole) String() string {
 
 type User struct {
 	ID           uuid.UUID `json:"id"`
-	UserName     string    `json:"username"`
+	Username     string    `json:"username"`
 	EncodedName  string    `json:"encoded_name"`
 	DisplayName  string    `json:"display_name"`
 	Email        string    `json:"email"`
@@ -43,7 +43,7 @@ type User struct {
 
 type UserNotif struct {
 	ID          uuid.UUID `json:"id"`
-	UserName    string    `json:"username"`
+	Username    string    `json:"username"`
 	EncodedName string    `json:"encoded_name"`
 	ProfilePic  string    `json:"profile_pic"`
 }
@@ -70,7 +70,7 @@ type Follows struct {
 // Post
 type Post struct {
 	ID         uuid.UUID     `json:"id"`
-	Author     *User         `json:"author"`
+	Author     UserNotif     `json:"author"`
 	Title      string        `json:"title"`
 	RawContent string        `json:"raw_content"`
 	Content    template.HTML `json:"content"`
@@ -96,7 +96,7 @@ func (p Post) TruncatedText() string {
 // Comment
 type Comment struct {
 	ID         uuid.UUID `json:"id"`
-	Author     User      `json:"author"`
+	Author     UserNotif `json:"author"`
 	Content    string    `json:"content"`
 	Date       string    `json:"date"`
 	Rating     int       `json:"rating"`

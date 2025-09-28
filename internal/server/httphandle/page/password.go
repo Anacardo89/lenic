@@ -2,21 +2,23 @@ package page
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"os"
 
+	"github.com/Anacardo89/lenic/internal/middleware"
 	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
-	"github.com/Anacardo89/lenic/pkg/logger"
+	"github.com/Anacardo89/lenic/internal/session"
 	"github.com/gorilla/mux"
 )
 
 func (h *PageHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	body, err := os.ReadFile("templates/forgot-password.html")
 	if err != nil {
-		logger.Error.Println("/forgot-password - Could not parse template: ", err)
+		h.log.Error("/forgot-password - Could not parse template: ", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
@@ -29,27 +31,41 @@ type RecoverPasswdPage struct {
 }
 
 func (h *PageHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
+	// Input validation
 	vars := mux.Vars(r)
-	encoded := vars["encoded_username"]
-	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	bytes, err := base64.URLEncoding.DecodeString(vars["encoded_username"])
 	if err != nil {
-		logger.Error.Println("/recover-password - Could not decode user: ", err)
-		redirect.RedirectToError(w, r, err.Error())
+		fail("could not decode user", err, true, http.StatusBadRequest, "invalid user")
 		return
 	}
-	userName := string(bytes)
-
+	username := string(bytes)
 	token := r.URL.Query().Get("token")
 	if token == "" {
-		logger.Error.Println("/recover-password - No token", err)
+		fail("invalid token", err, true, http.StatusBadRequest, "invalid token")
 		return
 	}
-	dbUser, err := h.db.GetUserByUserName(h.ctx, userName)
+	// DB operations
+	dbUser, err := h.db.GetUserByUserName(r.Context(), username)
 	if err != nil {
-		logger.Error.Println("/recover-password - Could not get user: ", err)
-		redirect.RedirectToError(w, r, err.Error())
+		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid user")
 		return
 	}
+	// Response
 	u := models.FromDBUser(dbUser)
 	page := RecoverPasswdPage{
 		User:  u,
@@ -57,29 +73,38 @@ func (h *PageHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	t, err := template.ParseFiles("templates/recover-password.html")
 	if err != nil {
-		logger.Error.Println("/recover-password - Could not parse template: ", err)
-		redirect.RedirectToError(w, r, err.Error())
+		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
 	t.Execute(w, page)
 }
 
 func (h *PageHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	encoded := vars["encoded_username"]
-	bytes, err := base64.URLEncoding.DecodeString(encoded)
-	if err != nil {
-		logger.Error.Println("/change-password - Could not decode user: ", err)
-		redirect.RedirectToError(w, r, err.Error())
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
+	// Get session
+	session, ok := r.Context().Value(middleware.CtxKeySession).(*session.Session)
+	if !ok {
+		fail("session type mismatch", errors.New("session type mismatch"), true, http.StatusUnauthorized, "invalid session")
 		return
 	}
-	userName := string(bytes)
-
-	session := h.sessionStore.ValidateSession(w, r)
+	// Response
 	t, err := template.ParseFiles("templates/authorized/change-password.html")
 	if err != nil {
-		logger.Error.Println("/recover-password - Could not parse template: ", err)
-		redirect.RedirectToError(w, r, err.Error())
+		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
 	t.Execute(w, session)

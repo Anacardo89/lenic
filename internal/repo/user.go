@@ -28,7 +28,7 @@ func (db *dbHandler) CreateUser(ctx context.Context, u *User) (uuid.UUID, error)
 
 	var ID uuid.UUID
 	if err := db.pool.QueryRow(ctx, query,
-		u.UserName,
+		u.Username,
 		u.Email,
 		u.PasswordHash,
 	).Scan(&ID); err != nil {
@@ -53,7 +53,7 @@ func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, erro
 	err := db.pool.QueryRow(ctx, query, ID).
 		Scan(
 			&u.ID,
-			&u.UserName,
+			&u.Username,
 			&u.DisplayName,
 			&u.Email,
 			&u.PasswordHash,
@@ -82,7 +82,7 @@ func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*U
 	u := User{}
 	err := db.pool.QueryRow(ctx, query, userName).Scan(
 		&u.ID,
-		&u.UserName,
+		&u.Username,
 		&u.DisplayName,
 		&u.Email,
 		&u.PasswordHash,
@@ -122,7 +122,7 @@ func (db *dbHandler) GetConversationUsers(ctx context.Context, user1, user2 stri
 		u := User{}
 		err = rows.Scan(
 			&u.ID,
-			&u.UserName,
+			&u.Username,
 			&u.DisplayName,
 			&u.Email,
 			&u.PasswordHash,
@@ -157,7 +157,7 @@ func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, e
 	err := db.pool.QueryRow(ctx, query, email).
 		Scan(
 			&u.ID,
-			&u.UserName,
+			&u.Username,
 			&u.DisplayName,
 			&u.Email,
 			&u.PasswordHash,
@@ -200,7 +200,7 @@ func (db *dbHandler) SearchUsersByUserName(ctx context.Context, username string)
 		u := User{}
 		err = rows.Scan(
 			&u.ID,
-			&u.UserName,
+			&u.Username,
 			&u.ProfilePic,
 		)
 		if err != nil {
@@ -234,7 +234,7 @@ func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName s
 		u := User{}
 		err = rows.Scan(
 			&u.ID,
-			&u.UserName,
+			&u.Username,
 			&u.DisplayName,
 			&u.Email,
 			&u.PasswordHash,

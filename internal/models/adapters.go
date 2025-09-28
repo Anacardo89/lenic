@@ -10,8 +10,8 @@ import (
 func FromDBUser(u *repo.User) *User {
 	return &User{
 		ID:           u.ID,
-		UserName:     u.UserName,
-		EncodedName:  base64.URLEncoding.EncodeToString([]byte(u.UserName)),
+		Username:     u.Username,
+		EncodedName:  base64.URLEncoding.EncodeToString([]byte(u.Username)),
 		DisplayName:  u.DisplayName,
 		Email:        u.Email,
 		ProfilePic:   u.ProfilePic,
@@ -26,8 +26,8 @@ func FromDBUser(u *repo.User) *User {
 func FromDBUserNotif(u *repo.User) *UserNotif {
 	return &UserNotif{
 		ID:          u.ID,
-		UserName:    u.UserName,
-		EncodedName: base64.URLEncoding.EncodeToString([]byte(u.UserName)),
+		Username:    u.Username,
+		EncodedName: base64.URLEncoding.EncodeToString([]byte(u.Username)),
 		ProfilePic:  u.ProfilePic,
 	}
 }
@@ -42,7 +42,7 @@ func FromDBFollows(f *repo.Follows) *Follows {
 
 func ToDBUser(u *User) *repo.User {
 	return &repo.User{
-		UserName:     u.UserName,
+		Username:     u.Username,
 		Email:        u.Email,
 		PasswordHash: u.PasswordHash,
 		ProfilePic:   u.ProfilePic,
@@ -51,7 +51,7 @@ func ToDBUser(u *User) *repo.User {
 	}
 }
 
-func FromDBPost(p *repo.Post, u *User) *Post {
+func FromDBPost(p *repo.Post, u UserNotif) *Post {
 	return &Post{
 		ID:         p.ID,
 		Author:     u,
@@ -64,10 +64,10 @@ func FromDBPost(p *repo.Post, u *User) *Post {
 	}
 }
 
-func FromDBComment(c *repo.Comment, u *User) *Comment {
+func FromDBComment(c *repo.Comment, u UserNotif) *Comment {
 	return &Comment{
 		ID:      c.ID,
-		Author:  *u,
+		Author:  u,
 		Content: c.Content,
 		Date:    fmt.Sprint(c.CreatedAt.Format(dateLayout)),
 		Rating:  c.Rating,
