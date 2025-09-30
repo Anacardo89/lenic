@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) (uuid.UUID, error) {
+func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) error {
 
 	query := `
 	INSERT INTO notifications (
@@ -19,10 +19,19 @@ func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) (u
 		parent_id
 	)
 	VALUES ($1, $2, $3, $4, $5, $6)
-	RETURNING id
+	RETURNING
+		id,
+		user_id,
+		from_user_id,
+		notif_type,
+		notif_text,
+		resource_id,
+		parent_id,
+		is_read,
+		created_at,
+		updated_at
 	;`
 
-	var ID uuid.UUID
 	err := db.pool.QueryRow(ctx, query,
 		n.UserID,
 		n.FromUserID,
@@ -30,8 +39,19 @@ func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) (u
 		n.NotifText,
 		n.ResourceID,
 		n.ParentID,
-	).Scan(&ID)
-	return ID, err
+	).Scan(
+		&n.ID,
+		&n.UserID,
+		&n.FromUserID,
+		&n.NotifType,
+		&n.NotifText,
+		&n.ResourceID,
+		&n.ParentID,
+		&n.IsRead,
+		&n.CreatedAt,
+		&n.UpdatedAt,
+	)
+	return err
 }
 
 func (db *dbHandler) GetFollowNotification(ctx context.Context, userID, fromUserID uuid.UUID) (*Notification, error) {

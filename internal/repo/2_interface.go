@@ -33,6 +33,7 @@ type DBRepository interface {
 	CreatePost(ctx context.Context, p *Post) (uuid.UUID, error)
 	GetFeed(ctx context.Context, username string) ([]*Post, error)
 	GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error)
+	GetPostAuthorFromComment(ctx context.Context, commentID uuid.UUID) (*User, error)
 	GetUserPublicPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error)
 	GetPost(ctx context.Context, ID uuid.UUID) (*Post, error)
 	GetPostForPage(ctx context.Context, ID, userID uuid.UUID) (*PostWithComments, error)
@@ -57,7 +58,7 @@ type DBRepository interface {
 	GetCommentUserRating(ctx context.Context, targetID, userID uuid.UUID) (*CommentRatings, error)
 
 	// Notifications
-	CreateNotification(ctx context.Context, n *Notification) (uuid.UUID, error)
+	CreateNotification(ctx context.Context, n *Notification) error
 	GetFollowNotification(ctx context.Context, userID, fromUserID uuid.UUID) (*Notification, error)
 	DeleteFollowNotification(ctx context.Context, username, fromUsername string) error
 	GetNotification(ctx context.Context, ID uuid.UUID) (*Notification, error)
