@@ -103,8 +103,8 @@ type Notification struct {
 	FromUserID uuid.UUID
 	NotifType  string
 	NotifText  string
-	ResourceID uuid.UUID
-	ParentID   uuid.UUID
+	ResourceID string
+	ParentID   string
 	IsRead     bool
 	CreatedAt  time.Time
 	UpdatedAt  time.Time

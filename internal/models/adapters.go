@@ -81,8 +81,8 @@ func FromDBNotification(n *repo.Notification, u, fromU UserNotif) *Notification 
 		FromUser:   fromU,
 		NotifType:  NotifType(n.NotifType),
 		NotifText:  n.NotifText,
-		ResourceID: n.ResourceID.String(),
-		ParentID:   n.ParentID.String(),
+		ResourceID: n.ResourceID,
+		ParentID:   n.ParentID,
 		IsRead:     n.IsRead,
 	}
 }

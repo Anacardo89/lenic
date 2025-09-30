@@ -6,13 +6,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
+
 	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/internal/middleware"
 	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/internal/server/wshandle"
 	"github.com/Anacardo89/lenic/internal/session"
-	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 )
 
 type AddCommentResponse struct {

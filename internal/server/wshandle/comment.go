@@ -2,78 +2,65 @@ package wshandle
 
 import (
 	"encoding/json"
-	"strconv"
+
+	"github.com/google/uuid"
 
 	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/internal/repo"
-	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
 func (h *WSHandler) handleCommentOnPost(msg Message) {
-	commentID, err := strconv.Atoi(msg.ResourceID)
-	if err != nil {
-		logger.Error.Printf("Could not convert %s to int: %s\n", msg.ResourceID, err)
-		return
+	// Error Handling
+	fail := func(logMsg string, e error) {
+		h.log.Error(logMsg, "error", e,
+			"message_type", msg.Type,
+		)
 	}
-	c, err := h.db.GetComment(h.ctx, commentID)
-	if err != nil {
-		logger.Error.Println("Could not get comment: ", err)
-		return
-	}
-	dbPost, err := h.db.GetPost(h.ctx, c.PostID)
-	if err != nil {
-		logger.Error.Println("Could not get post: ", err)
-		return
-	}
-	dbUser, err := h.db.GetUserByID(h.ctx, dbPost.AuthorID)
-	if err != nil {
-		logger.Error.Println("Could not get user: ", err)
-		return
-	}
+	//
 
-	fromUser, err := h.db.GetUserByUserName(h.ctx, msg.FromUserName)
+	// Execution
+	cID, err := uuid.Parse(msg.ResourceID)
 	if err != nil {
-		logger.Error.Println("Could not get from user: ", err)
+		fail("parsing comment uuid", err)
 		return
 	}
-
-	if dbUser.ID == fromUser.ID {
+	// DB operations
+	uDB, err := h.db.GetPostAuthorFromComment(h.ctx, cID)
+	if err != nil {
+		fail("dberr: could not get post author", err)
 		return
 	}
-
-	u := models.FromDBUserNotif(dbUser)
-	fromU := models.FromDBUserNotif(fromUser)
-
+	fuDB, err := h.db.GetUserByUserName(h.ctx, msg.FromUserName)
+	if err != nil {
+		fail("dberr: could not get user", err)
+		return
+	}
+	if uDB.ID == fuDB.ID {
+		return
+	}
 	n := &repo.Notification{
-		UserID:     dbPost.AuthorID,
-		FromUserID: fromUser.ID,
+		UserID:     uDB.ID,
+		FromUserID: fuDB.ID,
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
-		ResourceID: msg.ResourceID,
+		ResourceID: cID.String(),
 		ParentID:   msg.ParentID,
 	}
-
-	notifID, err := h.db.CreateNotification(h.ctx, n)
-	if err != nil {
-		logger.Error.Println("Could not create notification: ", err)
+	if err := h.db.CreateNotification(h.ctx, n); err != nil {
+		fail("dberr: could not create notification", err)
 		return
 	}
-
-	dbNotif, err := h.db.GetNotification(h.ctx, notifID)
-	if err != nil {
-		logger.Error.Println("Could not get notification: ", err)
-		return
-	}
-	notif := models.FromDBNotification(dbNotif, *u, *fromU)
-	notif.ParentID = c.PostID
-
+	// Response
+	u := models.FromDBUserNotif(uDB)
+	fromU := models.FromDBUserNotif(fuDB)
+	notif := models.FromDBNotification(n, *u, *fromU)
+	notif.ParentID = msg.ParentID
 	data, err := json.Marshal(notif)
 	if err != nil {
-		logger.Error.Println("Could not marshal JSON: ", err)
+		fail("failed to marshal JSON", err)
 		return
 	}
-
-	if h.wsConnMann.IsConnected(dbUser.UserName) {
-		h.wsConnMann.SendMessage(u.UserName, data)
+	if h.wsConnMann.IsConnected(u.Username) {
+		h.wsConnMann.SendMessage(u.Username, data)
 	}
 }

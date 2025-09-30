@@ -4,59 +4,60 @@ import (
 	"encoding/json"
 
 	"github.com/Anacardo89/lenic/internal/models"
-	"github.com/Anacardo89/lenic/pkg/logger"
 )
 
 func (h *WSHandler) handleDM(msg Message) {
+	// Error Handling
+	fail := func(logMsg string, e error) {
+		h.log.Error(logMsg, "error", e,
+			"message_type", msg.Type,
+		)
+	}
+	//
 
-	dbUser, err := h.db.GetUserByUserName(h.ctx, msg.ResourceID)
+	// Execution
+	// Early return
+	if msg.ResourceID == msg.FromUserName {
+		return
+	}
+	// DB ooperations
+	uDB, err := h.db.GetUserByUserName(h.ctx, msg.ResourceID)
 	if err != nil {
-		logger.Error.Println("Could not get post: ", err)
+		fail("dberr: could not get user", err)
 		return
 	}
-
-	fromUser, err := h.db.GetUserByUserName(h.ctx, msg.FromUserName)
+	fuDB, err := h.db.GetUserByUserName(h.ctx, msg.FromUserName)
 	if err != nil {
-		logger.Error.Println("Could not get from user: ", err)
+		fail("dberr: could not get user", err)
 		return
 	}
-
-	if dbUser.ID == fromUser.ID {
-		return
-	}
-
-	u := models.FromDBUserNotif(dbUser)
-	fromU := models.FromDBUserNotif(fromUser)
-
-	dbConvo, err := h.db.GetConversationByUsers(h.ctx, u.ID, fromU.ID)
+	dbConvo, err := h.db.GetConversationByUsers(h.ctx, uDB.ID, fuDB.ID)
 	if err != nil {
-		logger.Error.Println("Could not get conversation: ", err)
+		fail("dberr: could not get conversation", err)
 		return
 	}
-
-	err = h.db.UpdateConversation(h.ctx, dbConvo.ID)
-	if err != nil {
-		logger.Error.Println("Could not update conversation: ", err)
+	if err := h.db.UpdateConversation(h.ctx, dbConvo.ID); err != nil {
+		fail("dberr: could not update conversation", err)
 		return
 	}
-
+	// Response
+	u := models.FromDBUserNotif(uDB)
+	fu := models.FromDBUserNotif(fuDB)
 	n := &models.Notification{
 		User:       *u,
-		FromUser:   *fromU,
+		FromUser:   *fu,
 		NotifType:  models.NotifType(msg.Type),
 		NotifText:  msg.Msg,
 		ResourceID: dbConvo.ID.String(),
 		ParentID:   "",
 		IsRead:     false,
 	}
-
 	data, err := json.Marshal(n)
 	if err != nil {
-		logger.Error.Println("Could not marshal JSON: ", err)
+		fail("failed to marshal JSON", err)
 		return
 	}
-
-	if h.wsConnMann.IsConnected(dbUser.UserName) {
-		h.wsConnMann.SendMessage(u.UserName, data)
+	if h.wsConnMann.IsConnected(u.Username) {
+		h.wsConnMann.SendMessage(u.Username, data)
 	}
 }

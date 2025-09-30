@@ -105,6 +105,27 @@ func (db *dbHandler) GetFeed(ctx context.Context, username string) ([]*Post, err
 	return posts, nil
 }
 
+func (db *dbHandler) GetPostAuthorFromComment(ctx context.Context, commentID uuid.UUID) (*User, error) {
+	query := `
+	SELECT 
+		u.id AS user_id,
+		u.username,
+		u.profile_pic
+	FROM comments c
+	JOIN posts p ON c.post_id = p.id
+	JOIN users u ON p.author_id = u.id
+	WHERE c.id = $1
+	;`
+
+	var u User
+	err := db.pool.QueryRow(ctx, query, commentID).Scan(
+		&u.ID,
+		&u.Username,
+		&u.ProfilePic,
+	)
+	return &u, err
+}
+
 func (db *dbHandler) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
 
 	query := `
