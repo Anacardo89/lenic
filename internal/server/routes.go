@@ -18,6 +18,12 @@ func NewRouter(ah *api.APIHandler, ph *page.PageHandler, wsh *wshandle.WSHandler
 
 	r.HandleFunc("/", redirect.RedirIndex).Schemes("http")
 
+	// Static
+	staticDir := "./static"
+	r.PathPrefix("/static/").Handler(
+		http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))),
+	)
+
 	// Page
 	r.HandleFunc("/home", ph.Home).Schemes("http")
 	r.HandleFunc("/login", ph.Login).Schemes("http")
