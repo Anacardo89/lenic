@@ -1,0 +1,80 @@
+
+networks:
+  lenic-network:
+
+volumes:
+  lenic-db-volume:
+  lenic-log-volume:
+  lenic-images-volume:
+
+services:
+  db:
+    image: postgres:16
+    container_name: lenic-db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    networks:
+      - lenic-network
+    volumes:
+      - lenic-db-volume:/var/lib/postgresql/data
+
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/migrate.Dockerfile
+    container_name: lenic-migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_TIMEOUT: ${DB_TIMEOUT}
+    networks:
+      - lenic-network
+    volumes:
+      - ./migrations:/migrations
+      - ./scripts:/scripts
+
+  lenic:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    container_name: lenic-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: ${PORT}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_TIMEOUT: ${DB_TIMEOUT}
+      DB_DSN: postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable
+      SESSION_SECRET: ${SESSION_SECRET}
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      CFG_PATH: ${CFG_PATH}
+      IMG_PATH: ${IMG_PATH}
+      LOG_PATH: ${LOG_PATH}
+      LOG_FILE: ${LOG_FILE}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+    ports:
+      - "${PORT}:${PORT}"
+    networks:
+      - lenic-network
+    volumes:
+      - ./config/config.yaml:/lenic/config.yaml:ro
+      - lenic-log-volume:${LOG_PATH}
+      - lenic-images-volume:${IMG_PATH}

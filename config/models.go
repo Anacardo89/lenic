@@ -8,6 +8,7 @@ type Config struct {
 	Token   Token   `yaml:"token"`
 	DB      DB      `yaml:"db"`
 	Log     Log     `yaml:"logging"`
+	Img     Img     `yaml:"img"`
 	Mail    Mail
 }
 
@@ -19,12 +20,12 @@ type Server struct {
 }
 
 type Session struct {
-	Secret   string        `env:"TOKEN_SECRET" envDefault:"token-secret"`
+	Secret   string        `env:"SESSION_SECRET" envDefault:"session-secret"`
 	Duration time.Duration `yaml:"duration"` // hours
 }
 
 type Token struct {
-	Secret   string        `env:"SESSION_SECRET" envDefault:"session-secret"`
+	Secret   string        `env:"TOKEN_SECRET" envDefault:"token-secret"`
 	Duration time.Duration `yaml:"duration"` // minutes
 }
 
@@ -44,6 +45,15 @@ type Log struct {
 	MaxBackups int    `yaml:"max_backups"`
 	MaxAge     int    `yaml:"max_age"` // days
 	Compress   bool   `yaml:"compress"`
+}
+
+type Img struct {
+	BasePath      string `env:"IMG_PATH" envDefault:"/lenic/img"`
+	OriginalsDir  string `yaml:"originals_dir"`
+	PreviewsDir   string `yaml:"previews_dir"`
+	PreviewWidth  int    `yaml:"preview_width"`  // pixels
+	PreviewHeight int    `yaml:"preview_height"` // pixels
+	JPEGQuality   int    `yaml:"jpeg_quality"`
 }
 
 type Mail struct {

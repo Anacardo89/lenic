@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -16,7 +15,6 @@ import (
 	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/internal/server/wshandle"
 	"github.com/Anacardo89/lenic/internal/session"
-	"github.com/Anacardo89/lenic/pkg/fsops"
 )
 
 // POST /action/post
@@ -57,10 +55,12 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 		isPublic = true
 	}
 	pDB := &repo.Post{
-		Title:    r.FormValue("title"),
-		Content:  r.FormValue("content"),
-		AuthorID: session.User.ID,
-		IsPublic: isPublic,
+		ID:        uuid.New(),
+		AuthorID:  session.User.ID,
+		Title:     r.FormValue("title"),
+		Content:   r.FormValue("content"),
+		PostImage: "",
+		IsPublic:  isPublic,
 	}
 	// Handle image
 	file, header, err := r.FormFile("post_image")
@@ -70,14 +70,11 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 	}
 	if file != nil && header != nil {
 		fileExt := filepath.Ext(header.Filename)
-		fileName := fsops.NameImg(16)
-		fileName = fmt.Sprintf("%s.%s", fileName, fileExt)
-		pDB.PostImage = fileName
-		imgData, err := io.ReadAll(file)
-		if err != nil {
-			fail("could not read image data", err, true, http.StatusBadRequest, "invalid params")
-		}
-		fsops.SaveImg(imgData, fsops.PostImgPath, fileName)
+		filename := pDB.ID.String()
+		filename = fmt.Sprintf("%s%s", filename, fileExt)
+		pDB.PostImage = filename
+		h.img.SaveImg(file, filename)
+		h.img.CreatePreview(filename)
 	}
 	// DB operations
 	pID, err := h.db.CreatePost(h.ctx, pDB)

@@ -1,10 +1,11 @@
-CREATE FUNCTION apply_rating(table_name TEXT)
+CREATE FUNCTION apply_rating()
 RETURNS TRIGGER AS 
 $$
 DECLARE
     delta INTEGER;
+    table_name TEXT := TG_ARGV[0];
 BEGIN
-    -- Delta relates to how the final value changed in relation to the old onde
+    -- Delta relates to how the final value changed in relation to the old one
     -- 1 → -1 results in a delta of -2 (remove +1, apply -1)   
     IF TG_OP = 'INSERT' THEN
         delta := NEW.rating_value;
@@ -19,6 +20,7 @@ BEGIN
         table_name
     )
     USING delta, NEW.target_id;
+
     RETURN NEW;
 END;
 $$

@@ -6,12 +6,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Anacardo89/lenic/config"
-	"github.com/Anacardo89/lenic/internal/repo"
-
-	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
+
+	"github.com/Anacardo89/lenic/config"
+	"github.com/Anacardo89/lenic/internal/models"
+	"github.com/Anacardo89/lenic/internal/repo"
 )
 
 // TODO - Get this to Redis
@@ -25,7 +25,7 @@ type SessionManager struct {
 	sessions map[uuid.UUID]*Session
 }
 
-func NewSessionStore(ctx context.Context, cfg config.Session, db repo.DBRepository) *SessionManager {
+func NewSessionManager(ctx context.Context, cfg config.Session, db repo.DBRepository) *SessionManager {
 	return &SessionManager{
 		ctx:      ctx,
 		cfg:      cfg,

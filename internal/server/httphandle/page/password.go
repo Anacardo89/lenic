@@ -8,17 +8,18 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/mux"
+
 	"github.com/Anacardo89/lenic/internal/middleware"
 	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
 	"github.com/Anacardo89/lenic/internal/session"
-	"github.com/gorilla/mux"
 )
 
 func (h *PageHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	body, err := os.ReadFile("templates/forgot-password.html")
 	if err != nil {
-		h.log.Error("/forgot-password - Could not parse template: ", err)
+		h.log.Error("/forgot-password - Could not parse template", "error", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
