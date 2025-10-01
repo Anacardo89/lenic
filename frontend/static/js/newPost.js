@@ -100,7 +100,7 @@ function makeSuggestionResult(user) {
     if (user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + user.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + user.encoded
     }
     const username = document.createElement('div');
     username.innerHTML = '<strong>' + user.username + '</strong>';

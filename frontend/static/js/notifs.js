@@ -17,7 +17,7 @@ export function makeCommentRateNotif(notification) {
     if (notification.fromuser.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
     }
     const notifMsg = document.createElement('div');
     notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
@@ -64,7 +64,7 @@ export function makeCommentTagNotif(notification) {
     if (notification.fromuser.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
     }
     const notifMsg = document.createElement('div');
     notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
@@ -110,7 +110,7 @@ export function makePostRateNotif(notification) {
     if (notification.fromuser.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
     }
     const notifMsg = document.createElement('div');
     notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
@@ -156,7 +156,7 @@ export function makePostTagNotif(notification) {
     if (notification.fromuser.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
     }
     const notifMsg = document.createElement('div');
     notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
@@ -203,7 +203,7 @@ export function makeCommentOnPostNotif(notification) {
     if (notification.fromuser.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
     }
     const notifMsg = document.createElement('div');
     notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
@@ -248,7 +248,7 @@ export function makeFollowAcceptNotif(notification) {
     if (notification.fromuser.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
     }
     const notifMsg = document.createElement('div');
     notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
@@ -296,7 +296,7 @@ export function makeFollowRequestNotif(notification) {
     if (notification.fromuser.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
     }
     profilePicLink.append(profilePic);
 

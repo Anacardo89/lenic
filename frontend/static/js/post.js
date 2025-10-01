@@ -2,7 +2,7 @@ import {positionSuggestionBox, insertAtCaret} from './tag.js';
 import {session_username, session_encoded} from "./auth.js";
 import  * as wsoc from './wsManager.js';
 
-export let guid = $('#post-guid').val();
+export let postID = $('#post-id').val();
 
 // Edit post textarea hide/show
 $(document).ready(function() {
@@ -112,7 +112,7 @@ function editPost(el) {
     let edited_post = form.find('#edit-post').val();
     let edited_visibility = form.find('input[name="post-visibility"]:checked').val();
     $.ajax({
-        url: '/action/post/' + guid,
+        url: '/action/post/' + postID,
         method: 'PUT',
         data: ({
             title: edited_title,
@@ -133,7 +133,7 @@ function editPost(el) {
 // Delete Post
 function deletePost() {
     $.ajax({
-        url: '/action/post/' + guid,
+        url: '/action/post/' + postID,
         method: 'DELETE',
         success: function() {
             window.location.href = '/user/' + session_encoded + '/feed'
@@ -149,14 +149,14 @@ function deletePost() {
 // Rate post Up
 function ratePostUp() {
     $.ajax({
-        url: '/action/post/' + guid + '/up',
+        url: '/action/post/' + postID + '/up',
         method: 'POST',
         success: function() {
             const message = {
                 from_username: session_username,
                 type: wsoc.TYPE_POST_RATE,
                 msg: wsoc.MSG_POST_RATE,
-                resource_id: guid
+                resource_id: postID
             };
             wsoc.sendWSmsg(message);
             location.reload()
@@ -172,14 +172,14 @@ function ratePostUp() {
 // Rate post Down
 function ratePostDown() {
     $.ajax({
-        url: '/action/post/' + guid + '/down',
+        url: '/action/post/' + postID + '/down',
         method: 'POST',
         success: function() {
             const message = {
                 from_username: session_username,
                 type: wsoc.TYPE_POST_RATE,
                 msg: wsoc.MSG_POST_RATE,
-                resource_id: guid
+                resource_id: postID
             };
             wsoc.sendWSmsg(message);
             location.reload()
@@ -254,7 +254,7 @@ function makeSuggestionResult(user) {
     if (user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + user.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + user.encoded
     }
     const username = document.createElement('div');
     username.innerHTML = '<strong>' + user.username + '</strong>';

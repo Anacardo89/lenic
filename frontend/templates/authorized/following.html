@@ -59,7 +59,7 @@
                 <div class="vertical-bar"></div>
                 <a class="user-profile-button" href="/user/{{.Session.User.EncodedName}}">
                     {{if .Session.User.ProfilePic}}
-                        <img class="profile-pic-mini" src="/action/profile-pic?user-encoded={{.Session.User.EncodedName}}" alt="Profile Pic" />
+                        <img class="profile-pic-mini" src="/action/profile-pic?encoded_username={{.Session.User.EncodedName}}" alt="Profile Pic" />
                     {{else}}
                         <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
                     {{end}}
@@ -75,7 +75,7 @@
                     <a href="/user/{{.EncodedName}}">
                         <div class="follow">
                             {{if .ProfilePic}}
-                                <img class="profile-pic-med" src="/action/profile-pic?user-encoded={{.EncodedName}}" alt="Profile Pic">
+                                <img class="profile-pic-med" src="/action/profile-pic?encoded_username={{.EncodedName}}" alt="Profile Pic">
                             {{else}}
                                 <img class="profile-pic-med" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
                             {{end}}
@@ -90,7 +90,7 @@
                 <div class="profile-personal">
                     <div class="profile-pic">
                         {{if .User.ProfilePic}}
-                            <img src="/action/profile-pic?user-encoded={{.User.EncodedName}}" alt="Profile Pic">
+                            <img src="/action/profile-pic?encoded_username={{.User.EncodedName}}" alt="Profile Pic">
                             {{if eq .User.UserName .Session.User.UserName}}
                                 <input type="file" id="profile-image" class="file-input">
                                 <label for="file" class="custom-profile-label"><i class="fa-solid fa-2x fa-image"></i></label>

@@ -9,7 +9,7 @@ export const session_encoded = $('#session-encoded').val();
 
 
 $(document).ready(function() {
-    const userName = localStorage.getItem('user_name');
+    const userName = localStorage.getItem('username');
     if (userName) {
         wsoc.connectWS(userName);
     }
@@ -40,7 +40,7 @@ function readAllNotifs() {
                 console.log('Notification marked as read.');
             },
             error: function(xhr) {
-                localStorage.removeItem('user_name');
+                localStorage.removeItem('username');
                 wsoc.closeWS();
                 const errorMessage = xhr.responseText;
                 alert(errorMessage);
@@ -570,7 +570,7 @@ function makeSearchResult(user) {
     if (user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + user.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + user.encoded
     }
     const username = document.createElement('div');
     username.innerHTML = '<strong>' + user.username + '</strong>';

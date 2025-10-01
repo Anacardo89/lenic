@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/Anacardo89/lenic/internal/helpers"
@@ -63,7 +64,7 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Send account activation email
-	mailSubject, mailBody := helpers.BuildActivateAccountMail(h.mail.Host, string(h.mail.Port), u.Username)
+	mailSubject, mailBody := helpers.BuildActivateAccountMail(h.mail.Host, fmt.Sprintf("%d", h.mail.Port), u.Username)
 	errs := h.mail.Send([]string{u.Email}, mailSubject, mailBody)
 	if len(errs) != 0 {
 		for _, err := range errs {

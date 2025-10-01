@@ -14,7 +14,7 @@ export function makeConversation(conversation) {
     if (conversation.user2.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + conversation.user2.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + conversation.user2.encoded
     }
 
     const convoMsg = document.createElement('div');

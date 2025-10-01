@@ -57,7 +57,7 @@
                 </div>
                 <a href="/user/{{.Session.User.EncodedName}}">
                     {{if .Session.User.ProfilePic}}
-                        <img class="session-profile-pic" src="/action/profile-pic?user-encoded={{.Session.User.EncodedName}}" alt="Profile Pic" />
+                        <img class="session-profile-pic" src="/action/profile-pic?encoded_username={{.Session.User.EncodedName}}" alt="Profile Pic" />
                     {{else}}
                         <img class="session-profile-pic" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
                     {{end}}

@@ -21,10 +21,10 @@ function register(el) {
         method: 'POST',
         contentType: 'application/x-www-form-urlencoded',
         data: { 
-            user_name: username,
-		    user_email: email,
-		    user_password: passwd,
-		    user_password2: passwd2
+            username: username,
+            user_email: email,
+            user_password: passwd,
+            user_password2: passwd2
         },
         success: function(xhr) {
             window.location.href = '/home';
