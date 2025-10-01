@@ -1,158 +1,183 @@
 package api
 
 import (
-	"database/sql"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
 	"net/http"
-	"os"
 	"path/filepath"
-	"strings"
 
-	"github.com/Anacardo89/lenic/pkg/fsops"
-	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 // /action/image
-func (h *APIHandler) PostImage(w http.ResponseWriter, r *http.Request) {
-	pIDstr := r.URL.Query().Get("post_id")
-	if pIDstr == "" {
-		return
-	}
-
-	pID, err := uuid.Parse(pIDstr)
-	if err != nil {
-		logger.Error.Printf("/action/image - Could not convert id to string: %s\n", pIDstr, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	pDB, err := h.db.GetPost(h.ctx, pID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return
+func (h *APIHandler) GetPostImage(w http.ResponseWriter, r *http.Request) {
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
 		}
-		logger.Error.Println("/action/image - Could not get post: ", err)
+	}
+	//
+
+	// Execution
+	// Input validation
+	pID, err := uuid.Parse(r.URL.Query().Get("post_id"))
+	if err != nil {
+		fail("parsing post uuid from URL", err, true, http.StatusBadRequest, "invalid path")
 		return
 	}
-
-	imgPath := fsops.PostImgPath + pDB.PostImage
-	imgFile, err := os.Open(imgPath)
+	// DB operations
+	pDB, err := h.db.GetPost(r.Context(), pID)
 	if err != nil {
-		logger.Error.Println("/action/image - Could not open image: ", err)
+		fail("dberr: could not get post", err, true, http.StatusBadRequest, "invalid params")
+		return
+	}
+	// Early return if no image
+	if pDB.PostImage == "" {
+		w.WriteHeader(200)
+		return
+	}
+	// Get img
+	imgFile, err := h.img.GetImg(true, pDB.PostImage)
+	if err != nil {
+		fail("failed to get image", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
 	defer imgFile.Close()
-
-	imgData, err := io.ReadAll(imgFile)
-	if err != nil {
-		logger.Error.Println("/action/image - Could not read image: ", err)
-		return
-	}
-
-	imageExt := strings.TrimPrefix(pDB.PostImage, ".")
-	mimeType := mime.TypeByExtension(imageExt)
+	// Determine MIME type
+	ext := filepath.Ext(pDB.PostImage)
+	mimeType := mime.TypeByExtension(ext)
 	if mimeType == "" {
 		mimeType = "application/octet-stream"
 	}
 	w.Header().Set("Content-Type", mimeType)
-	w.Write(imgData)
+	// Stream file directly to response
+	if _, err := io.Copy(w, imgFile); err != nil {
+		fail("failed to write image to response", err, false, http.StatusInternalServerError, "internal error")
+		return
+	}
 }
 
 // /action/profile-pic
-func (h *APIHandler) ProfilePic(w http.ResponseWriter, r *http.Request) {
-	encoded := r.URL.Query().Get("encoded_username")
-	if encoded == "" {
-		return
+func (h *APIHandler) GetProfilePic(w http.ResponseWriter, r *http.Request) {
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
 	}
+	//
 
-	bytes, err := base64.URLEncoding.DecodeString(encoded)
+	// Execution
+	// Input validation
+	bytes, err := base64.URLEncoding.DecodeString(r.URL.Query().Get("encoded_username"))
 	if err != nil {
-		logger.Error.Printf("/action/profile-pic - Could not decode user: %s\n", err)
+		fail("could not decode user", err, true, http.StatusBadRequest, "invalid user")
 		return
 	}
 	userName := string(bytes)
-
+	// DB operations
 	uDB, err := h.db.GetUserByUserName(h.ctx, userName)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return
-		}
-		logger.Error.Println("/action/profile-pic - Could not get user: ", err)
+		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-
-	imgPath := fsops.ProfilePicPath + uDB.ProfilePic
-	imgFile, err := os.Open(imgPath)
+	if uDB.ProfilePic == "" {
+		w.WriteHeader(200)
+		return
+	}
+	// Get img
+	imgFile, err := h.img.GetImg(true, uDB.ProfilePic)
 	if err != nil {
-		logger.Error.Println("/action/profile-pic - Could not open image: ", err)
+		fail("failed to get image", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
 	defer imgFile.Close()
-
-	imgData, err := io.ReadAll(imgFile)
-	if err != nil {
-		logger.Error.Println("/action/image - Could not read image: ", err)
-		return
-	}
-
-	picExt := strings.TrimPrefix(uDB.ProfilePic, ".")
-	mimeType := mime.TypeByExtension(picExt)
+	// Determine MIME type
+	ext := filepath.Ext(uDB.ProfilePic)
+	mimeType := mime.TypeByExtension(ext)
 	if mimeType == "" {
 		mimeType = "application/octet-stream"
 	}
 	w.Header().Set("Content-Type", mimeType)
-	w.Write(imgData)
+	// Stream file directly to response
+	if _, err := io.Copy(w, imgFile); err != nil {
+		fail("failed to write image to response", err, false, http.StatusInternalServerError, "internal error")
+		return
+	}
 }
 
 // /action/user/{user_encoded}/profile-pic
 func (h *APIHandler) PostProfilePic(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	encoded := vars["encoded_username"]
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
 
+	// Execution
+	// Input validation
+	vars := mux.Vars(r)
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		logger.Error.Printf("/action/user/%s/profile-pic - Could not parse form  %s\n", encoded, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		fail("could not parse form", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-
 	file, header, err := r.FormFile("profile_pic")
 	if err != nil {
-		logger.Error.Printf("/action/user/%s/profile-pic - Could not get image: %s\n", encoded, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		fail("could not get image", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-
-	fileName := fsops.NameImg(16)
+	if file == nil || header == nil {
+		fail("no file", errors.New("no file"), true, http.StatusBadRequest, "invalid params")
+		return
+	}
+	bytes, err := base64.URLEncoding.DecodeString(vars["encoded_username"])
+	if err != nil {
+		fail("could not decode user", err, true, http.StatusBadRequest, "invalid user")
+		return
+	}
+	username := string(bytes)
+	// DB operations
+	uDB, err := h.db.GetUserByUserName(r.Context(), username)
+	if err != nil {
+		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid params")
+		return
+	}
+	// Handle file
 	fileExt := filepath.Ext(header.Filename)
-	fileName = fmt.Sprintf("%s.%s", fileName, fileExt)
-
-	bytes, err := base64.URLEncoding.DecodeString(encoded)
-	if err != nil {
-		logger.Error.Printf("/action/user/%s/profile-pic - Could not decode user: %s\n", encoded, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	filename := uDB.ID.String()
+	filename = fmt.Sprintf("%s%s", filename, fileExt)
+	h.img.SaveImg(file, filename)
+	h.img.CreatePreview(filename)
+	if err := h.db.UpdateProfilePic(r.Context(), username, filename); err != nil {
+		fail("dberr: could not update profile pic", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
-	userName := string(bytes)
-
-	err = h.db.UpdateProfilePic(h.ctx, userName, fileName)
-	if err != nil {
-		logger.Error.Printf("/action/user/%s/profile-pic - Could not update profile pic: %s\n", encoded, err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	imgData, err := io.ReadAll(file)
-	if err != nil {
-		logger.Error.Println("/action/image - Could not read image: ", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	fsops.SaveImg(imgData, fsops.ProfilePicPath, fileName)
+	// Response
 	w.WriteHeader(http.StatusOK)
 }

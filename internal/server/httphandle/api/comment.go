@@ -145,7 +145,7 @@ func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 		Content: r.FormValue("comment"),
 	}
 	if err := h.db.UpdateComment(r.Context(), &c); err != nil {
-		fail("dberr - could not update comment", err, true, http.StatusInternalServerError, "internal error")
+		fail("dberr: could not update comment", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
 	// Handle user mentions

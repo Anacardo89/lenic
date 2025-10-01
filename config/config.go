@@ -4,18 +4,25 @@ import (
 	_ "embed"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/caarlos0/env/v9"
 	"gopkg.in/yaml.v3"
 )
 
-//go:embed config.yaml
-var configBytes []byte
-
 func LoadConfig() (*Config, error) {
 	cfg := DefaultConfig()
-	if err := yaml.Unmarshal(configBytes, cfg); err != nil {
+	cfgPath := os.Getenv("CFG_PATH")
+	if cfgPath == "" {
+		cfgPath = "/lenic/config.yaml"
+	}
+	f, err := os.Open(cfgPath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
 		return nil, fmt.Errorf("unmarshal config: %w", err)
 	}
 	cfg.Server.ReadTimeout *= time.Second
@@ -63,6 +70,14 @@ func DefaultConfig() *Config {
 			MaxBackups: 3,
 			MaxAge:     30, // days
 			Compress:   true,
+		},
+		Img: Img{
+			BasePath:      "/lenic/img",
+			OriginalsDir:  "/originals",
+			PreviewsDir:   "/previews",
+			PreviewWidth:  200, // pixels
+			PreviewHeight: 200, // pixels
+			JPEGQuality:   95,
 		},
 		Mail: Mail{
 			Host: "smtp.gmail.com",
