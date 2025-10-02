@@ -12,7 +12,7 @@ const (
 	We're glad you could join us {{.User}}. Please click the link below to verify your account:
 	%s 
 	` // link
-	LinkRecoverPassword = "https://%s:%s/recover-password/%s?token=%s"
+	LinkActivateAccount = "http://%s:%s/action/activate/%s"
 
 	// Password recover
 	SubjectRecoverPassword = `Password Recovery for Lenic`
@@ -22,7 +22,7 @@ const (
 	Please click the link below:
 	%s
 	` // user - link
-	LinkActivateAccount = "https://%s:%s/action/activate/%s"
+	LinkRecoverPassword = "http://%s:%s/recover-password/%s?token=%s"
 )
 
 // Password recover

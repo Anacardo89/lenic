@@ -3,14 +3,14 @@ package api
 import (
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"net/http"
+
+	"github.com/gorilla/mux"
 
 	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/pkg/crypto"
-	"github.com/gorilla/mux"
 )
 
 // /action/register
@@ -35,7 +35,7 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		fail("could not parse form", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-	if r.FormValue("password") != r.FormValue("user_password2") {
+	if r.FormValue("password") != r.FormValue("password2") {
 		fail("passwords do not match", errors.New("passwords do not match"), true, http.StatusBadRequest, "passwords do not match")
 		return
 	}
@@ -64,7 +64,7 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Send account activation email
-	mailSubject, mailBody := helpers.BuildActivateAccountMail(h.mail.Host, fmt.Sprintf("%d", h.mail.Port), u.Username)
+	mailSubject, mailBody := helpers.BuildActivateAccountMail("localhost", h.cfg.Port, u.Username)
 	errs := h.mail.Send([]string{u.Email}, mailSubject, mailBody)
 	if len(errs) != 0 {
 		for _, err := range errs {

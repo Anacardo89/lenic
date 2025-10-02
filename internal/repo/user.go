@@ -44,7 +44,19 @@ func (db *dbHandler) CreateUser(ctx context.Context, u *User) (uuid.UUID, error)
 func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, error) {
 
 	query := `
-	SELECT *
+	SELECT
+		id,
+		username,
+		email,
+		password_hash,
+		profile_pic,
+		user_followers,
+		user_following,
+		is_active,
+		is_verified,
+		user_role,
+		created_at,
+		updated_at
 	FROM users
 	WHERE id = $1
 	;`
@@ -54,11 +66,9 @@ func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, erro
 		Scan(
 			&u.ID,
 			&u.Username,
-			&u.DisplayName,
 			&u.Email,
 			&u.PasswordHash,
 			&u.ProfilePic,
-			&u.Bio,
 			&u.Followers,
 			&u.Following,
 			&u.IsActive,
@@ -74,7 +84,19 @@ func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, erro
 func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*User, error) {
 
 	query := `
-	SELECT * 
+	SELECT
+		id,
+		username,
+		email,
+		password_hash,
+		profile_pic,
+		user_followers,
+		user_following,
+		is_active,
+		is_verified,
+		user_role,
+		created_at,
+		updated_at
 	FROM users
 	WHERE username = $1
 	;`
@@ -83,11 +105,9 @@ func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*U
 	err := db.pool.QueryRow(ctx, query, userName).Scan(
 		&u.ID,
 		&u.Username,
-		&u.DisplayName,
 		&u.Email,
 		&u.PasswordHash,
 		&u.ProfilePic,
-		&u.Bio,
 		&u.Followers,
 		&u.Following,
 		&u.IsActive,
@@ -95,7 +115,6 @@ func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*U
 		&u.UserRole,
 		&u.CreatedAt,
 		&u.UpdatedAt,
-		&u.DeletedAt,
 	)
 	return &u, err
 }
@@ -103,7 +122,19 @@ func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*U
 func (db *dbHandler) GetConversationUsers(ctx context.Context, user1, user2 string) ([]*User, error) {
 
 	query := `
-	SELECT * 
+	SELECT
+		id,
+		username,
+		email,
+		password_hash,
+		profile_pic,
+		user_followers,
+		user_following,
+		is_active,
+		is_verified,
+		user_role,
+		created_at,
+		updated_at
 	FROM users
 	WHERE username = $1 OR username = $2
 	;`
@@ -123,11 +154,9 @@ func (db *dbHandler) GetConversationUsers(ctx context.Context, user1, user2 stri
 		err = rows.Scan(
 			&u.ID,
 			&u.Username,
-			&u.DisplayName,
 			&u.Email,
 			&u.PasswordHash,
 			&u.ProfilePic,
-			&u.Bio,
 			&u.Followers,
 			&u.Following,
 			&u.IsActive,
@@ -135,7 +164,6 @@ func (db *dbHandler) GetConversationUsers(ctx context.Context, user1, user2 stri
 			&u.UserRole,
 			&u.CreatedAt,
 			&u.UpdatedAt,
-			&u.DeletedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -148,7 +176,19 @@ func (db *dbHandler) GetConversationUsers(ctx context.Context, user1, user2 stri
 func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 
 	query := `
-	SELECT * 
+	SELECT
+		id,
+		username,
+		email,
+		password_hash,
+		profile_pic,
+		user_followers,
+		user_following,
+		is_active,
+		is_verified,
+		user_role,
+		created_at,
+		updated_at
 	FROM users
 	WHERE email = $1
 	;`
@@ -158,11 +198,9 @@ func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, e
 		Scan(
 			&u.ID,
 			&u.Username,
-			&u.DisplayName,
 			&u.Email,
 			&u.PasswordHash,
 			&u.ProfilePic,
-			&u.Bio,
 			&u.Followers,
 			&u.Following,
 			&u.IsActive,
@@ -170,7 +208,6 @@ func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, e
 			&u.UserRole,
 			&u.CreatedAt,
 			&u.UpdatedAt,
-			&u.DeletedAt,
 		)
 	return &u, err
 }
@@ -214,7 +251,19 @@ func (db *dbHandler) SearchUsersByUserName(ctx context.Context, username string)
 func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName string) ([]*User, error) {
 
 	query := `
-	SELECT * 
+	SELECT
+		id,
+		username,
+		email,
+		password_hash,
+		profile_pic,
+		user_followers,
+		user_following,
+		is_active,
+		is_verified,
+		user_role,
+		created_at,
+		updated_at 
 	FROM users
 	WHERE display_name LIKE $1
 	;`
@@ -235,11 +284,9 @@ func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName s
 		err = rows.Scan(
 			&u.ID,
 			&u.Username,
-			&u.DisplayName,
 			&u.Email,
 			&u.PasswordHash,
 			&u.ProfilePic,
-			&u.Bio,
 			&u.Followers,
 			&u.Following,
 			&u.IsActive,
@@ -247,7 +294,6 @@ func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName s
 			&u.UserRole,
 			&u.CreatedAt,
 			&u.UpdatedAt,
-			&u.DeletedAt,
 		)
 		if err != nil {
 			return nil, err
