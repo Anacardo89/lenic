@@ -12,12 +12,12 @@ export const MSG_COMMENT_ON_POST = ' has commented on your post';
 export const MSG_FOLLOW_ACCEPT = ' has accepted your follow request.';
 export const MSG_FOLLOW_REQUEST = ' has requested to follow you.';
 
-export const TYPE_COMMENT_RATE = 'rate_comment';
-export const TYPE_POST_RATE = 'rate_post';
-export const TYPE_COMMENT_TAG = 'comment_tag';
-export const TYPE_POST_TAG = 'post_tag';
-export const TYPE_COMMENT_ON_POST = 'comment_on_post';
-export const TYPE_FOLLOW_ACCEPT = 'follow_accept';
+export const TYPE_COMMENT_RATE = 'comment_rating';
+export const TYPE_POST_RATE = 'post_rating';
+export const TYPE_COMMENT_TAG = 'comment_mention';
+export const TYPE_POST_TAG = 'post_mention';
+export const TYPE_COMMENT_ON_POST = 'post_comment';
+export const TYPE_FOLLOW_ACCEPT = 'follow_response';
 export const TYPE_FOLLOW_REQUEST = 'follow_request';
 export const TYPE_DM = 'dm';
 

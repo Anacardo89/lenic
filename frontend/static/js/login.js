@@ -22,7 +22,7 @@ function register(el) {
         contentType: 'application/x-www-form-urlencoded',
         data: { 
             username: username,
-            user_email: email,
+            email: email,
             user_password: passwd,
             user_password2: passwd2
         },
@@ -47,12 +47,12 @@ function login(el) {
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
-            user_name: username,
-            user_password: userPassword
+            username: username,
+            password: userPassword
         }),
         success: function(xhr) {
-            localStorage.setItem('user_name', username);
-            connectWS(localStorage.getItem('user_name'));
+            localStorage.setItem('username', username);
+            connectWS(localStorage.getItem('username'));
             window.location.href = '/user/' + encoded + '/feed';
         },
         error: function(xhr) {
@@ -71,7 +71,7 @@ function forgotPasswd(el) {
         url: '/action/forgot-password',
         method: 'POST',
         contentType: 'application/x-www-form-urlencoded',
-        data: { user_email: email },
+        data: { email: email },
         success: function(xhr) {
             window.location.href = '/home';
         },
@@ -95,7 +95,7 @@ function recoverPasswd(el) {
         method: 'POST',
         contentType: 'application/x-www-form-urlencoded',
         data: { 
-            user_name: user,
+            username: user,
             token: token,
             password: pass,
             password2: pass2 
@@ -122,7 +122,7 @@ function changePasswd() {
     const newPasswd = $('#new-passwd').val();
     const newPasswd2 = $('#new-passwd2').val();
 
-    formData.append('user_name', user);
+    formData.append('username', user);
     formData.append('old_password', oldPasswd);
     formData.append('password', newPasswd);
     formData.append('password2', newPasswd2);

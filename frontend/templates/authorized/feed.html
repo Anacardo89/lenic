@@ -18,7 +18,7 @@
 </head>
 <body>
     <header>
-        <input type="hidden" id="session-username" value="{{.Session.User.UserName}}">
+        <input type="hidden" id="session-username" value="{{.Session.User.Username}}">
         <input type="hidden" id="session-encoded" value="{{.Session.User.EncodedName}}">
         <div class="logo">
             <h1 class="home-link"><a href="/user/{{.Session.User.EncodedName}}/feed">L E N I C</a></h1>
@@ -102,7 +102,7 @@
                                             <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
                                         {{end}}
                                     </a>
-                                    <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.UserName}}</strong></a>   -   <strong>{{.Date}}</strong></div>
+                                    <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.Username}}</strong></a>   -   <strong>{{.Date}}</strong></div>
                                 </div>
                                 <div class="post-content-image-container">
                                     <div class="post-title-content">

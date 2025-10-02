@@ -14,7 +14,7 @@
 </head>
 <body>
     <header>
-        <input type="hidden" id="session-username" value="{{.Session.User.UserName}}">
+        <input type="hidden" id="session-username" value="{{.Session.User.Username}}">
         <input type="hidden" id="session-encoded" value="{{.Session.User.EncodedName}}">
         <div class="logo">
             <h1 class="home-link"><a href="/user/{{.Session.User.EncodedName}}/feed">L E N I C</a></h1>
@@ -68,7 +68,7 @@
     </header>
     <main>
         <div class="main-container">
-            {{if eq .Session.User.UserName .User.UserName}}
+            {{if eq .Session.User.Username .User.Username}}
                 <div class="add-post-container">
                     <div class="add-post-top-row">
                         <h2>POST SOMETHING</h2>
@@ -90,7 +90,7 @@
             <div class="user-posts">
                 <div class="post-preview-container">
                     {{range .Posts}}
-                        <div class="post-preview" onclick="location.href='/post/{{.GUID}}';">
+                        <div class="post-preview" onclick="location.href='/post/{{.ID}}';">
                             <div class="post-preview-content">
                                 <div class="author-info-inline">
                                     <a href="/user/{{.Author.EncodedName}}">
@@ -100,7 +100,7 @@
                                             <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
                                         {{end}}
                                     </a>
-                                    <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.UserName}}</strong></a>   -   <strong>{{.Date}}</strong></div>
+                                    <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.Username}}</strong></a>   -   <strong>{{.Date}}</strong></div>
                                 </div>
                                 <div class="post-content-image-container">
                                     <div class="post-title-content">
@@ -127,14 +127,14 @@
                     <div class="profile-pic">
                         {{if .User.ProfilePic}}
                             <img src="/action/profile-pic?encoded_username={{.User.EncodedName}}" alt="Profile Pic">
-                            {{if eq .User.UserName .Session.User.UserName}}
+                            {{if eq .User.Username .Session.User.Username}}
                                 <input type="file" id="profile-image" class="file-input">
                                 <label for="profile-image" id="profile-image-label" class="custom-profile-label"><i class="fa-solid fa-2x fa-image"></i></label>
                                 <div id="profile-pic-confirm" class="profile-pic-confirm"><button>CONFIRM</button></div>
                             {{end}}
                         {{else}}
                             <img src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
-                            {{if eq .User.UserName .Session.User.UserName}}
+                            {{if eq .User.Username .Session.User.Username}}
                                 <input type="file" id="profile-image" class="file-input">
                                 <label for="profile-image" id="profile-image-label" class="custom-profile-label"><i class="fa-solid fa-2x fa-image"></i></label>
                                 <div id="profile-pic-confirm" class="profile-pic-confirm"><button>CONFIRM</button></div>
@@ -143,15 +143,15 @@
                     </div>
                     <div class="profile-info">
                         <input type="hidden" id="encoded-user" value="{{.User.EncodedName}}" />
-                        <h1>{{.User.UserName}}</h1>
+                        <h1>{{.User.Username}}</h1>
                         <input type="hidden" id="profile-username" value="{{.User.UserName}}">
                         <br>
-                        {{if eq .User.UserName .Session.User.UserName}}
+                        {{if eq .User.Username .Session.User.Username}}
                             <p>{{.User.Email}}</p>
                             <br>
                         {{else}}
                             {{if .Session.Authenticated}}
-                                {{if ne .Session.User.UserName .User.UserName}}
+                                {{if ne .Session.User.Username .User.Username}}
                                     {{if gt .Follows 0}}
                                         <button id="unfollow-button">Unfollow</button>
                                     {{else if lt .Follows 0}}
@@ -179,7 +179,7 @@
     <footer>
         <div id="dm-window" class="hidden">
             <div class="dm-header">
-                <span id="dm-title">{{.User.UserName}}</span>
+                <span id="dm-title">{{.User.Username}}</span>
                 <button id="close-dm-btn">&times;</button>
             </div>
             <div id="dm-content" class="dm-content">

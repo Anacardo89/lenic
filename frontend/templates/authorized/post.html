@@ -13,7 +13,7 @@
 </head>
 <body>
     <header>
-        <input type="hidden" id="session-username" value="{{.Session.User.UserName}}">
+        <input type="hidden" id="session-username" value="{{.Session.User.Username}}">
         <input type="hidden" id="session-encoded" value="{{.Session.User.EncodedName}}">
         <div class="logo">
             <h1 class="home-link"><a href="/user/{{.Session.User.EncodedName}}/feed">L E N I C</a></h1>
@@ -87,7 +87,7 @@
                             <img class="post-image" src="/action/image?post_id={{.Post.ID}}" alt="Post Image">
                         {{end}}
                     </div>
-                    {{if eq .Post.Author.UserName .Session.User.UserName}}
+                    {{if eq .Post.Author.Username .Session.User.Username}}
                         <div id="post-edit-container">
                             <form id="post-edit-form">
                                 <input type="text" id="edit-post-title" name="post-title" value="{{.Post.Title}}">
@@ -116,7 +116,7 @@
                             </div>
                         {{end}}
                     </div>
-                    {{if eq .Post.Author.UserName .Session.User.UserName}}
+                    {{if eq .Post.Author.Username .Session.User.Username}}
                         <div class="post-buttons">
                             <button id="post-editor-button">Edit</button>
                             <button id="post-deleter-button">Delete</button>
@@ -149,10 +149,10 @@
                                             <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
                                         {{end}}
                                     </a>
-                                    <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.UserName}}</strong></a>   -   <strong>{{.Date}}</strong></div>
+                                    <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.Username}}</strong></a>   -   <strong>{{.Date}}</strong></div>
                                 </div>
                                 <div class="comment-text" id="comment-text-{{.Id}}"><p>{{.Content}}</p></div>
-                                {{if eq .Author.UserName $.Session.User.UserName}}
+                                {{if eq .Author.Username $.Session.User.Username}}
                                     <div class="comment-edit-container" id="comment-editor-{{.Id}}">
                                         <form class="comment-edit-form">
                                             <input type="hidden" class="comment_id" value="{{.Id}}" />

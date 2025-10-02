@@ -14,7 +14,7 @@
 </head>
 <body>
     <header>
-        <input type="hidden" id="session-username" value="{{.Session.User.UserName}}">
+        <input type="hidden" id="session-username" value="{{.Session.User.Username}}">
         <input type="hidden" id="session-encoded" value="{{.Session.User.EncodedName}}">
         <div class="logo">
             <h1 class="home-link"><a href="/user/{{.Session.User.EncodedName}}/feed">L E N I C</a></h1>
@@ -91,18 +91,18 @@
                     <div class="profile-pic">
                         {{if .User.ProfilePic}}
                             <img src="/action/profile-pic?encoded_username={{.User.EncodedName}}" alt="Profile Pic">
-                            {{if eq .User.UserName .Session.User.UserName}}
+                            {{if eq .User.Username .Session.User.Username}}
                                 <input type="file" id="profile-image" class="file-input">
                                 <label for="file" class="custom-profile-label"><i class="fa-solid fa-2x fa-image"></i></label>
                             {{end}}
                         {{else}}
                             <img src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
-                            {{if eq .User.UserName .Session.User.UserName}}
+                            {{if eq .User.Username .Session.User.Username}}
                                 <input type="file" id="profile-image" class="file-input">
                                 <label for="file" class="custom-profile-label"><i class="fa-solid fa-2x fa-image"></i></label>
                             {{end}}
                         {{end}}
-                        {{if eq .Session.User.UserName .User.UserName}}
+                        {{if eq .Session.User.Username .User.Username}}
                             <div class="profile-pic-add-container"> 
                                 <button class="profile-pic-add-button" id="profile-pic-confirm-button"><strong>Confirm</strong></button>
                             </div>
@@ -110,15 +110,15 @@
                     </div>
                     <div class="profile-info">
                         <input type="hidden" id="encoded-user" value="{{.User.EncodedName}}" />
-                        <h1>{{.User.UserName}}</h1>
+                        <h1>{{.User.Username}}</h1>
                         <input type="hidden" id="profile-username" value="{{.User.UserName}}">
                         <br>
-                        {{if eq .User.UserName .Session.User.UserName}}
+                        {{if eq .User.Username .Session.User.Username}}
                             <p>{{.User.Email}}</p>
                             <br>
                         {{else}}
                             {{if .Session.Authenticated}}
-                                {{if ne .Session.User.UserName .User.UserName}}
+                                {{if ne .Session.User.Username .User.Username}}
                                     {{if gt .Follows 0}}
                                         <button id="unfollow-button">Unfollow</button>
                                     {{else if lt .Follows 0}}
@@ -128,14 +128,14 @@
                                     {{end}}
                                 {{end}}
                             {{end}}
-                            <button class="start-dm-button" data-user="{{.User.UserName}}">Send a DM</button>
+                            <button class="start-dm-button" data-user="{{.User.Username}}">Send a DM</button>
                         {{end}}
                         <div class="follow-info"><a href="/user/{{.User.EncodedName}}/followers"><strong>Followers:</strong></a> {{.User.Followers}}</div>
                         <div class="follow-info"><a href="/user/{{.User.EncodedName}}/following"><strong>Following:</strong></a> {{.User.Following}}</div>
                     </div>
                 </div>
                 <div class="bottom-buttons">
-                    {{if eq .User.UserName .Session.User.UserName}}
+                    {{if eq .User.Username .Session.User.Username}}
                         <a href="/change-password/{{.User.EncodedName}}"><button>Change password</button></a>
                         <button id="logout-button"><strong>Logout</strong></button>
                     {{end}}

@@ -64,12 +64,12 @@ function logout() {
         method: 'POST',
         success: function() {
             console.log('Logout successful'); 
-            localStorage.removeItem('user_name');
+            localStorage.removeItem('username');
             wsoc.closeWS();
             window.location.href = '/home';
         },
         error: function(xhr) {
-            localStorage.removeItem('user_name');
+            localStorage.removeItem('username');
             wsoc.closeWS();
             const errorMessage = xhr.responseText;
             alert(errorMessage);

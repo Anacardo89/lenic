@@ -17,9 +17,9 @@ function addPost() {
     if (imageFile) {
         formData.append('post-image', imageFile);
     }
-    formData.append('post-title', postTitle);
-    formData.append('post-content', postContent);
-    formData.append('post-visibility', visibility);
+    formData.append('title', postTitle);
+    formData.append('content', postContent);
+    formData.append('is_public', visibility);
     
     $.ajax({
         url: '/action/post',

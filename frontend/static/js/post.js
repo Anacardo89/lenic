@@ -117,7 +117,7 @@ function editPost(el) {
         data: ({
             title: edited_title,
             content: edited_post,
-            visibility: edited_visibility
+            is_public: edited_visibility
         }),
         success: function(res) {
             location.reload()

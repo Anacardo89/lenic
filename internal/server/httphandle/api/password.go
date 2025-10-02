@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/pkg/crypto"
-	"github.com/google/uuid"
 )
 
 // POST /action/forgot-password
@@ -34,7 +35,7 @@ func (h *APIHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// DB operations
-	uDB, err := h.db.GetUserByEmail(h.ctx, r.FormValue("user_email"))
+	uDB, err := h.db.GetUserByEmail(h.ctx, r.FormValue("email"))
 	if err == sql.ErrNoRows {
 		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid params")
 		return
@@ -136,7 +137,7 @@ func (h *APIHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Get user from DB
-	uDB, err := h.db.GetUserByUserName(r.Context(), r.FormValue("user_name"))
+	uDB, err := h.db.GetUserByUserName(r.Context(), r.FormValue("username"))
 	if err != nil {
 		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid user")
 		return

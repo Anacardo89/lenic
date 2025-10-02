@@ -76,7 +76,7 @@ type Post struct {
 	Content    template.HTML `json:"content"`
 	Image      string        `json:"img"`
 	Rating     int           `json:"rating"`
-	UserRating int           `json:"user_ratinmg"`
+	UserRating int           `json:"user_rating"`
 	Date       string        `json:"date"`
 	IsPublic   bool          `json:"is_public"`
 	Comments   []*Comment    `json:"comments"`
