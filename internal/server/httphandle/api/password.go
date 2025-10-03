@@ -142,7 +142,7 @@ func (h *APIHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Validate old password
-	if !crypto.ValidatePassword(uDB.PasswordHash, r.FormValue("old_password")) {
+	if err := crypto.ValidatePassword(uDB.PasswordHash, r.FormValue("old_password")); err != nil {
 		fail("wrong password", err, true, http.StatusUnauthorized, "wrong password")
 		return
 	}
