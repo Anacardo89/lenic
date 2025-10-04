@@ -3,7 +3,7 @@ CREATE TABLE users (
     username VARCHAR(32) NOT NULL UNIQUE,
     display_name VARCHAR(64),
     email VARCHAR(128) NOT NULL UNIQUE,
-    password_hash VARCHAR(128) NOT NULL DEFAULT '',
+    password_hash TEXT NOT NULL DEFAULT '',
     profile_pic VARCHAR(128) NOT NULL DEFAULT '',
     bio TEXT,
     user_followers INTEGER NOT NULL DEFAULT 0,

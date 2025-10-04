@@ -16,71 +16,74 @@ func NewRouter(ah *api.APIHandler, ph *page.PageHandler, wsh *wshandle.WSHandler
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", redirect.RedirIndex).Schemes("http")
-
-	// Static
-	staticDir := "./static"
-	r.PathPrefix("/static/").Handler(
-		http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))),
-	)
+	r.Handle("/", http.HandlerFunc(redirect.RedirIndex))
 
 	// Page
 	r.HandleFunc("/home", ph.Home).Schemes("http")
 	r.HandleFunc("/login", ph.Login).Schemes("http")
 	r.HandleFunc("/register", ph.Register).Schemes("http")
 	r.HandleFunc("/error", ph.Error).Schemes("http")
-	r.HandleFunc("/newPost", ph.NewPost).Schemes("http")
-	r.HandleFunc("/post/{post_id}", ph.Post).Schemes("http")
-	r.HandleFunc("/user/{encoded_username}", ph.UserProfile).Schemes("http")
-	r.HandleFunc("/user/{encoded_username}/feed", ph.Feed).Schemes("http")
-	r.HandleFunc("/user/{encoded_username}/followers", ph.UserFollowers).Schemes("http")
-	r.HandleFunc("/user/{encoded_username}/following", ph.UserFollowing).Schemes("http")
-	r.HandleFunc("/forgot-password", ph.ForgotPassword).Schemes("http")
-	r.HandleFunc("/recover-password/{encoded_username}", ph.RecoverPassword).Schemes("http")
-	r.HandleFunc("/change-password/{encoded_username}", ph.ChangePassword).Schemes("http")
+	r.Handle("/newPost", mw.Auth(http.HandlerFunc(ph.NewPost))).Schemes("http")
+	r.Handle("/post/{post_id}", mw.Auth(http.HandlerFunc(ph.Post))).Schemes("http")
+	r.Handle("/user/{encoded_username}", mw.Auth(http.HandlerFunc(ph.UserProfile))).Schemes("http")
+	r.Handle("/user/{encoded_username}/feed", mw.Auth(http.HandlerFunc(ph.Feed))).Schemes("http")
+	r.Handle("/user/{encoded_username}/followers", mw.Auth(http.HandlerFunc(ph.UserFollowers))).Schemes("http")
+	r.Handle("/user/{encoded_username}/following", mw.Auth(http.HandlerFunc(ph.UserFollowing))).Schemes("http")
+	r.Handle("/change-password/{encoded_username}", mw.Auth(http.HandlerFunc(ph.ChangePassword))).Schemes("http")
+	r.Handle("/forgot-password", http.HandlerFunc(ph.ForgotPassword)).Schemes("http")
+	r.Handle("/recover-password/{encoded_username}", http.HandlerFunc(ph.RecoverPassword)).Schemes("http")
 
 	// API
 	r.HandleFunc("/action/register", ah.RegisterUser).Methods("POST").Schemes("http")
 	r.HandleFunc("/action/activate/{encoded_username}", ah.ActivateUser).Schemes("http")
 	r.HandleFunc("/action/login", ah.Login).Methods("POST").Schemes("http")
 	r.HandleFunc("/action/logout", ah.Logout).Methods("POST").Schemes("http")
+
+	authRoutes := r.PathPrefix("/action").Subrouter()
+	authRoutes.Use(mw.Auth)
 	// User
-	r.HandleFunc("/action/search/user", ah.SearchUsers).Methods("GET").Schemes("http")
-	r.HandleFunc("/action/user/{encoded_username}/follow", ah.RequestFollowUser).Methods("POST").Schemes("http")
-	r.HandleFunc("/action/user/{encoded_username}/accept", ah.AcceptFollowRequest).Methods("PUT").Schemes("http")
-	r.HandleFunc("/action/user/{encoded_username}/unfollow", ah.UnfollowUser).Methods("DELETE").Schemes("http")
-	r.HandleFunc("/action/user/{encoded_username}/profile-pic", ah.PostProfilePic).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/search/user", ah.SearchUsers).Methods("GET").Schemes("http")
+	authRoutes.HandleFunc("/user/{encoded_username}/follow", ah.RequestFollowUser).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/user/{encoded_username}/accept", ah.AcceptFollowRequest).Methods("PUT").Schemes("http")
+	authRoutes.HandleFunc("/user/{encoded_username}/unfollow", ah.UnfollowUser).Methods("DELETE").Schemes("http")
+	authRoutes.HandleFunc("/user/{encoded_username}/profile-pic", ah.PostProfilePic).Methods("POST").Schemes("http")
 	// DM
-	r.HandleFunc("/action/user/{encoded_username}/conversations", ah.GetConversations).Methods("GET").Schemes("http")
-	r.HandleFunc("/action/user/{encoded_username}/conversations", ah.StartConversation).Methods("POST").Schemes("http")
-	r.HandleFunc("/action/user/{encoded_username}/conversations/{conversation_id}/read", ah.ReadConversation).Methods("PUT").Schemes("http")
-	r.HandleFunc("/action/user/{encoded_username}/conversations/{conversation_id}/dms", ah.GetDMs).Methods("GET").Schemes("http")
-	r.HandleFunc("/action/user/{encoded_username}/conversations/{conversation_id}/dms", ah.SendDM).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/user/{encoded_username}/conversations", ah.GetConversations).Methods("GET").Schemes("http")
+	authRoutes.HandleFunc("/user/{encoded_username}/conversations", ah.StartConversation).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/user/{encoded_username}/conversations/{conversation_id}/read", ah.ReadConversation).Methods("PUT").Schemes("http")
+	authRoutes.HandleFunc("/user/{encoded_username}/conversations/{conversation_id}/dms", ah.GetDMs).Methods("GET").Schemes("http")
+	authRoutes.HandleFunc("/user/{encoded_username}/conversations/{conversation_id}/dms", ah.SendDM).Methods("POST").Schemes("http")
 	// Notif
-	r.HandleFunc("/action/user/{encoded_username}/notifications", ah.GetNotifs).Methods("GET").Schemes("http")
-	r.HandleFunc("/action/user/{encoded_username}/notifications/{notif_id}/read", ah.UpdateNotif).Methods("PUT").Schemes("http")
+	authRoutes.HandleFunc("/user/{encoded_username}/notifications", ah.GetNotifs).Methods("GET").Schemes("http")
+	authRoutes.HandleFunc("/user/{encoded_username}/notifications/{notif_id}/read", ah.UpdateNotif).Methods("PUT").Schemes("http")
 	// Post
-	r.HandleFunc("/action/post", ah.AddPost).Methods("POST").Schemes("http")
-	r.HandleFunc("/action/post/{post_id}", ah.EditPost).Methods("PUT").Schemes("http")
-	r.HandleFunc("/action/post/{post_id}", ah.DeletePost).Methods("DELETE").Schemes("http")
-	r.HandleFunc("/action/post/{post_id}/up", ah.RatePostUp).Methods("POST").Schemes("http")
-	r.HandleFunc("/action/post/{post_id}/down", ah.RatePostDown).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/post", ah.AddPost).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/post/{post_id}", ah.EditPost).Methods("PUT").Schemes("http")
+	authRoutes.HandleFunc("/post/{post_id}", ah.DeletePost).Methods("DELETE").Schemes("http")
+	authRoutes.HandleFunc("/post/{post_id}/up", ah.RatePostUp).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/post/{post_id}/down", ah.RatePostDown).Methods("POST").Schemes("http")
 	// Comment
-	r.HandleFunc("/action/post/{post_id}/comment", ah.AddComment).Methods("POST").Schemes("http")
-	r.HandleFunc("/action/post/{post_id}/comment/{comment_id}", ah.EditComment).Methods("PUT").Schemes("http")
-	r.HandleFunc("/action/post/{post_id}/comment/{comment_id}", ah.DeleteComment).Methods("DELETE").Schemes("http")
-	r.HandleFunc("/action/post/{post_id}/comment/{comment_id}/up", ah.RateCommentUp).Methods("POST").Schemes("http")
-	r.HandleFunc("/action/post/{post_id}/comment/{comment_id}/down", ah.RateCommentDown).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/post/{post_id}/comment", ah.AddComment).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/post/{post_id}/comment/{comment_id}", ah.EditComment).Methods("PUT").Schemes("http")
+	authRoutes.HandleFunc("/post/{post_id}/comment/{comment_id}", ah.DeleteComment).Methods("DELETE").Schemes("http")
+	authRoutes.HandleFunc("/post/{post_id}/comment/{comment_id}/up", ah.RateCommentUp).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/post/{post_id}/comment/{comment_id}/down", ah.RateCommentDown).Methods("POST").Schemes("http")
 	// Password
-	r.HandleFunc("/action/forgot-password", ah.ForgotPassword).Methods("POST").Schemes("http")
-	r.HandleFunc("/action/recover-password", ah.RecoverPassword).Methods("POST").Schemes("http")
-	r.HandleFunc("/action/change-password", ah.ChangePassword).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/forgot-password", ah.ForgotPassword).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/recover-password", ah.RecoverPassword).Methods("POST").Schemes("http")
+	authRoutes.HandleFunc("/change-password", ah.ChangePassword).Methods("POST").Schemes("http")
 	// Image
-	r.HandleFunc("/action/image", ah.GetPostImage).Schemes("http")
-	r.HandleFunc("/action/profile-pic", ah.GetProfilePic).Schemes("http")
+	authRoutes.HandleFunc("/image", ah.GetPostImage).Schemes("http")
+	authRoutes.HandleFunc("/profile-pic", ah.GetProfilePic).Schemes("http")
 
 	// Websocket
-	r.HandleFunc("/ws", wsh.HandleWSMsg)
+	r.Handle("/ws", mw.Auth(http.HandlerFunc(wsh.HandleWSMsg)))
+
+	// Static
+	staticDir := "./static"
+	r.PathPrefix("/static/").Handler(
+		http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))),
+	)
 
 	return mw.Wrap(r)
 

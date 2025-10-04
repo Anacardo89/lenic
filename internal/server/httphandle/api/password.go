@@ -46,7 +46,7 @@ func (h *APIHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Send recovery email
-	mailSubject, mailBody := helpers.BuildPasswordRecoveryMail("localhost", h.cfg.Port, uDB.Username, token)
+	mailSubject, mailBody := helpers.BuildPasswordRecoveryMail(h.cfg.Host, h.cfg.Port, uDB.Username, token)
 	errs := h.mail.Send([]string{uDB.Email}, mailSubject, mailBody)
 	if len(errs) != 0 {
 		for _, err := range errs {

@@ -26,11 +26,19 @@ type SessionManager struct {
 }
 
 func NewSessionManager(ctx context.Context, cfg config.Session, db repo.DBRepository) *SessionManager {
+	store := sessions.NewCookieStore([]byte(cfg.Secret))
+	store.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   int(cfg.Duration.Seconds()),
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	}
 	return &SessionManager{
 		ctx:      ctx,
 		cfg:      cfg,
 		db:       db,
-		store:    sessions.NewCookieStore([]byte(cfg.Secret)),
+		store:    store,
 		sessions: make(map[uuid.UUID]*Session),
 	}
 }

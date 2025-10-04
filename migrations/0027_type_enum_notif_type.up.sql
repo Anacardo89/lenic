@@ -5,5 +5,5 @@ CREATE TYPE notif_type AS ENUM (
     'post_mention',
     'comment_mention',
     'post_rating',
-    'comment_rating',
+    'comment_rating'
 );

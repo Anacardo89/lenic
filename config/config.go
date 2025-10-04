@@ -42,6 +42,7 @@ func LoadConfig() (*Config, error) {
 func DefaultConfig() *Config {
 	return &Config{
 		Server: Server{
+			Host:            "localhost",
 			Port:            "8080",
 			ReadTimeout:     5,  // seconds
 			WriteTimeout:    10, // seconds
@@ -56,7 +57,7 @@ func DefaultConfig() *Config {
 			Duration: 60, // minutes
 		},
 		DB: DB{
-			DSN:             "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
+			DSN:             "postgres://user:pass@db:5432/dbname?sslmode=disable",
 			MaxConns:        10,
 			MinConns:        2,
 			MaxConnLifetime: 30, // minutes

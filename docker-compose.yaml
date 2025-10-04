@@ -16,7 +16,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 2s
       timeout: 2s
       retries: 10
@@ -55,6 +55,7 @@ services:
       db:
         condition: service_healthy
     environment:
+      HOST: ${HOST}
       PORT: ${PORT}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}

@@ -7,14 +7,14 @@ import (
 	"github.com/Anacardo89/lenic/config"
 )
 
-const (
-	mailMsg = `
-	From: %s\r\n
-	To: %s\r\n
-	Subject: %s\r\n\r\n
-	%s
-	`
-)
+const mailMsg = `From: %s
+To: %s
+Subject: %s
+MIME-Version: 1.0
+Content-Type: text/html; charset="UTF-8"
+
+%s
+`
 
 type Client struct {
 	Host     string

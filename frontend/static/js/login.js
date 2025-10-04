@@ -23,8 +23,8 @@ function register(el) {
         data: { 
             username: username,
             email: email,
-            user_password: passwd,
-            user_password2: passwd2
+            password: passwd,
+            password2: passwd2
         },
         success: function(xhr) {
             window.location.href = '/home';
