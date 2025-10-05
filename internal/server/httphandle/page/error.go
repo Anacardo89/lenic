@@ -17,7 +17,7 @@ func (h *PageHandler) Error(w http.ResponseWriter, r *http.Request) {
 	errpg := ErrorPage{
 		ErrorMsg: msg,
 	}
-	t, err := template.ParseFiles("templates/error.html")
+	t, err := template.ParseFiles("../frontend/templates/error.html")
 	if err != nil {
 		h.log.Error("/error - Could not parse template", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)

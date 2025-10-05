@@ -19,7 +19,7 @@
             <h1 class="home-link"><a href="/user/{{.Session.User.EncodedName}}/feed">L E N I C</a></h1>
             <p class="logo-bottom">Cinel do avesso</p>
         </div>
-        {{if not .Session.Authenticated}}
+        {{if not .Session.IsAuthenticated}}
             <div class="header-buttons">
                 <a href="/login"><button class="header-button">Login</button></a>
                 <a href="/register"><button class="header-button">Register</button></a>
@@ -66,7 +66,7 @@
         {{end}}
     </header>
     <main>
-        <input type="hidden" id="post-id" value="{{.Post.GUID}}">
+        <input type="hidden" id="post-id" value="{{.Post.ID}}">
         <div class="main-container">
             <div class="content">
                 <div class="post-content">
@@ -78,7 +78,7 @@
                                 <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
                             {{end}}
                         </a>
-                        <div class="author-name-date"><a href="/user/{{.Post.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Post.Author.UserName}}</strong></a>   -   <strong>{{.Post.Date}}</strong></div>
+                        <div class="author-name-date"><a href="/user/{{.Post.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Post.Author.Username}}</strong></a>   -   <strong>{{.Post.Date}}</strong></div>
                     </div>
                     <h1>{{.Post.Title}}</h1>
                     <div class="post-text-image">
@@ -108,7 +108,7 @@
                     <div class="rating-container">
                         <div class="rating-text">Rating</div>
                         <div class="rating"><strong>{{.Post.Rating}}</strong></div>
-                        {{if $.Session.Authenticated}}
+                        {{if $.Session.IsAuthenticated}}
                             <div class="rate-buttons">
                                 <button id="post-rate-up-button"><i class="fa-solid fa-thumbs-up"></i></button>
                                 <input type="hidden" id="post-rating-hidden" value="{{.Post.UserRating}}" />
@@ -125,7 +125,7 @@
                 </div>
             </div>
             <div class="comment-section">
-                {{if .Session.Authenticated}}
+                {{if .Session.IsAuthenticated}}
                     <div class="add-comment-form">
                         <div><p><strong>ADD A COMMENT:</strong></p></div>
                         <div class="comment-form">
@@ -166,7 +166,7 @@
                                 <div class="comment-rating-container">
                                     <div class="comment-rating-text">Rating</div>
                                     <div class="comment-rating"><strong>{{.Rating}}</strong></div>
-                                    {{if $.Session.Authenticated}}
+                                    {{if $.Session.IsAuthenticated}}
                                         <div class="comment-rate-buttons">
                                             <button id="comment-rate-up-button-{{.Id}}"><i class="comment-rate-up-button fa-solid fa-thumbs-up" data-id="{{.Id}}"></i></button>
                                             <input type="hidden" class="comment-rating-hidden" data-id="{{.Id}}" value="{{.UserRating}}" />
@@ -175,7 +175,7 @@
                                     {{end}}
                                 </div>
                             </div>
-                            {{if eq .Author.UserName $.Session.User.UserName}}
+                            {{if eq .Author.Username $.Session.User.Username}}
                                 <div class="comment-buttons">
                                     <button class="comment-editor-button" data-id="{{.Id}}">Edit</button>
                                     <button class="comment-deleter-button" data-id="{{.Id}}">Delete</button>

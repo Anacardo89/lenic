@@ -8,11 +8,15 @@ import (
 	"time"
 
 	"github.com/caarlos0/env/v9"
+	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
 
 func LoadConfig() (*Config, error) {
 	cfg := DefaultConfig()
+	if err := godotenv.Load("../dev.env"); err != nil {
+		log.Println("No dev.env file found, relying on OS env variables")
+	}
 	cfgPath := os.Getenv("CFG_PATH")
 	if cfgPath == "" {
 		cfgPath = "/lenic/config.yaml"

@@ -102,7 +102,7 @@ func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 		Posts:   posts,
 		Follows: followStatus,
 	}
-	t, err := template.ParseFiles("templates/authorized/user-profile.html")
+	t, err := template.ParseFiles("../frontend/templates/authorized/user-profile.html")
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

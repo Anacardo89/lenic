@@ -53,17 +53,14 @@ func (h *APIHandler) Login(w http.ResponseWriter, r *http.Request) {
 		fail("user is inactive", err, true, http.StatusUnauthorized, "inactive user")
 		return
 	}
-	h.log.Info("Register form",
-		"user", body.Username,
-		"password", body.Password,
-		"passwordHash", uDB.PasswordHash,
-	)
 	if err := crypto.ValidatePassword(uDB.PasswordHash, body.Password); err != nil {
 		fail("wrong password", err, true, http.StatusUnauthorized, "wrong password")
 		return
 	}
 	// Response
-	h.sm.CreateSession(w, r, uDB.ID)
+	if _, err := h.sm.CreateSession(w, r, uDB.ID); err != nil {
+		fail("could not create session", err, true, http.StatusInternalServerError, "internal error")
+	}
 	w.WriteHeader(http.StatusOK)
 }
 

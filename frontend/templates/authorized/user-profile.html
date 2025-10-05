@@ -20,7 +20,7 @@
             <h1 class="home-link"><a href="/user/{{.Session.User.EncodedName}}/feed">L E N I C</a></h1>
             <p class="logo-bottom">Cinel do avesso</p>
         </div>
-        {{if not .Session.Authenticated}}
+        {{if not .Session.IsAuthenticated}}
             <div class="header-buttons">
                 <a href="/login"><button class="header-button">Login</button></a>
                 <a href="/register"><button class="header-button">Register</button></a>
@@ -144,7 +144,7 @@
                     <div class="profile-info">
                         <input type="hidden" id="encoded-user" value="{{.User.EncodedName}}" />
                         <h1>{{.User.Username}}</h1>
-                        <input type="hidden" id="profile-username" value="{{.User.UserName}}">
+                        <input type="hidden" id="profile-username" value="{{.User.Username}}">
                         <br>
                         {{if eq .User.Username .Session.User.Username}}
                             <p>{{.User.Email}}</p>
@@ -161,14 +161,14 @@
                                     {{end}}
                                 {{end}}
                             {{end}}
-                            <button class="start-dm-button" data-user="{{.User.UserName}}">Send a DM</button>
+                            <button class="start-dm-button" data-user="{{.User.Username}}">Send a DM</button>
                         {{end}}
                         <div class="follow-info"><a href="/user/{{.User.EncodedName}}/followers"><strong>Followers:</strong></a> {{.User.Followers}}</div>
                         <div class="follow-info"><a href="/user/{{.User.EncodedName}}/following"><strong>Following:</strong></a> {{.User.Following}}</div>
                     </div>
                 </div>
                 <div class="bottom-buttons">
-                    {{if eq .User.UserName .Session.User.UserName}}
+                    {{if eq .User.Username .Session.User.Username}}
                         <a href="/change-password/{{.User.EncodedName}}"><button>Change password</button></a>
                         <button id="logout-button"><strong>Logout</strong></button>
                     {{end}}

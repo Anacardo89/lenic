@@ -210,13 +210,13 @@ $(document).ready(function() {
 
     // Scroll event handler
     function handleScroll() {
-      const scrollHeight = $container[0].scrollHeight;
-      const scrollTop = $container.scrollTop();
-      const clientHeight = $container.height();
+        const scrollHeight = $container[0].scrollHeight;
+        const scrollTop = $container.scrollTop();
+        const clientHeight = $container.height();
 
-      if (scrollHeight - scrollTop === clientHeight) {
-        fetchNotifications();
-      }
+        if (scrollHeight - scrollTop === clientHeight) {
+            fetchNotifications();
+        }
     }
 
     // Attach scroll event listener

@@ -45,13 +45,6 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		fail("could not hash password", err, true, http.StatusInternalServerError, "internal error")
 		return
 	}
-	h.log.Info("Register form",
-		"user", r.FormValue("username"),
-		"email", r.FormValue("username"),
-		"password", r.FormValue("password"),
-		"password2", r.FormValue("password2"),
-		"passwordHash", hashed,
-	)
 	var u = &models.User{
 		Username:     r.FormValue("username"),
 		Email:        r.FormValue("email"),

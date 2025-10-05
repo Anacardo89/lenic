@@ -104,8 +104,8 @@ func (s *SessionManager) ValidateSession(w http.ResponseWriter, r *http.Request)
 	if !ok {
 		return session
 	}
-	sessionID, err := uuid.Parse(sessionIDVal.(string))
-	if err != nil {
+	sessionID, ok := sessionIDVal.(uuid.UUID)
+	if !ok {
 		return session
 	}
 	s.mu.Lock()
@@ -134,6 +134,7 @@ func (s *SessionManager) ValidateSession(w http.ResponseWriter, r *http.Request)
 
 	s.mu.Lock()
 	s.sessions[sessionID] = session
+	s.mu.Unlock()
 
 	return session
 }

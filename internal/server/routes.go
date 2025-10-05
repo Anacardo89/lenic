@@ -80,7 +80,7 @@ func NewRouter(ah *api.APIHandler, ph *page.PageHandler, wsh *wshandle.WSHandler
 	r.Handle("/ws", mw.Auth(http.HandlerFunc(wsh.HandleWSMsg)))
 
 	// Static
-	staticDir := "./static"
+	staticDir := "../frontend/static"
 	r.PathPrefix("/static/").Handler(
 		http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))),
 	)

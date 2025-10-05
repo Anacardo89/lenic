@@ -26,3 +26,5 @@ go.work.sum
 /cmd/ssl
 
 .env
+dev.env
+prod.env

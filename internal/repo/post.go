@@ -38,7 +38,7 @@ func (db *dbHandler) CreatePost(ctx context.Context, p *Post) (uuid.UUID, error)
 
 func (db *dbHandler) GetFeed(ctx context.Context, username string) ([]*Post, error) {
 	query := `
-	WITH current_user AS (
+	WITH active_user AS (
 		SELECT id AS user_id 
 		FROM users 
 		WHERE username = $1
@@ -57,13 +57,13 @@ func (db *dbHandler) GetFeed(ctx context.Context, username string) ([]*Post, err
 	FROM posts p
 	LEFT JOIN follows f
 		ON p.author_id = f.followed_id
-		AND f.follower_id = (SELECT user_id FROM current_user)
+		AND f.follower_id = (SELECT user_id FROM active_user)
 	WHERE
 		p.is_active = TRUE
 		AND (
-			p.author_id = (SELECT user_id FROM current_user)
+			p.author_id = (SELECT user_id FROM active_user)
 			OR p.is_public = TRUE
-			OR (f.follower_id = (SELECT user_id FROM current_user) AND f.follow_status = 'accepted')
+			OR (f.follower_id = (SELECT user_id FROM active_user) AND f.follow_status = 'accepted')
 		)
 	ORDER BY 
 		CASE 
@@ -250,7 +250,7 @@ func (db *dbHandler) GetPostForPage(ctx context.Context, ID, userID uuid.UUID) (
 		p.created_at,
 		p.updated_at,
 		-- Post rating for the specific user
-		COALESCE(pr.rating_value, 0) AS user_post_rating,
+		COALESCE(MAX(pr.rating_value), 0) AS user_post_rating,
 		-- Post author
 		json_build_object(
 			'id', u.id,
@@ -259,24 +259,7 @@ func (db *dbHandler) GetPostForPage(ctx context.Context, ID, userID uuid.UUID) (
 		) AS author,
 		-- Comments array
 		COALESCE(
-			json_agg(
-				json_build_object(
-					'id', c.id,
-					'post_id', c.post_id,
-					'author_id', c.author_id,
-					'content', c.content,
-					'rating', c.rating,
-					'is_active', c.is_active,
-					'created_at', c.created_at,
-					'updated_at', c.updated_at,
-					'user_rating', COALESCE(cr.rating_value, 0),
-					'author', json_build_object(
-						'id', cu.id,
-						'username', cu.username,
-						'profile_pic', cu.profile_pic
-					)
-				)
-			) FILTER (WHERE c.id IS NOT NULL),
+			json_agg(cdata) FILTER (WHERE cdata IS NOT NULL),
 			'[]'
 		) AS comments
 	FROM posts p
@@ -284,12 +267,30 @@ func (db *dbHandler) GetPostForPage(ctx context.Context, ID, userID uuid.UUID) (
 		ON u.id = p.author_id
 	LEFT JOIN post_ratings pr 
 		ON pr.target_id = p.id AND pr.user_id = $2
-	LEFT JOIN comments c
-		ON c.post_id = p.id AND c.is_active = TRUE
-	LEFT JOIN users cu
-		ON cu.id = c.author_id
-	LEFT JOIN comment_ratings cr 
-		ON cr.target_id = c.id AND cr.user_id = $2
+	-- comment + author + rating packed into subquery
+	LEFT JOIN (
+		SELECT 
+			c.id,
+			c.post_id,
+			c.author_id,
+			c.content,
+			c.rating,
+			c.is_active,
+			c.created_at,
+			c.updated_at,
+			COALESCE(MAX(cr.rating_value), 0) AS user_rating,
+			json_build_object(
+				'id', cu.id,
+				'username', cu.username,
+				'profile_pic', cu.profile_pic
+			) AS author
+		FROM comments c
+		JOIN users cu ON cu.id = c.author_id
+		LEFT JOIN comment_ratings cr 
+			ON cr.target_id = c.id AND cr.user_id = $2
+		WHERE c.is_active = TRUE
+		GROUP BY c.id, cu.id
+	) AS cdata ON cdata.post_id = p.id
 	WHERE p.id = $1 AND p.is_active = TRUE
 	GROUP BY p.id, u.id
 	;`

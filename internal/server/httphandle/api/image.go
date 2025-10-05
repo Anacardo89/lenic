@@ -147,7 +147,7 @@ func (h *APIHandler) PostProfilePic(w http.ResponseWriter, r *http.Request) {
 		fail("could not parse form", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
-	file, header, err := r.FormFile("profile_pic")
+	file, header, err := r.FormFile("profile_image")
 	if err != nil {
 		fail("could not get image", err, true, http.StatusBadRequest, "invalid params")
 		return

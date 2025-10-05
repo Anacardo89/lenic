@@ -20,7 +20,7 @@
             <h1 class="home-link"><a href="/user/{{.Session.User.EncodedName}}/feed">L E N I C</a></h1>
             <p class="logo-bottom">Cinel do avesso</p>
         </div>
-        {{if not .Session.Authenticated}}
+        {{if not .Session.IsAuthenticated}}
             <div class="header-buttons">
                 <a href="/login"><button class="header-button">Login</button></a>
                 <a href="/register"><button class="header-button">Register</button></a>
@@ -79,7 +79,7 @@
                             {{else}}
                                 <img class="profile-pic-med" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
                             {{end}}
-                            <p><strong>{{.UserName}}</strong></p>
+                            <p><strong>{{.Username}}</strong></p>
                         </div>
                     </a>
                 {{end}}
@@ -111,7 +111,7 @@
                     <div class="profile-info">
                         <input type="hidden" id="encoded-user" value="{{.User.EncodedName}}" />
                         <h1>{{.User.Username}}</h1>
-                        <input type="hidden" id="profile-username" value="{{.User.UserName}}">
+                        <input type="hidden" id="profile-username" value="{{.User.Username}}">
                         <br>
                         {{if eq .User.Username .Session.User.Username}}
                             <p>{{.User.Email}}</p>

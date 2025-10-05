@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -76,7 +77,6 @@ func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, erro
 			&u.UserRole,
 			&u.CreatedAt,
 			&u.UpdatedAt,
-			&u.DeletedAt,
 		)
 	return &u, err
 }
@@ -416,7 +416,13 @@ func (db *dbHandler) GetUserFollows(ctx context.Context, followerID, followedID 
 			&f.CreatedAt,
 			&f.UpdatedAt,
 		)
-	return &f, err
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &f, nil
+		}
+		return nil, err
+	}
+	return &f, nil
 }
 
 func (db *dbHandler) GetFollowers(ctx context.Context, followedID uuid.UUID) ([]*Follows, error) {
@@ -430,7 +436,7 @@ func (db *dbHandler) GetFollowers(ctx context.Context, followedID uuid.UUID) ([]
 	follows := []*Follows{}
 	rows, err := db.pool.Query(ctx, query, followedID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return follows, nil
 		}
 		return nil, err
@@ -465,7 +471,7 @@ func (db *dbHandler) GetFollowing(ctx context.Context, followerID uuid.UUID) ([]
 	follows := []*Follows{}
 	rows, err := db.pool.Query(ctx, query, followerID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return follows, nil
 		}
 		return nil, err
