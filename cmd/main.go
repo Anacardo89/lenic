@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/gob"
 	"log"
 	"net/http"
 	"os"
@@ -20,6 +21,7 @@ import (
 	"github.com/Anacardo89/lenic/pkg/img"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/Anacardo89/lenic/pkg/mail"
+	"github.com/google/uuid"
 )
 
 var (
@@ -31,6 +33,7 @@ func main() {
 	// Dependencies
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	gob.Register(uuid.UUID{})
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
