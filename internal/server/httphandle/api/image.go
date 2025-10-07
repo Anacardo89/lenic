@@ -91,13 +91,14 @@ func (h *APIHandler) GetProfilePic(w http.ResponseWriter, r *http.Request) {
 		fail("could not decode user", err, true, http.StatusBadRequest, "invalid user")
 		return
 	}
-	userName := string(bytes)
+	username := string(bytes)
 	// DB operations
-	uDB, err := h.db.GetUserByUserName(h.ctx, userName)
+	uDB, err := h.db.GetUserByUserName(h.ctx, username)
 	if err != nil {
 		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
+	h.log.Info("uDB", "object", uDB)
 	if uDB.ProfilePic == "" {
 		w.WriteHeader(200)
 		return

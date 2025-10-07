@@ -15,7 +15,10 @@ type Logger struct {
 	*slog.Logger
 }
 
-func NewLogger(cfg config.Log) *Logger {
+func NewLogger(cfg config.Log) (*Logger, error) {
+	if err := os.MkdirAll(cfg.Path, 0755); err != nil {
+		return nil, err
+	}
 	logLevel := strings.ToUpper(cfg.Level)
 	level := slog.LevelInfo
 	switch logLevel {
@@ -42,5 +45,5 @@ func NewLogger(cfg config.Log) *Logger {
 	slog.SetDefault(logger)
 	return &Logger{
 		logger,
-	}
+	}, nil
 }

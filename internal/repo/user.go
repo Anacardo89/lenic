@@ -325,15 +325,15 @@ func (db *dbHandler) SetNewPassword(ctx context.Context, userID uuid.UUID, passH
 	return err
 }
 
-func (db *dbHandler) UpdateProfilePic(ctx context.Context, userName string, profilePic string) error {
+func (db *dbHandler) UpdateProfilePic(ctx context.Context, username string, profilePic string) error {
 
 	query := `
 	UPDATE users
-	SET profile_pic = $2,
+	SET profile_pic = $2
 	WHERE username = $1
 	;`
 
-	_, err := db.pool.Exec(ctx, query, userName, profilePic)
+	_, err := db.pool.Exec(ctx, query, username, profilePic)
 	return err
 }
 

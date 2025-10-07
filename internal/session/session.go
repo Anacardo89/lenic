@@ -145,7 +145,7 @@ func (s *SessionManager) DeleteSession(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 	sessionIDVal := lenicSession.Values["session_id"]
-	sessionID, err := uuid.Parse(sessionIDVal.(string))
+	sessionID := sessionIDVal.(uuid.UUID)
 	if err != nil {
 		return err
 	}
