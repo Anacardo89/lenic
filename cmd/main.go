@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"encoding/gob"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/google/uuid"
 
 	"github.com/Anacardo89/lenic/config"
 	"github.com/Anacardo89/lenic/internal/auth"
@@ -21,7 +24,6 @@ import (
 	"github.com/Anacardo89/lenic/pkg/img"
 	"github.com/Anacardo89/lenic/pkg/logger"
 	"github.com/Anacardo89/lenic/pkg/mail"
-	"github.com/google/uuid"
 )
 
 var (
@@ -33,12 +35,17 @@ func main() {
 	// Dependencies
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	cwd, _ := os.Getwd()
+	fmt.Println("Current working dir:", cwd)
 	gob.Register(uuid.UUID{})
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
-	logg := logger.NewLogger(cfg.Log)
+	logg, err := logger.NewLogger(cfg.Log)
+	if err != nil {
+		log.Fatalf("failed start logger: %v", err)
+	}
 	dbRepo, err := initDB(cfg.DB)
 	if err != nil {
 		logg.Error("failed to init db", "error", err)
@@ -48,8 +55,11 @@ func main() {
 	tokenMan := auth.NewTokenManager(&cfg.Token)
 	sm := session.NewSessionManager(context.Background(), cfg.Session, dbRepo)
 	mailClient := mail.NewClient(cfg.Mail)
-	im := img.NewImgManager(&cfg.Img)
-
+	im, err := img.NewImgManager(&cfg.Img)
+	if err != nil {
+		logg.Error("failed to start image manager", "error", err)
+		os.Exit(1)
+	}
 	wsh := wshandle.NewHandler(dbRepo, logg, sm, wsconnman.NewWSConnMan())
 	ah := api.NewHandler(context.Background(), logg, &cfg.Server, dbRepo, tokenMan, sm, wsh, mailClient, im)
 	ph := page.NewHandler(context.Background(), logg, dbRepo, sm)
