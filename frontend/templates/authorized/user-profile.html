@@ -150,15 +150,13 @@
                             <p>{{.User.Email}}</p>
                             <br>
                         {{else}}
-                            {{if .Session.Authenticated}}
-                                {{if ne .Session.User.Username .User.Username}}
-                                    {{if gt .Follows 0}}
-                                        <button id="unfollow-button">Unfollow</button>
-                                    {{else if lt .Follows 0}}
-                                        <button id="follow-button">Follow</button>
-                                    {{else}}
-                                        <p>A request has been sent</p>
-                                    {{end}}
+                            {{if .Session.IsAuthenticated}}
+                                {{if gt .Follows 0}}
+                                    <button id="unfollow-button">Unfollow</button>
+                                {{else if lt .Follows 0}}
+                                    <button id="follow-button">Follow</button>
+                                {{else}}
+                                    <p>A request has been sent</p>
                                 {{end}}
                             {{end}}
                             <button class="start-dm-button" data-user="{{.User.Username}}">Send a DM</button>

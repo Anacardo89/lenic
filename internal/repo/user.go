@@ -402,7 +402,12 @@ func (db *dbHandler) UnfollowUser(ctx context.Context, followerName, followedNam
 func (db *dbHandler) GetUserFollows(ctx context.Context, followerID, followedID uuid.UUID) (*Follows, error) {
 
 	query := `
-	SELECT *
+	SELECT
+		follower_id,
+		followed_id,
+		follow_status,
+		created_at,
+		updated_at
 	FROM follows
 	WHERE follower_id = $1 AND followed_id = $2
 	;`
@@ -418,7 +423,7 @@ func (db *dbHandler) GetUserFollows(ctx context.Context, followerID, followedID 
 		)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return &f, nil
+			return nil, nil
 		}
 		return nil, err
 	}
