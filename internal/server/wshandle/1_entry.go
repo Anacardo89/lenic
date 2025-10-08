@@ -18,13 +18,13 @@ type Message struct {
 func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 	conn, err := h.wsConnMann.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		h.log.Error("failed to upgrade conn to websocket:", err)
+		h.log.Error("failed to upgrade conn to websocket", "error", err)
 		return
 	}
 
 	username := r.URL.Query().Get("username")
 	if username == "" {
-		h.log.Error("no user provided", err)
+		h.log.Error("no user provided", "error", err)
 		return
 	}
 
@@ -45,9 +45,9 @@ func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-				h.log.Info("connection closed normally:", err)
+				h.log.Info("connection closed normally", "error", err)
 			} else {
-				h.log.Error("could not read message:", err)
+				h.log.Error("could not read message:", "error", err)
 			}
 			break
 		}
@@ -55,7 +55,7 @@ func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 		var msg Message
 		err = json.Unmarshal(message, &msg)
 		if err != nil {
-			h.log.Error("could not unmarshal message:", err)
+			h.log.Error("could not unmarshal message", "error", err)
 			continue
 		}
 
@@ -75,7 +75,7 @@ func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 		case "dm":
 			h.handleDM(msg)
 		default:
-			h.log.Warn("unknown message type:", msg.Type)
+			h.log.Warn("unknown message type", "msg type", msg.Type)
 		}
 	}
 }

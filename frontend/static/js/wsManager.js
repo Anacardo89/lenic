@@ -29,7 +29,7 @@ export function connectWS(user_name) {
         return;
     }
 
-    const wsUrl = `wss://${window.location.host}/ws?user_name=${user_name}`;
+    const wsUrl = `ws://${window.location.host}/ws?username=${user_name}`;
     ws = new WebSocket(wsUrl);
 
     ws.onopen = function() {
