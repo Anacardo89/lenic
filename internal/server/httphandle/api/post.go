@@ -63,7 +63,7 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 		IsPublic:  isPublic,
 	}
 	// Handle image
-	file, header, err := r.FormFile("post_image")
+	file, header, err := r.FormFile("post-image")
 	if err != nil && err != http.ErrMissingFile {
 		fail("could not get image", err, true, http.StatusBadRequest, "invalid params")
 		return
