@@ -21,9 +21,9 @@
 go.work
 go.work.sum
 
-/cmd/logs
-/cmd/img
-/cmd/ssl
+/log
+/img
+
 
 .env
 dev.env

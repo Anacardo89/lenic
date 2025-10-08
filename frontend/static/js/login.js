@@ -117,22 +117,20 @@ function changePasswd() {
     let formData = new FormData();
 
     const user = $('#session-username').val();
-    console.log(user);
     const oldPasswd = $('#old-passwd').val();
     const newPasswd = $('#new-passwd').val();
     const newPasswd2 = $('#new-passwd2').val();
 
-    formData.append('username', user);
-    formData.append('old_password', oldPasswd);
-    formData.append('password', newPasswd);
-    formData.append('password2', newPasswd2);
-
     $.ajax({
         url: '/action/change-password',
         method: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false, 
+        contentType: 'application/x-www-form-urlencoded',
+        data: { 
+            username: user,
+            old_password: oldPasswd,
+            password: newPasswd,
+            password2: newPasswd2
+        },
         success: function(xhr) {
             window.location.href = '/home';
         },
