@@ -38,6 +38,8 @@ func main() {
 	cwd, _ := os.Getwd()
 	fmt.Println("Current working dir:", cwd)
 	gob.Register(uuid.UUID{})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
@@ -60,9 +62,9 @@ func main() {
 		logg.Error("failed to start image manager", "error", err)
 		os.Exit(1)
 	}
-	wsh := wshandle.NewHandler(dbRepo, logg, sm, wsconnman.NewWSConnMan())
-	ah := api.NewHandler(context.Background(), logg, &cfg.Server, dbRepo, tokenMan, sm, wsh, mailClient, im)
-	ph := page.NewHandler(context.Background(), logg, dbRepo, sm)
+	wsh := wshandle.NewHandler(ctx, dbRepo, logg, sm, wsconnman.NewWSConnMan())
+	ah := api.NewHandler(ctx, logg, &cfg.Server, dbRepo, tokenMan, sm, wsh, mailClient, im)
+	ph := page.NewHandler(ctx, logg, dbRepo, sm)
 	mw := middleware.NewMiddlewareHandler(sm, logg, cfg.Server.WriteTimeout)
 
 	srv := server.NewServer(cfg.Server, logg, ah, ph, mw, wsh)

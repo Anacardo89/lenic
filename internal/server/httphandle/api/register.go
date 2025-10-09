@@ -72,7 +72,7 @@ func (h *APIHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/home", http.StatusFound)
 }
 
 // /action/activate
@@ -107,5 +107,5 @@ func (h *APIHandler) ActivateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/home", http.StatusFound)
 }

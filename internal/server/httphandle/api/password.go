@@ -55,7 +55,7 @@ func (h *APIHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/home", http.StatusFound)
 }
 
 // /action/recover-password
@@ -106,7 +106,7 @@ func (h *APIHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/home", http.StatusFound)
 }
 
 // /action/change-password
@@ -158,5 +158,5 @@ func (h *APIHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/home", http.StatusFound)
 }

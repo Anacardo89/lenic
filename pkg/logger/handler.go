@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -16,6 +15,7 @@ import (
 type LoggerHandler struct {
 	level   slog.Level
 	handler slog.Handler
+	out     io.Writer
 }
 
 type LogRecord struct {
@@ -37,6 +37,7 @@ func NewLoggerHandler(out io.Writer, level slog.Level) *LoggerHandler {
 	return &LoggerHandler{
 		level:   level,
 		handler: jsonHandler,
+		out:     out,
 	}
 }
 
@@ -101,7 +102,7 @@ func (h *LoggerHandler) Handle(ctx context.Context, r slog.Record) error {
 	}
 	buf.WriteString("}\n")
 
-	_, err := os.Stdout.Write(buf.Bytes())
+	_, err := h.out.Write(buf.Bytes())
 	return err
 }
 

@@ -11,6 +11,7 @@ import (
 
 type WSHandler struct {
 	ctx        context.Context
+	cancel     context.CancelFunc
 	db         repo.DBRepository
 	log        *logger.Logger
 	sm         *session.SessionManager
@@ -18,12 +19,16 @@ type WSHandler struct {
 }
 
 func NewHandler(
+	parentCtx context.Context,
 	db repo.DBRepository,
 	l *logger.Logger,
 	sm *session.SessionManager,
 	wsConnMan *wsconnman.WSConnMan,
 ) *WSHandler {
+	ctx, cancel := context.WithCancel(parentCtx)
 	return &WSHandler{
+		ctx:        ctx,
+		cancel:     cancel,
 		db:         db,
 		log:        l,
 		sm:         sm,

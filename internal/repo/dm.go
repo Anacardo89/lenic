@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/google/uuid"
+
+	"github.com/Anacardo89/lenic/internal/helpers"
 )
 
 // Conversations
@@ -188,7 +189,7 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 		COALESCE(
 			json_agg(
 				json_build_object(
-					'id', c.convo_id,
+					'id', c.id,
 					'created_at', c.created_at,
 					'other_user', json_build_object(
 						'id', ou.id,
@@ -208,7 +209,7 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 							FROM (
 								SELECT *
 								FROM dmessages
-								WHERE conversation_id = c.convo_id
+								WHERE conversation_id = c.id
 								ORDER BY created_at DESC
 								LIMIT 1000
 							) m
@@ -216,7 +217,7 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 						'[]'
 					)
 				)
-			) FILTER (WHERE c.convo_id IS NOT NULL),
+			) FILTER (WHERE c.id IS NOT NULL),
 			'[]'
 		) AS conversations
 	FROM u

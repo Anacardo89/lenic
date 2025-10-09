@@ -4,8 +4,8 @@ CREATE TABLE notifications (
     from_user_id UUID NOT NULL REFERENCES users(id),
     notif_type notif_type NOT NULL,
     notif_text TEXT NOT NULL,
-    resource_id UUID NOT NULL,
-    parent_id UUID,
+    resource_id TEXT NOT NULL,
+    parent_id TEXT,
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
