@@ -2,15 +2,17 @@ package api
 
 import (
 	"context"
+	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"strconv"
 
-	"github.com/Anacardo89/lenic/internal/models"
-	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+
+	"github.com/Anacardo89/lenic/internal/models"
+	"github.com/Anacardo89/lenic/internal/repo"
 )
 
 type ConvoStarter struct {
@@ -36,11 +38,12 @@ func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 	// Execution
 	// Input validation
 	vars := mux.Vars(r)
-	userBytes, err := base64.URLEncoding.DecodeString(vars["encoded_username"])
+	bytes, err := base64.URLEncoding.DecodeString(vars["encoded_username"])
 	if err != nil {
 		fail("could not decode user", err, true, http.StatusBadRequest, "invalid user")
 		return
 	}
+	username := string(bytes)
 	var msg ConvoStarter
 	err = json.NewDecoder(r.Body).Decode(&msg)
 	if err != nil {
@@ -48,7 +51,7 @@ func (h *APIHandler) StartConversation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// DB operations
-	c, users, err := h.db.GetConversationAndUsers(r.Context(), string(userBytes), msg.User)
+	c, users, err := h.db.GetConversationAndUsers(r.Context(), username, msg.User)
 	if err != nil {
 		fail("dberr - could not get conversation", err, true, http.StatusBadRequest, "invalid params")
 		return
@@ -109,6 +112,10 @@ func (h *APIHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	// DB operations
 	dbUser, dbConvos, err := h.db.GetConversationsAndOwner(r.Context(), string(userBytes), limit, offset)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			w.WriteHeader(200)
+			return
+		}
 		fail("dberr - could not get user convos", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
