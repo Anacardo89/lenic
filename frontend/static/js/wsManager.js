@@ -42,7 +42,7 @@ export function connectWS(user_name) {
         const dmButton = $('.dm-button');
         console.log(message);
 
-        switch (message.type) {
+        switch (message.notif_type) {
             case TYPE_COMMENT_RATE:
                 handleRateComment(message);
                 if (!message.is_read) {
@@ -90,8 +90,8 @@ export function connectWS(user_name) {
                 const $dmTitle = $('#dm-title');
                 const $dmContent = $('#dm-content');
                 if (!$dmWindow.hasClass('hidden')) {
-                    if ($dmTitle.text() === message.fromuser.username) {
-                        DMChatModule.appendMessage(message.msg, 'received');
+                    if ($dmTitle.text() === message.from_user.username) {
+                        DMChatModule.appendMessage(message.notif_text, 'received');
                         $dmContent.scrollTop($dmContent[0].scrollHeight);
                         DMChatModule.readConversation(message.resource_id);
                     }    
@@ -101,7 +101,7 @@ export function connectWS(user_name) {
                 }
                 break;
             default:
-                console.warn('Unknown message type:', message.type);
+                console.warn('Unknown message type:', message.notif_type);
         }
         console.log('Message from server:', event.data);
     };

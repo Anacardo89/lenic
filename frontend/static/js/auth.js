@@ -158,7 +158,7 @@ $(document).ready(function() {
         const notifButton = $('.notif-button');
         notifications.forEach(function(notification) {
             let notif = null;
-            switch (notification.type) {
+            switch (notification.notif_type) {
             case wsoc.TYPE_COMMENT_RATE:
                 notif = notifs.makeCommentRateNotif(notification);
                 if (!notification.is_read) {
@@ -202,7 +202,7 @@ $(document).ready(function() {
                 }
                 break;
             default:
-                console.warn('Unknown message type:', message.type);
+                console.warn('Unknown message type:', notification.notif_type);
             }
             notifContainer.append(notif);
         });

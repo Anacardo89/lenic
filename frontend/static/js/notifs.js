@@ -14,13 +14,13 @@ export function makeCommentRateNotif(notification) {
     authorInline.classList.add('author-info-inline');
     const profilePic = document.createElement('img');
     profilePic.classList.add('profile-pic-mini');
-    if (notification.fromuser.profile_pic === '') {
+    if (notification.from_user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded_name
     }
     const notifMsg = document.createElement('div');
-    notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    notifMsg.innerHTML = '<strong>' + notification.from_user.username + '</strong> ' + notification.notif_text;
     const idHidden = document.createElement('input');
     idHidden.type = 'hidden';
     idHidden.value = notification.id;
@@ -61,13 +61,13 @@ export function makeCommentTagNotif(notification) {
     authorInline.classList.add('author-info-inline');
     const profilePic = document.createElement('img');
     profilePic.classList.add('profile-pic-mini');
-    if (notification.fromuser.profile_pic === '') {
+    if (notification.from_user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.from_user.encoded_name
     }
     const notifMsg = document.createElement('div');
-    notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    notifMsg.innerHTML = '<strong>' + notification.from_user.username + '</strong> ' + notification.notif_text;
     const idHidden = document.createElement('input');
     idHidden.type = 'hidden';
     idHidden.value = notification.id;
@@ -107,13 +107,13 @@ export function makePostRateNotif(notification) {
     authorInline.classList.add('author-info-inline');
     const profilePic = document.createElement('img');
     profilePic.classList.add('profile-pic-mini');
-    if (notification.fromuser.profile_pic === '') {
+    if (notification.from_user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.from_user.encoded_name
     }
     const notifMsg = document.createElement('div');
-    notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    notifMsg.innerHTML = '<strong>' + notification.from_user.username + '</strong> ' + notification.notif_text;
     const idHidden = document.createElement('input');
     idHidden.type = 'hidden';
     idHidden.value = notification.id;
@@ -153,13 +153,13 @@ export function makePostTagNotif(notification) {
     authorInline.classList.add('author-info-inline');
     const profilePic = document.createElement('img');
     profilePic.classList.add('profile-pic-mini');
-    if (notification.fromuser.profile_pic === '') {
+    if (notification.from_user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded_name
     }
     const notifMsg = document.createElement('div');
-    notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    notifMsg.innerHTML = '<strong>' + notification.from_user.username + '</strong> ' + notification.notif_text;
     const idHidden = document.createElement('input');
     idHidden.type = 'hidden';
     idHidden.value = notification.id;
@@ -200,13 +200,13 @@ export function makeCommentOnPostNotif(notification) {
     authorInline.classList.add('author-info-inline');
     const profilePic = document.createElement('img');
     profilePic.classList.add('profile-pic-mini');
-    if (notification.fromuser.profile_pic === '') {
+    if (notification.from_user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.from_user.encoded_name
     }
     const notifMsg = document.createElement('div');
-    notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    notifMsg.innerHTML = '<strong>' + notification.from_user.username + '</strong> ' + notification.notif_text;
     const idHidden = document.createElement('input');
     idHidden.type = 'hidden';
     idHidden.value = notification.id;
@@ -245,13 +245,13 @@ export function makeFollowAcceptNotif(notification) {
     authorInline.classList.add('author-info-inline');
     const profilePic = document.createElement('img');
     profilePic.classList.add('profile-pic-mini');
-    if (notification.fromuser.profile_pic === '') {
+    if (notification.from_user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.from_user.encoded_name
     }
     const notifMsg = document.createElement('div');
-    notifMsg.innerHTML = '<strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    notifMsg.innerHTML = '<strong>' + notification.from_user.username + '</strong> ' + notification.notif_text;
     const idHidden = document.createElement('input');
     idHidden.type = 'hidden';
     idHidden.value = notification.id;
@@ -269,7 +269,7 @@ export function makeFollowAcceptNotif(notification) {
             url: '/action/user/' + session_encoded + '/notifications/' + idHidden.value + '/read',
             method: 'PUT',
             success: function() {
-                window.location.href = '/user/' +  notification.fromuser.encoded;
+                window.location.href = '/user/' +  notification.from_user.encoded_name;
             },
             error: function(xhr) {
                 const errorMessage = xhr.responseText;
@@ -281,7 +281,7 @@ export function makeFollowAcceptNotif(notification) {
 }
 
 export function makeFollowRequestNotif(notification) {
-    const fromUser = notification.fromuser.username;
+    const fromUser = notification.from_user.username;
     const notif = document.createElement('div');
     notif.classList.add('notif-item');
     
@@ -289,19 +289,19 @@ export function makeFollowRequestNotif(notification) {
     authorInline.classList.add('author-info-inline');
 
     const profilePicLink = document.createElement('a');
-    profilePicLink.href = '/user/' + notification.fromuser.encoded;
+    profilePicLink.href = '/user/' + notification.from_user.encoded_name;
     
     const profilePic = document.createElement('img');
     profilePic.classList.add('profile-pic-mini');
-    if (notification.fromuser.profile_pic === '') {
+    if (notification.from_user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?encoded_username=' + notification.fromuser.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + notification.from_user.encoded_name
     }
     profilePicLink.append(profilePic);
 
     const notifMsg = document.createElement('div');
-    notifMsg.innerHTML = '<a href="/user/' + notification.fromuser.encoded + '"><strong>' + notification.fromuser.username + '</strong> ' + notification.msg;
+    notifMsg.innerHTML = '<a href="/user/' + notification.from_user.encoded_name + '"><strong>' + notification.from_user.username + '</strong> ' + notification.notif_text;
     
     const idHidden = document.createElement('input');
     idHidden.type = 'hidden';
@@ -341,7 +341,7 @@ export function makeFollowRequestNotif(notification) {
                     from_username: session_username,
                     type: wsoc.TYPE_FOLLOW_ACCEPT,
                     msg: wsoc.MSG_FOLLOW_ACCEPT,
-                    resource_id: notification.fromuser.encoded,
+                    resource_id: notification.from_user.encoded_name,
                     parent_id: ''
                 };
                 wsoc.sendWSmsg(message);
