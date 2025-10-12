@@ -14,7 +14,7 @@ import (
 
 func LoadConfig() (*Config, error) {
 	cfg := DefaultConfig()
-	if err := godotenv.Load("../dev.env"); err != nil {
+	if err := godotenv.Load("../.env"); err != nil {
 		log.Println("No dev.env file found, relying on OS env variables")
 	}
 	cfgPath := os.Getenv("CFG_PATH")

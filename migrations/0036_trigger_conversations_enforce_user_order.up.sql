@@ -1,4 +1,4 @@
 CREATE TRIGGER conversations_enforce_user_order
-BEFORE INSERT ON conversations
+BEFORE INSERT OR UPDATE ON conversations
 FOR EACH ROW
 EXECUTE FUNCTION enforce_user_order();

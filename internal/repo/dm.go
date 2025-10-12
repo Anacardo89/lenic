@@ -85,23 +85,23 @@ func (db *dbHandler) GetConversationAndSender(ctx context.Context, conversationI
 func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 string) (*Conversation, []*User, error) {
 	query1 := `
 	WITH ids AS (
-		SELECT u1.id AS user1_id, u2.id AS user2_id
+		SELECT 
+			u1.id AS user1_id,
+			u2.id AS user2_id
 		FROM users u1, users u2
 		WHERE u1.username = $1 AND u2.username = $2
-	),
-	ins AS (
-		INSERT INTO conversations(user1_id, user2_id)
-		SELECT user1_id, user2_id FROM ids
-		ON CONFLICT (user1_id, user2_id) DO NOTHING
-		RETURNING id
 	)
-	SELECT id FROM ins
-	UNION ALL
-	SELECT c.id
-	FROM conversations c
-	JOIN ids i
-	ON (c.user1_id = i.user1_id AND c.user2_id = i.user2_id)
-	LIMIT 1
+	INSERT INTO conversations(
+		user1_id,
+		user2_id
+	)
+	SELECT
+		user1_id,
+		user2_id
+	FROM ids
+	ON CONFLICT (user1_id, user2_id)
+		DO UPDATE SET user1_id = user1_id
+	RETURNING id
 	;`
 
 	query2 := `
@@ -161,7 +161,7 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 		FROM conversations c
 		JOIN user_data u
 			ON c.user1_id = u.id OR c.user2_id = u.id
-		ORDER BY c.created_at DESC
+		ORDER BY c.updated_at DESC
 		LIMIT $2
 		OFFSET $3
 	)
@@ -173,7 +173,7 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 			json_agg(
 				json_build_object(
 					'id', c.id,
-					'created_at', c.created_at,
+					'updated_at', c.updated_at,
 					'other_user', json_build_object(
 						'id', ou.id,
 						'username', ou.username,
@@ -202,12 +202,10 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 		ON u.id = c.user1_id OR u.id = c.user2_id
 	JOIN users ou
 		ON ou.id = COALESCE(
-			CASE 
-				WHEN c.user1_id = u.id
-					THEN c.user2_id
-					ELSE c.user1_id
-				END,
-			u.id
+			CASE WHEN c.user1_id = u.id
+				THEN c.user2_id
+				ELSE c.user1_id
+			END,u.id
 		)
 	GROUP BY u.id, u.username, u.profile_pic;
 	;`
