@@ -174,7 +174,7 @@ type DMessage struct {
 
 type ConversationsWithDMs struct {
 	ID        uuid.UUID
-	CreatedAt time.Time
+	UpdatedAt time.Time
 	OtherUser *User
 	Messages  []*DMessage
 }

@@ -142,97 +142,118 @@ func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 s
 
 func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, limit, offset int) (*User, []*ConversationsWithDMs, error) {
 
-	query := `
-	WITH user_data AS (
-		SELECT
-			id,
-			username,
-			profile_pic
-		FROM users
-		WHERE username = $1
-	),
-	user_convos AS (
-		SELECT
-			c.id,
-			c.user1_id,
-			c.user2_id,
-			c.updated_at
-		FROM conversations c
-		JOIN user_data u
-			ON c.user1_id = u.id OR c.user2_id = u.id
-		ORDER BY c.updated_at DESC
-		LIMIT $2
-		OFFSET $3
-	)
+	query1 := `
+	SELECT
+		id,
+		username,
+		profile_pic
+	FROM users
+	WHERE username = $1
+	;`
+
+	query2 := `
+	SELECT
+		id,
+		user1_id,
+		user2_id,
+		updated_at
+	FROM conversations
+	WHERE user1_id = $1 OR user2_id = $1
+	ORDER BY updated_at DESC
+	LIMIT $2
+	OFFSET $3
+	;`
+
+	query3 := `
 	SELECT
 		u.id,
 		u.username,
 		u.profile_pic,
 		COALESCE(
-			json_agg(
-				json_build_object(
-					'id', c.id,
-					'updated_at', c.updated_at,
-					'other_user', json_build_object(
-						'id', ou.id,
-						'username', ou.username,
-						'profile_pic', ou.profile_pic
-					),
-					'messages', COALESCE(
-						(
-							SELECT json_agg(json_build_object(
-								'id', m.id,
-								'conversation_id', m.conversation_id,
-								'sender_id', m.sender_id,
-								'content', m.content,
-								'is_read', m.is_read,
-								'created_at', m.created_at
-							) ORDER BY m.created_at DESC)
-							FROM dmessages m
-							WHERE m.conversation_id = c.id
-							LIMIT 1000
-						), '[]'::json
-					)
+			(
+				SELECT json_agg(
+					json_build_object(
+						'id', m.id,
+						'conversation_id', m.conversation_id,
+						'sender_id', m.sender_id,
+						'content', m.content,
+						'is_read', m.is_read,
+						'created_at', m.created_at
+					) ORDER BY m.created_at DESC
 				)
-			), '[]'
-		) AS conversations
-	FROM user_data u
-	JOIN user_convos c
-		ON u.id = c.user1_id OR u.id = c.user2_id
-	JOIN users ou
-		ON ou.id = COALESCE(
-			CASE WHEN c.user1_id = u.id
-				THEN c.user2_id
-				ELSE c.user1_id
-			END,u.id
-		)
-	GROUP BY u.id, u.username, u.profile_pic;
+				FROM dmessages m
+				WHERE m.conversation_id = c.id
+				LIMIT 1000
+			), '[]'::json
+		) AS messages
+	FROM users u
+	JOIN conversations c
+		ON u.id = CASE
+			WHEN c.user1_id = $1 THEN c.user2_id
+			ELSE c.user1_id
+		END
+	WHERE c.id = $2
 	;`
 
-	rows, err := db.pool.Query(ctx, query, user, limit, offset)
+	var u User
+	if err := db.pool.QueryRow(ctx, query1, user).Scan(
+		&u.ID,
+		&u.Username,
+		&u.ProfilePic,
+	); err != nil {
+		return nil, nil, err
+	}
+
+	rows, err := db.pool.Query(ctx, query2, u.ID, limit, offset)
 	if err != nil {
 		return nil, nil, err
 	}
-	defer rows.Close()
-	var u User
-	var convos []*ConversationsWithDMs
-	var convosJSON []byte
-	if rows.Next() {
+	var convos []*Conversation
+	for rows.Next() {
+		var c Conversation
 		if err := rows.Scan(
-			&u.ID,
-			&u.Username,
-			&u.ProfilePic,
-			&convosJSON,
+			&c.ID,
+			&c.User1ID,
+			&c.User2ID,
+			&c.UpdatedAt,
 		); err != nil {
 			return nil, nil, err
 		}
-		if err := json.Unmarshal(convosJSON, &convos); err != nil {
+		convos = append(convos, &c)
+	}
+	rows.Close()
+
+	var completeConvos []*ConversationsWithDMs
+	for _, c := range convos {
+		rows, err = db.pool.Query(ctx, query3, u.ID, c.ID)
+		if err != nil {
 			return nil, nil, err
 		}
-	} else {
-		return nil, nil, sql.ErrNoRows
+		for rows.Next() {
+			var dmJSON []byte
+			var convo ConversationsWithDMs
+			messages := make([]*DMessage, 0)
+			var otherUser User
+			convo.Messages = messages
+			if err := rows.Scan(
+				&otherUser.ID,
+				&otherUser.Username,
+				&otherUser.ProfilePic,
+				&dmJSON,
+			); err != nil {
+				return nil, nil, err
+			} else {
+				convo.ID = c.ID
+				convo.OtherUser = &otherUser
+				if err := json.Unmarshal(dmJSON, &convo.Messages); err != nil {
+					return nil, nil, err
+				}
+			}
+			completeConvos = append(completeConvos, &convo)
+		}
 	}
-	return &u, convos, nil
+
+	return &u, completeConvos, nil
 }
 
 func (db *dbHandler) GetConversationByUsers(ctx context.Context, user1ID, user2ID uuid.UUID) (*Conversation, error) {

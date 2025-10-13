@@ -119,6 +119,7 @@ func (h *APIHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
 		fail("dberr - could not get user convos", err, true, http.StatusBadRequest, "invalid params")
 		return
 	}
+	h.log.Info("DB Convos", "dbConvos", dbConvos)
 	// Response
 	u := models.FromDBUserNotif(dbUser)
 	var convos []*models.Conversation
