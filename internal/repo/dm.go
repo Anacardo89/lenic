@@ -56,7 +56,6 @@ func (db *dbHandler) GetConversationAndSender(ctx context.Context, conversationI
 		c.id AS conversation_id,
 		c.user1_id,
 		c.user2_id,
-		c.created_at,
 		c.updated_at,
 		u.id AS user_id,
 		u.username,
@@ -74,7 +73,7 @@ func (db *dbHandler) GetConversationAndSender(ctx context.Context, conversationI
 		&c.ID,
 		&c.User1ID,
 		&c.User2ID,
-		&c.CreatedAt,
+		&c.UpdatedAt,
 		&u.ID,
 		&u.Username,
 		&u.ProfilePic,
@@ -86,8 +85,8 @@ func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 s
 	query1 := `
 	WITH ids AS (
 		SELECT 
-			u1.id AS user1_id,
-			u2.id AS user2_id
+			u1.id AS u1_id,
+			u2.id AS u2_id
 		FROM users u1, users u2
 		WHERE u1.username = $1 AND u2.username = $2
 	)
@@ -96,16 +95,16 @@ func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 s
 		user2_id
 	)
 	SELECT
-		user1_id,
-		user2_id
+		u1_id,
+		u2_id
 	FROM ids
 	ON CONFLICT (user1_id, user2_id)
-		DO UPDATE SET user1_id = user1_id
+		DO UPDATE SET user1_id = conversations.user1_id
 	RETURNING id
 	;`
 
 	query2 := `
-	SELECT c.id, c.user1_id, c.user2_id, c.created_at,
+	SELECT c.id, c.user1_id, c.user2_id, c.updated_at,
 		u1.id, u1.username, u1.profile_pic,
 		u2.id, u2.username, u2.profile_pic
 	FROM conversations c
@@ -157,7 +156,7 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 			c.id,
 			c.user1_id,
 			c.user2_id,
-			c.created_at
+			c.updated_at
 		FROM conversations c
 		JOIN user_data u
 			ON c.user1_id = u.id OR c.user2_id = u.id
