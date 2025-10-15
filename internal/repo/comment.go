@@ -170,7 +170,7 @@ func (db *dbHandler) RateCommentUp(ctx context.Context, targetID, userID uuid.UU
 			WHEN comment_ratings.rating_value = 1
 			THEN 0
 			ELSE 1
-		END;
+		END
 	;`
 
 	_, err := db.pool.Exec(ctx, query, targetID, userID)
@@ -192,7 +192,7 @@ func (db *dbHandler) RateCommentDown(ctx context.Context, targetID, userID uuid.
 			WHEN comment_ratings.rating_value = -1
 			THEN 0
 			ELSE -1
-		END;
+		END
 	;`
 
 	_, err := db.pool.Exec(ctx, query, targetID, userID)

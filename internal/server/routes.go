@@ -38,6 +38,8 @@ func NewRouter(ah *api.APIHandler, ph *page.PageHandler, wsh *wshandle.WSHandler
 	r.HandleFunc("/action/activate/{encoded_username}", ah.ActivateUser).Schemes("http")
 	r.HandleFunc("/action/login", ah.Login).Methods("POST").Schemes("http")
 	r.HandleFunc("/action/logout", ah.Logout).Methods("POST").Schemes("http")
+	r.HandleFunc("/action/forgot-password", ah.ForgotPassword).Methods("POST").Schemes("http")
+	r.HandleFunc("/action/recover-password", ah.RecoverPassword).Methods("POST").Schemes("http")
 
 	authRoutes := r.PathPrefix("/action").Subrouter()
 	authRoutes.Use(mw.Auth)
@@ -69,8 +71,7 @@ func NewRouter(ah *api.APIHandler, ph *page.PageHandler, wsh *wshandle.WSHandler
 	authRoutes.HandleFunc("/post/{post_id}/comment/{comment_id}/up", ah.RateCommentUp).Methods("POST").Schemes("http")
 	authRoutes.HandleFunc("/post/{post_id}/comment/{comment_id}/down", ah.RateCommentDown).Methods("POST").Schemes("http")
 	// Password
-	authRoutes.HandleFunc("/forgot-password", ah.ForgotPassword).Methods("POST").Schemes("http")
-	authRoutes.HandleFunc("/recover-password", ah.RecoverPassword).Methods("POST").Schemes("http")
+
 	authRoutes.HandleFunc("/change-password", ah.ChangePassword).Methods("POST").Schemes("http")
 	// Image
 	authRoutes.HandleFunc("/image", ah.GetPostImage).Schemes("http")

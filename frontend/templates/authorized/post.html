@@ -139,7 +139,7 @@
                 {{end}}
                 <div class="comments">
                     {{range .Post.Comments}}
-                        <div class="comment-container" id="comment-{{.Id}}" data-id="{{.Id}}">
+                        <div class="comment-container" id="comment-{{.ID}}" data-id="{{.ID}}">
                             <div class="comment-content">
                                 <div class="author-info-inline">
                                     <a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();">
@@ -151,13 +151,13 @@
                                     </a>
                                     <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.Username}}</strong></a>   -   <strong>{{.Date}}</strong></div>
                                 </div>
-                                <div class="comment-text" id="comment-text-{{.Id}}"><p>{{.Content}}</p></div>
+                                <div class="comment-text" id="comment-text-{{.ID}}"><p>{{.Content}}</p></div>
                                 {{if eq .Author.Username $.Session.User.Username}}
-                                    <div class="comment-edit-container" id="comment-editor-{{.Id}}">
+                                    <div class="comment-edit-container" id="comment-editor-{{.ID}}">
                                         <form class="comment-edit-form">
-                                            <input type="hidden" class="comment_id" value="{{.Id}}" />
-                                            <textarea id="edit-comment-{{.Id}}" type="textarea" class="edit_comment" name="comment">{{.Content}}</textarea>
-                                            <div id="suggestionBox-editComment-{{.Id}}" class="suggestion-box"></div>
+                                            <input type="hidden" class="comment_id" value="{{.ID}}" />
+                                            <textarea id="edit-comment-{{.ID}}" type="textarea" class="edit_comment" name="comment">{{.Content}}</textarea>
+                                            <div id="suggestionBox-editComment-{{.ID}}" class="suggestion-box"></div>
                                             <input type="submit" value="Confirm" />
                                         </form>
                                     </div>
@@ -168,17 +168,17 @@
                                     <div class="comment-rating"><strong>{{.Rating}}</strong></div>
                                     {{if $.Session.IsAuthenticated}}
                                         <div class="comment-rate-buttons">
-                                            <button id="comment-rate-up-button-{{.Id}}"><i class="comment-rate-up-button fa-solid fa-thumbs-up" data-id="{{.Id}}"></i></button>
-                                            <input type="hidden" class="comment-rating-hidden" data-id="{{.Id}}" value="{{.UserRating}}" />
-                                            <button id="comment-rate-down-button-{{.Id}}"><i class="comment-rate-down-button fa-solid fa-thumbs-down" data-id="{{.Id}}"></i></button>
+                                            <button id="comment-rate-up-button-{{.ID}}"><i class="comment-rate-up-button fa-solid fa-thumbs-up" data-id="{{.ID}}"></i></button>
+                                            <input type="hidden" class="comment-rating-hidden" data-id="{{.ID}}" value="{{.UserRating}}" />
+                                            <button id="comment-rate-down-button-{{.ID}}"><i class="comment-rate-down-button fa-solid fa-thumbs-down" data-id="{{.ID}}"></i></button>
                                         </div>
                                     {{end}}
                                 </div>
                             </div>
                             {{if eq .Author.Username $.Session.User.Username}}
                                 <div class="comment-buttons">
-                                    <button class="comment-editor-button" data-id="{{.Id}}">Edit</button>
-                                    <button class="comment-deleter-button" data-id="{{.Id}}">Delete</button>
+                                    <button class="comment-editor-button" data-id="{{.ID}}">Edit</button>
+                                    <button class="comment-deleter-button" data-id="{{.ID}}">Delete</button>
                                 </div>
                             {{end}}
                         </div>
