@@ -1,3 +1,9 @@
+-- cleanup
+TRUNCATE TABLE comment_ratings;
+TRUNCATE TABLE comments;
+TRUNCATE TABLE post_ratings;
+TRUNCATE TABLE posts;
+TRUNCATE TABLE follows;
 TRUNCATE TABLE users;
 
 INSERT INTO users (
