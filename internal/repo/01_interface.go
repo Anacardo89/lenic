@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type DBRepository interface {
+type DBRepo interface {
 	// Convenience Methods
 	Close()
 

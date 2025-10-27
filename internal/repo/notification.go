@@ -11,6 +11,7 @@ func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) er
 
 	query := `
 	INSERT INTO notifications (
+		id,
 		user_id,
 		from_user_id,
 		notif_type,
@@ -18,7 +19,7 @@ func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) er
 		resource_id,
 		parent_id
 	)
-	VALUES ($1, $2, $3, $4, $5, $6)
+	VALUES ($1, $2, $3, $4, $5, $6, $7)
 	RETURNING
 		id,
 		user_id,
@@ -31,8 +32,9 @@ func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) er
 		created_at,
 		updated_at
 	;`
-
+	ID := uuid.New()
 	err := db.pool.QueryRow(ctx, query,
+		ID,
 		n.UserID,
 		n.FromUserID,
 		n.NotifType,

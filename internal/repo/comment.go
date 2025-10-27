@@ -11,6 +11,7 @@ import (
 func (db *dbHandler) CreateComment(ctx context.Context, c *Comment) error {
 	query := `
 	INSERT INTO comments (
+		id,
 		post_id,
 		author_id,
 		content
@@ -26,7 +27,9 @@ func (db *dbHandler) CreateComment(ctx context.Context, c *Comment) error {
 		created_at
 	;`
 
+	ID := uuid.New()
 	err := db.pool.QueryRow(ctx, query,
+		ID,
 		c.PostID,
 		c.AuthorID,
 		c.Content,

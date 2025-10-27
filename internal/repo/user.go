@@ -19,16 +19,18 @@ var (
 func (db *dbHandler) CreateUser(ctx context.Context, u *User) (uuid.UUID, error) {
 	query := `
 	INSERT INTO users (
+		id,
 		username,
 		email, 
 		password_hash
 	)
-	VALUES ($1, $2, $3)
+	VALUES ($1, $2, $3, $4)
 	RETURNING id
 	;`
 
-	var ID uuid.UUID
+	ID := uuid.New()
 	if err := db.pool.QueryRow(ctx, query,
+		ID,
 		u.Username,
 		u.Email,
 		u.PasswordHash,

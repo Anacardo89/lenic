@@ -15,6 +15,7 @@ func (db *dbHandler) CreateConversation(ctx context.Context, conv *Conversation)
 
 	query := `
 	INSERT INTO conversations (
+		id,
 		user1_id,
 		user2_id
 	)
@@ -22,8 +23,9 @@ func (db *dbHandler) CreateConversation(ctx context.Context, conv *Conversation)
 	RETURNING id
 	;`
 
-	var ID uuid.UUID
+	ID := uuid.New()
 	err := db.pool.QueryRow(ctx, query,
+		ID,
 		conv.User1ID,
 		conv.User2ID,
 	).Scan(&ID)
@@ -88,13 +90,15 @@ func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 s
 			u1.id AS u1_id,
 			u2.id AS u2_id
 		FROM users u1, users u2
-		WHERE u1.username = $1 AND u2.username = $2
+		WHERE u1.username = $2 AND u2.username = $3
 	)
 	INSERT INTO conversations(
+		id,
 		user1_id,
 		user2_id
 	)
 	SELECT
+		$1,
 		u1_id,
 		u2_id
 	FROM ids
@@ -113,13 +117,13 @@ func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 s
 	WHERE c.id = $1
 	;`
 
-	var cID uuid.UUID
+	cID := uuid.New()
 	var c Conversation
 	users := []*User{
 		new(User),
 		new(User),
 	}
-	err := db.pool.QueryRow(ctx, query1, user1, user2).Scan(
+	err := db.pool.QueryRow(ctx, query1, cID, user1, user2).Scan(
 		&cID,
 	)
 	if err != nil {
@@ -331,16 +335,18 @@ func (db *dbHandler) CreateDM(ctx context.Context, dm *DMessage) (uuid.UUID, err
 
 	query := `
 	INSERT INTO dmessages (
+		id,
 		conversation_id,
 		sender_id,
 		content
 	)
-	VALUES ($1, $2, $3)
+	VALUES ($1, $2, $3, $4)
 	RETURNING id
 	;`
 
-	var ID uuid.UUID
+	ID := uuid.New()
 	err := db.pool.QueryRow(ctx, query,
+		ID,
 		dm.ConversationID,
 		dm.SenderID,
 		dm.Content,

@@ -57,14 +57,18 @@ func (db *dbHandler) DeleteUserTag(ctx context.Context, userID uuid.UUID, target
 // HashTags
 func (db *dbHandler) CreateHashtag(ctx context.Context, t *HashTag) (uuid.UUID, error) {
 	query := `
-	INSERT INTO hashtags (tag_name)
-	VALUES ($1)
+	INSERT INTO hashtags (
+		id,
+		tag_name
+	)
+	VALUES ($1, $2)
 	ON CONFLICT (tag_name) DO NOTHING
 	RETURNING id
 	;`
 
-	var ID uuid.UUID
+	ID := uuid.New()
 	err := db.pool.QueryRow(ctx, query,
+		ID,
 		t.TagName,
 	).Scan(&ID)
 	return ID, err
