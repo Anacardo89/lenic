@@ -9,6 +9,7 @@ import (
 	"github.com/Anacardo89/lenic/internal/repo"
 )
 
+// ws - post_comment
 func (h *WSHandler) handleCommentOnPost(msg Message) {
 	// Error Handling
 	fail := func(logMsg string, e error) {

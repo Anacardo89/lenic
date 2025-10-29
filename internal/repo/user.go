@@ -16,6 +16,10 @@ var (
 )
 
 // User
+
+// Endpoints:
+//
+// /action/register
 func (db *dbHandler) CreateUser(ctx context.Context, u *User) (uuid.UUID, error) {
 	query := `
 	INSERT INTO users (
@@ -44,6 +48,14 @@ func (db *dbHandler) CreateUser(ctx context.Context, u *User) (uuid.UUID, error)
 	return ID, nil
 }
 
+// Endpoints:
+//
+//	/user/{encoded_username}/feed
+//	/user/{encoded_username}/followers
+//	/user/{encoded_username}/following
+//	/ws - rate_comment
+//	/ws - rate_post
+//	as well as CreateSession and ValidateSession
 func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, error) {
 
 	query := `
@@ -83,6 +95,26 @@ func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, erro
 	return &u, err
 }
 
+// Endpoints:
+//
+// POST	/action/post/{post_id}/comment
+// PUT /action/post/{post_id}/comment/{comment_id}
+// DELETE /action/post/{post_id}/comment/{comment_id}
+// /action/image
+// /action/user/{user_encoded}/profile-pic
+// /action/login
+// /action/change-password
+// POST /action/post
+// PUT /action/post/{post_id}
+// DELETE /action/post/{post_id}
+// /user/{encoded_username}/followers
+// /user/{encoded_username}/following
+// /recover-password/{encoded_username}
+// /user/{encoded_username}
+// ws - comment_on_post
+// ws - dm
+// ws - follow_request
+// ws - follow_accept
 func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*User, error) {
 
 	query := `
@@ -121,60 +153,9 @@ func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*U
 	return &u, err
 }
 
-func (db *dbHandler) GetConversationUsers(ctx context.Context, user1, user2 string) ([]*User, error) {
-
-	query := `
-	SELECT
-		id,
-		username,
-		email,
-		password_hash,
-		profile_pic,
-		user_followers,
-		user_following,
-		is_active,
-		is_verified,
-		user_role,
-		created_at,
-		updated_at
-	FROM users
-	WHERE username = $1 OR username = $2
-	;`
-
-	users := []*User{}
-	rows, err := db.pool.Query(ctx, query, user1, user2)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return users, nil
-		}
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		u := User{}
-		err = rows.Scan(
-			&u.ID,
-			&u.Username,
-			&u.Email,
-			&u.PasswordHash,
-			&u.ProfilePic,
-			&u.Followers,
-			&u.Following,
-			&u.IsActive,
-			&u.IsVerified,
-			&u.UserRole,
-			&u.CreatedAt,
-			&u.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		users = append(users, &u)
-	}
-	return users, nil
-}
-
+// Endpoints:
+//
+// POST /action/forgot-password
 func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 
 	query := `
@@ -214,6 +195,9 @@ func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, e
 	return &u, err
 }
 
+// Endpoints:
+//
+// GET /action/search/user
 func (db *dbHandler) SearchUsersByUserName(ctx context.Context, username string) ([]*User, error) {
 
 	query := `
@@ -250,6 +234,9 @@ func (db *dbHandler) SearchUsersByUserName(ctx context.Context, username string)
 	return users, nil
 }
 
+// TODO:
+// 1- change username to displayName as seen name in frontend
+// 2- implement search based on display name
 func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName string) ([]*User, error) {
 
 	query := `
@@ -305,6 +292,11 @@ func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName s
 	return users, nil
 }
 
+// Endpoints:
+//
+// /action/activate
+//
+// TODO: set is_active to be equivalent to deleted and is_verified to be the current is_active
 func (db *dbHandler) SetUserActive(ctx context.Context, userName string) error {
 
 	query := `
@@ -317,6 +309,10 @@ func (db *dbHandler) SetUserActive(ctx context.Context, userName string) error {
 	return err
 }
 
+// Endpoints:
+//
+// /action/recover-password
+// /action/change-password
 func (db *dbHandler) SetNewPassword(ctx context.Context, userID uuid.UUID, passHash string) error {
 	query := `
 	UPDATE users
@@ -327,6 +323,9 @@ func (db *dbHandler) SetNewPassword(ctx context.Context, userID uuid.UUID, passH
 	return err
 }
 
+// Endpoints:
+//
+// /action/user/{user_encoded}/profile-pic
 func (db *dbHandler) UpdateProfilePic(ctx context.Context, username string, profilePic string) error {
 
 	query := `
@@ -340,6 +339,10 @@ func (db *dbHandler) UpdateProfilePic(ctx context.Context, username string, prof
 }
 
 // Follow
+
+// Endpoints:
+//
+// POST /action/user/{user_encoded}/follow
 func (db *dbHandler) FollowUser(ctx context.Context, followerID uuid.UUID, followedUsername string) error {
 	query := `
 	INSERT INTO follows (
@@ -360,6 +363,9 @@ func (db *dbHandler) FollowUser(ctx context.Context, followerID uuid.UUID, follo
 	return err
 }
 
+// Endpoints:
+//
+// PUT /action/user/{user_encoded}/accept
 func (db *dbHandler) AcceptFollow(ctx context.Context, followerName, followedName string) error {
 	query := `
 	UPDATE follows
@@ -381,6 +387,9 @@ func (db *dbHandler) AcceptFollow(ctx context.Context, followerName, followedNam
 	return err
 }
 
+// Endpoints:
+//
+// DELETE /action/user/{user_encoded}/unfollow
 func (db *dbHandler) UnfollowUser(ctx context.Context, followerName, followedName string) error {
 	query := `
 	DELETE FROM follows
@@ -401,6 +410,9 @@ func (db *dbHandler) UnfollowUser(ctx context.Context, followerName, followedNam
 	return err
 }
 
+// Endpoints:
+//
+// /user/{encoded_username}
 func (db *dbHandler) GetUserFollows(ctx context.Context, followerID, followedID uuid.UUID) (*Follows, error) {
 
 	query := `
@@ -432,6 +444,9 @@ func (db *dbHandler) GetUserFollows(ctx context.Context, followerID, followedID 
 	return &f, nil
 }
 
+// Endpoints:
+//
+// /user/{encoded_username}/followers
 func (db *dbHandler) GetFollowers(ctx context.Context, followedID uuid.UUID) ([]*Follows, error) {
 
 	query := `
@@ -467,6 +482,9 @@ func (db *dbHandler) GetFollowers(ctx context.Context, followedID uuid.UUID) ([]
 	return follows, nil
 }
 
+// Endpoints:
+//
+// /user/{encoded_username}/following
 func (db *dbHandler) GetFollowing(ctx context.Context, followerID uuid.UUID) ([]*Follows, error) {
 
 	query := `

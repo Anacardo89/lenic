@@ -7,6 +7,15 @@ import (
 	"github.com/google/uuid"
 )
 
+// Endpoints:
+//
+// ws - post_comment
+// ws - follow_request
+// ws - follow_response
+// ws - post_rating
+// ws - comment_rating
+// ws - post_tag
+// ws - comment_tag
 func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) error {
 
 	query := `
@@ -56,33 +65,10 @@ func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) er
 	return err
 }
 
-func (db *dbHandler) GetFollowNotification(ctx context.Context, userID, fromUserID uuid.UUID) (*Notification, error) {
-
-	query := `
-	SELECT *
-	FROM notifications
-	WHERE
-		notif_type = 'follow_request' AND
-		user_id = $1 AND from_user_id = $2
-	;`
-
-	n := Notification{}
-	err := db.pool.QueryRow(ctx, query, userID, fromUserID).
-		Scan(
-			&n.ID,
-			&n.UserID,
-			&n.FromUserID,
-			&n.NotifType,
-			&n.NotifText,
-			&n.ResourceID,
-			&n.ParentID,
-			&n.IsRead,
-			&n.CreatedAt,
-			&n.UpdatedAt,
-		)
-	return &n, err
-}
-
+// Endpoints:
+//
+// DELETE /action/user/{user_encoded}/unfollow
+// PUT /action/user/{user_encoded}/accept
 func (db *dbHandler) DeleteFollowNotification(ctx context.Context, username, fromUsername string) error {
 	query := `
 	DELETE FROM notifications
@@ -104,31 +90,9 @@ func (db *dbHandler) DeleteFollowNotification(ctx context.Context, username, fro
 	return err
 }
 
-func (db *dbHandler) GetNotification(ctx context.Context, ID uuid.UUID) (*Notification, error) {
-
-	query := `
-	SELECT *
-	FROM notifications
-	WHERE id = $1
-	;`
-
-	n := Notification{}
-	err := db.pool.QueryRow(ctx, query, ID).
-		Scan(
-			&n.ID,
-			&n.UserID,
-			&n.FromUserID,
-			&n.NotifType,
-			&n.NotifText,
-			&n.ResourceID,
-			&n.ParentID,
-			&n.IsRead,
-			&n.CreatedAt,
-			&n.UpdatedAt,
-		)
-	return &n, err
-}
-
+// Endpoints:
+//
+// GET /action/user/{user_encoded}/notifications
 func (db *dbHandler) GetUserNotifs(ctx context.Context, username string, limit, offset int) ([]*NotificationWithUsers, error) {
 
 	query := `
@@ -193,65 +157,14 @@ func (db *dbHandler) GetUserNotifs(ctx context.Context, username string, limit, 
 	return notifs, nil
 }
 
-func (db *dbHandler) GetNotificationsByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*Notification, error) {
-
-	query := `
-	SELECT *
-	FROM notifications
-	WHERE user_id = $1
-	ORDER BY created_at DESC
-	LIMIT $2
-	OFFSET $3
-	;`
-
-	notifs := []*Notification{}
-	rows, err := db.pool.Query(ctx, query, userID, limit, offset)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return notifs, nil
-		}
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		n := Notification{}
-		err = rows.Scan(
-			&n.ID,
-			&n.UserID,
-			&n.FromUserID,
-			&n.NotifType,
-			&n.NotifText,
-			&n.ResourceID,
-			&n.ParentID,
-			&n.IsRead,
-			&n.CreatedAt,
-			&n.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		notifs = append(notifs, &n)
-	}
-	return notifs, nil
-}
-
+// Endpoints:
+//
+// PUT /action/user/{user_encoded}/notifications/{notif_id}/read
 func (db *dbHandler) UpdateNotificationRead(ctx context.Context, ID uuid.UUID) error {
 
 	query := `
 	UPDATE notifications
 	SET is_read = TRUE
-	WHERE id = $1
-	;`
-
-	_, err := db.pool.Exec(ctx, query, ID)
-	return err
-}
-
-func (db *dbHandler) DeleteNotification(ctx context.Context, ID uuid.UUID) error {
-
-	query := `
-	DELETE FROM notifications
 	WHERE id = $1
 	;`
 

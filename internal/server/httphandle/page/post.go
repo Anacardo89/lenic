@@ -52,6 +52,7 @@ func (h *PageHandler) NewPost(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, postp)
 }
 
+// /post/{post_id}
 func (h *PageHandler) Post(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {

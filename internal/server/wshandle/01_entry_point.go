@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/gorilla/websocket"
 )
 
@@ -62,17 +63,17 @@ func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 		h.log.Info("received message from user %s: %s\n", username, string(message))
 
 		switch msg.Type {
-		case "rate_comment":
+		case models.NotifCommentRating.String():
 			h.handleCommentRate(msg)
-		case "rate_post":
+		case models.NotifPostRating.String():
 			h.handlePostRate(msg)
-		case "comment_on_post":
+		case models.NotifComment.String():
 			h.handleCommentOnPost(msg)
-		case "follow_accept":
+		case models.NotifFollowResponse.String():
 			h.handleFollowAccept(msg)
-		case "follow_request":
+		case models.NotifFollowRequest.String():
 			h.handleFollowRequest(msg)
-		case "dm":
+		case models.NotifDM.String():
 			h.handleDM(msg)
 		default:
 			h.log.Warn("unknown message type", "msg type", msg.Type)

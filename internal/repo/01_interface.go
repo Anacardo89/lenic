@@ -43,30 +43,26 @@ type DBRepo interface {
 	// Post Ratings
 	RatePostUp(ctx context.Context, targetID, userID uuid.UUID) error
 	RatePostDown(ctx context.Context, targetID, userID uuid.UUID) error
-	GetPostUserRating(ctx context.Context, targetID, userID uuid.UUID) (*PostRatings, error)
 
 	// Comments
 	CreateComment(ctx context.Context, comment *Comment) error
 	GetComment(ctx context.Context, ID uuid.UUID) (*Comment, error)
-	GetCommentsByPost(ctx context.Context, postID uuid.UUID) ([]*Comment, error)
 	UpdateComment(ctx context.Context, comment *Comment) error
 	DisableComment(ctx context.Context, ID uuid.UUID) (*Comment, error)
 
 	// CommentRatings
 	RateCommentUp(ctx context.Context, targetID, userID uuid.UUID) error
 	RateCommentDown(ctx context.Context, targetID, userID uuid.UUID) error
-	GetCommentUserRating(ctx context.Context, targetID, userID uuid.UUID) (*CommentRatings, error)
 
 	// Notifications
 	CreateNotification(ctx context.Context, n *Notification) error
-	GetFollowNotification(ctx context.Context, userID, fromUserID uuid.UUID) (*Notification, error)
 	DeleteFollowNotification(ctx context.Context, username, fromUsername string) error
-	GetNotification(ctx context.Context, ID uuid.UUID) (*Notification, error)
 	GetUserNotifs(ctx context.Context, username string, limit, offset int) ([]*NotificationWithUsers, error)
-	GetNotificationsByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*Notification, error)
 	UpdateNotificationRead(ctx context.Context, ID uuid.UUID) error
-	DeleteNotification(ctx context.Context, ID uuid.UUID) error
 
+	//
+	// REVIEWING HERE
+	//
 	// UserTags
 	CreateUserTag(ctx context.Context, t *UserTag) error
 	GetUserTagByTarget(ctx context.Context, userID, targetID uuid.UUID) (*UserTag, error)

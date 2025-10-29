@@ -31,6 +31,7 @@ type RecoverPasswdPage struct {
 	Token string
 }
 
+// /recover-password/{encoded_username}
 func (h *PageHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {

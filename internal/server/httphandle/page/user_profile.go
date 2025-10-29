@@ -21,6 +21,7 @@ type ProfilePage struct {
 	Follows int
 }
 
+// /user/{encoded_username}
 func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {

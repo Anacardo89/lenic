@@ -24,6 +24,7 @@ type FollowingPage struct {
 	Following []*models.User
 }
 
+// /user/{encoded_username}/followers
 func (h *PageHandler) UserFollowers(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -88,6 +89,7 @@ func (h *PageHandler) UserFollowers(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, fp)
 }
 
+// /user/{encoded_username}/following
 func (h *PageHandler) UserFollowing(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {

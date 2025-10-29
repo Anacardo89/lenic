@@ -9,6 +9,10 @@ import (
 )
 
 // Posts
+
+// Endpoints:
+//
+// POST /action/post
 func (db *dbHandler) CreatePost(ctx context.Context, p *Post) (uuid.UUID, error) {
 
 	query := `
@@ -36,6 +40,9 @@ func (db *dbHandler) CreatePost(ctx context.Context, p *Post) (uuid.UUID, error)
 	return ID, err
 }
 
+// Endpoints:
+//
+// /user/{encoded_username}/feed
 func (db *dbHandler) GetFeed(ctx context.Context, username string) ([]*Post, error) {
 	query := `
 	WITH active_user AS (
@@ -105,6 +112,9 @@ func (db *dbHandler) GetFeed(ctx context.Context, username string) ([]*Post, err
 	return posts, nil
 }
 
+// Endpoints:
+//
+// ws - post_comment
 func (db *dbHandler) GetPostAuthorFromComment(ctx context.Context, commentID uuid.UUID) (*User, error) {
 	query := `
 	SELECT 
@@ -126,6 +136,9 @@ func (db *dbHandler) GetPostAuthorFromComment(ctx context.Context, commentID uui
 	return &u, err
 }
 
+// Endpoints:
+//
+// /user/{encoded_username}
 func (db *dbHandler) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
 
 	query := `
@@ -168,6 +181,9 @@ func (db *dbHandler) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Pos
 	return posts, nil
 }
 
+// Endpoints:
+//
+// /user/{encoded_username}
 func (db *dbHandler) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
 
 	query := `
@@ -210,6 +226,10 @@ func (db *dbHandler) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) (
 	return posts, nil
 }
 
+// Endpoints:
+//
+// /action/image
+// ws - post_rating
 func (db *dbHandler) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 
 	query := `
@@ -236,6 +256,9 @@ func (db *dbHandler) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 	return &p, err
 }
 
+// Endpoints:
+//
+// /post/{post_id}
 func (db *dbHandler) GetPostForPage(ctx context.Context, ID, userID uuid.UUID) (*PostWithComments, error) {
 	query := `
 	SELECT 
@@ -326,6 +349,9 @@ func (db *dbHandler) GetPostForPage(ctx context.Context, ID, userID uuid.UUID) (
 	return &p, nil
 }
 
+// Endpoints:
+//
+// PUT /action/post/{post_id}
 func (db *dbHandler) UpdatePost(ctx context.Context, post *Post) error {
 
 	query := `
@@ -345,6 +371,9 @@ func (db *dbHandler) UpdatePost(ctx context.Context, post *Post) error {
 	return err
 }
 
+// Endpoints:
+//
+// DELETE /action/post/{post_id}
 func (db *dbHandler) DisablePost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 	query := `
 	UPDATE posts
@@ -366,6 +395,10 @@ func (db *dbHandler) DisablePost(ctx context.Context, ID uuid.UUID) (*Post, erro
 }
 
 // Post Ratings
+
+// Endpoints:
+//
+// POST /action/post/{post_id}/up
 func (db *dbHandler) RatePostUp(ctx context.Context, targetID, userID uuid.UUID) error {
 
 	query := `
@@ -387,6 +420,9 @@ func (db *dbHandler) RatePostUp(ctx context.Context, targetID, userID uuid.UUID)
 	return err
 }
 
+// Endpoints:
+//
+// POST /action/post/{post_id}/down
 func (db *dbHandler) RatePostDown(ctx context.Context, targetID, userID uuid.UUID) error {
 
 	query := `
@@ -407,22 +443,4 @@ func (db *dbHandler) RatePostDown(ctx context.Context, targetID, userID uuid.UUI
 
 	_, err := db.pool.Exec(ctx, query, targetID, userID)
 	return err
-}
-
-func (db *dbHandler) GetPostUserRating(ctx context.Context, targetID, userID uuid.UUID) (*PostRatings, error) {
-	query := `
-	SELECT *
-	FROM post_ratings
-	WHERE target_id = $1 AND user_id = $2
-	;`
-	pr := PostRatings{}
-	err := db.pool.QueryRow(ctx, query, targetID, userID).
-		Scan(
-			&pr.TargetID,
-			&pr.UserID,
-			&pr.RatingValue,
-			&pr.CreatedAt,
-			&pr.UpdatedAt,
-		)
-	return &pr, err
 }

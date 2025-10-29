@@ -17,6 +17,7 @@ type FeedPage struct {
 	Posts   []*models.Post
 }
 
+// /user/{encoded_username}/feed
 func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {

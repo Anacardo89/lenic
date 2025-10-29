@@ -8,6 +8,7 @@ import (
 	"github.com/Anacardo89/lenic/internal/repo"
 )
 
+// ws - follow_request
 func (h *WSHandler) handleFollowRequest(msg Message) {
 	// Error Handling
 	fail := func(logMsg string, e error) {
@@ -66,6 +67,7 @@ func (h *WSHandler) handleFollowRequest(msg Message) {
 	}
 }
 
+// ws - follow_response
 func (h *WSHandler) handleFollowAccept(msg Message) {
 	// Error Handling
 	fail := func(logMsg string, e error) {

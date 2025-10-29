@@ -2,12 +2,15 @@ package repo
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 )
 
 // Comments
+
+// Endpoints:
+//
+// POST /action/post/{post_id}/comment
 func (db *dbHandler) CreateComment(ctx context.Context, c *Comment) error {
 	query := `
 	INSERT INTO comments (
@@ -45,6 +48,10 @@ func (db *dbHandler) CreateComment(ctx context.Context, c *Comment) error {
 	return err
 }
 
+// Endpoints:
+//
+// ws - comment_rating
+// ws - comment_tag
 func (db *dbHandler) GetComment(ctx context.Context, ID uuid.UUID) (*Comment, error) {
 
 	query := `
@@ -69,44 +76,9 @@ func (db *dbHandler) GetComment(ctx context.Context, ID uuid.UUID) (*Comment, er
 	return &comment, err
 }
 
-func (db *dbHandler) GetCommentsByPost(ctx context.Context, postID uuid.UUID) ([]*Comment, error) {
-	query := `
-	SELECT *
-	FROM comments
-	WHERE post_id = $1 AND is_active = 1
-	ORDER BY rating DESC
-	;`
-
-	comments := []*Comment{}
-	rows, err := db.pool.Query(ctx, query, postID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return comments, nil
-		}
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		comment := Comment{}
-		err = rows.Scan(
-			&comment.ID,
-			&comment.PostID,
-			&comment.AuthorID,
-			&comment.Content,
-			&comment.Rating,
-			&comment.IsActive,
-			&comment.CreatedAt,
-			&comment.UpdatedAt,
-			&comment.DeletedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		comments = append(comments, &comment)
-	}
-	return comments, nil
-}
-
+// Endpoints:
+//
+// PUT /action/post/{post_id}/comment/{comment_id}
 func (db *dbHandler) UpdateComment(ctx context.Context, c *Comment) error {
 	query := `
 	UPDATE comments
@@ -137,6 +109,9 @@ func (db *dbHandler) UpdateComment(ctx context.Context, c *Comment) error {
 	return err
 }
 
+// Endpoints:
+//
+// DELETE /action/post/{post_id}/comment/{comment_id}
 func (db *dbHandler) DisableComment(ctx context.Context, ID uuid.UUID) (*Comment, error) {
 
 	query := `
@@ -158,6 +133,10 @@ func (db *dbHandler) DisableComment(ctx context.Context, ID uuid.UUID) (*Comment
 }
 
 // Comment Ratings
+
+// Endpoints:
+//
+// POST /action/post/{post_id}/comment/{comment_id}/up
 func (db *dbHandler) RateCommentUp(ctx context.Context, targetID, userID uuid.UUID) error {
 
 	query := `
@@ -180,6 +159,9 @@ func (db *dbHandler) RateCommentUp(ctx context.Context, targetID, userID uuid.UU
 	return err
 }
 
+// Endpoints:
+//
+// POST /action/post/{post_id}/comment/{comment_id}/down
 func (db *dbHandler) RateCommentDown(ctx context.Context, targetID, userID uuid.UUID) error {
 
 	query := `
@@ -200,24 +182,4 @@ func (db *dbHandler) RateCommentDown(ctx context.Context, targetID, userID uuid.
 
 	_, err := db.pool.Exec(ctx, query, targetID, userID)
 	return err
-}
-
-func (db *dbHandler) GetCommentUserRating(ctx context.Context, targetID, userID uuid.UUID) (*CommentRatings, error) {
-
-	query := `
-	SELECT *
-	FROM comment_ratings
-	WHERE target_id = $1 AND user_id = $2
-	;`
-
-	cr := CommentRatings{}
-	err := db.pool.QueryRow(ctx, query, targetID, userID).
-		Scan(
-			&cr.TargetID,
-			&cr.UserID,
-			&cr.RatingValue,
-			&cr.CreatedAt,
-			&cr.UpdatedAt,
-		)
-	return &cr, err
 }

@@ -9,6 +9,12 @@ import (
 	"github.com/Anacardo89/lenic/internal/repo"
 )
 
+// Endpoints:
+//
+// POST /action/post
+// PUT /action/post/{post_id}
+//
+// ws - post_tag
 func (h *WSHandler) HandlePostTag(msg Message, taggedUser string) {
 	// Error Handling
 	fail := func(logMsg string, e error) {
@@ -61,6 +67,12 @@ func (h *WSHandler) HandlePostTag(msg Message, taggedUser string) {
 	}
 }
 
+// Endpoints:
+//
+// POST /action/post/{post_id}/comment
+// PUT /action/post/{post_id}/comment/{comment_id}
+//
+// ws - comment_tag
 func (h *WSHandler) HandleCommentTag(msg Message, taggedUser string) {
 	// Error Handling
 	fail := func(logMsg string, e error) {

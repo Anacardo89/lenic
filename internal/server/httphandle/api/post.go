@@ -118,7 +118,7 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// PUT /action/post/{Post_GUID}
+// PUT /action/post/{post_id}
 func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -208,7 +208,7 @@ func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// DELETE /action/post/{Post_GUID}
+// DELETE /action/post/{post_id}
 func (h *APIHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -262,7 +262,7 @@ func (h *APIHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// POST /action/post/{Post_GUID}/up
+// POST /action/post/{post_id}/up
 func (h *APIHandler) RatePostUp(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -301,7 +301,7 @@ func (h *APIHandler) RatePostUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// POST /action/post/{Post_GUID}/down
+// POST /action/post/{post_id}/down
 func (h *APIHandler) RatePostDown(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {

@@ -9,6 +9,7 @@ import (
 	"github.com/Anacardo89/lenic/internal/repo"
 )
 
+// ws - post_rating
 func (h *WSHandler) handlePostRate(msg Message) {
 	// Error Handling
 	fail := func(logMsg string, e error) {
@@ -70,6 +71,7 @@ func (h *WSHandler) handlePostRate(msg Message) {
 	}
 }
 
+// ws - comment_rating
 func (h *WSHandler) handleCommentRate(msg Message) {
 	// Error Handling
 	fail := func(logMsg string, e error) {

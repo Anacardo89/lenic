@@ -14,8 +14,8 @@ export const MSG_FOLLOW_REQUEST = ' has requested to follow you.';
 
 export const TYPE_COMMENT_RATE = 'comment_rating';
 export const TYPE_POST_RATE = 'post_rating';
-export const TYPE_COMMENT_TAG = 'comment_mention';
-export const TYPE_POST_TAG = 'post_mention';
+export const TYPE_COMMENT_TAG = 'comment_tag';
+export const TYPE_POST_TAG = 'post_tag';
 export const TYPE_COMMENT_ON_POST = 'post_comment';
 export const TYPE_FOLLOW_ACCEPT = 'follow_response';
 export const TYPE_FOLLOW_REQUEST = 'follow_request';

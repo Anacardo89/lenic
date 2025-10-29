@@ -200,3 +200,173 @@ INSERT INTO comment_ratings (target_id, user_id, rating_value) VALUES
     ('c5e5f6a7-b8c9-4e0f-1a2b-5c6d7e8f9a0b', 'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1', 1),
     ('c5e5f6a7-b8c9-4e0f-1a2b-5c6d7e8f9a0b', 'cfa53179-9085-4f33-86b3-5dc5f7a1465f', 1),
     ('c5e5f6a7-b8c9-4e0f-1a2b-5c6d7e8f9a0b', 'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e', 1);
+
+INSERT INTO notifications (
+    id,
+    user_id,
+    from_user_id,
+    notif_type,
+    notif_text,
+    resource_id,
+    parent_id,
+    is_read
+) VALUES
+    -- Follow request from moderata to soccerpunk
+    (
+        'n1a1b2c3-d4f5-4e6f-9a7b-1c2d3e4f5a6b',
+        'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
+        'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
+        'follow_request',
+        'moderata wants to follow you.',
+        'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
+        NULL,
+        FALSE
+    ),
+
+    -- Follow response from anacardo to soccerpunk (accepted)
+    (
+        'n2b2c3d4-e5f6-4a7b-8c9d-2d3e4f5a6b7c',
+        'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
+        'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
+        'follow_response',
+        'anacardo accepted your follow request.',
+        'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
+        NULL,
+        FALSE
+    ),
+
+    -- Comment on Post 1 by moderata, notify anacardo
+    (
+        'n3c3d4e5-f6a7-4b8c-9d0e-3e4f5a6b7c8d',
+        'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
+        'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
+        'post_comment',
+        'moderata commented on your post: "Great insights, really makes me think!"',
+        'b1d3c0f7-5a1a-4f9b-9a4d-2a8e4f8b9f01',
+        'e1a1b2c3-d4f5-4a6b-9c7d-1e2f3a4b5c6d',
+        FALSE
+    ),
+
+    -- Comment on Post 3 by anacardo, notify soccerpunk
+    (
+        'n4d4e5f6-a7b8-4c9d-0e1f-4f5a6b7c8d9e',
+        'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
+        'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
+        'post_comment',
+        'anacardo commented on your post: "I missed the matches, thanks for the recap!"',
+        'd3f5e2a9-7c3c-4b7d-9d4c-4c0a6b1d1e23',
+        'c5e5f6a7-b8c9-4e0f-1a2b-5c6d7e8f9a0b',
+        FALSE
+    ),
+
+    -- Post rating notification: moderata liked Post 2, notify author (moderata themselves, for example)
+    (
+        'n5e5f6a7-b8c9-4d0e-1f2a-5b6c7d8e9f0a',
+        'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
+        'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
+        'post_rating',
+        'anacardo rated your post "Moderation Tips".',
+        'c2e4d1f8-6b2b-4a8c-8c3b-3b9f5a9c0d12',
+        NULL,
+        FALSE
+    ),
+
+    -- Comment rating notification: soccerpunk upvoted Comment 2, notify author (moderata)
+    (
+        'n6f6a7b8-c9d0-4e1f-2a3b-6c7d8e9f0a1b',
+        'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
+        'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
+        'comment_rating',
+        'soccerpunk upvoted your comment: "I have some different thoughts on this topic."',
+        'f2b2c3d4-e5f6-4b7c-8d9e-2f3a4b5c6d7e',
+        NULL,
+        FALSE
+    );
+
+INSERT INTO user_tags (user_id, target_id, resource_type) VALUES
+    -- anacardo tagged moderata in Post 1
+    ('cfa53179-9085-4f33-86b3-5dc5f7a1465f', 'b1d3c0f7-5a1a-4f9b-9a4d-2a8e4f8b9f01', 'post'),
+
+    -- moderata tagged soccerpunk in Post 2
+    ('f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e', 'c2e4d1f8-6b2b-4a8c-8c3b-3b9f5a9c0d12', 'post'),
+
+    -- soccerpunk tagged anacardo in Post 3
+    ('a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1', 'd3f5e2a9-7c3c-4b7d-9d4c-4c0a6b1d1e23', 'post'),
+
+    -- anacardo tagged soccerpunk in Comment 1
+    ('f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e', 'e1a1b2c3-d4f5-4a6b-9c7d-1e2f3a4b5c6d', 'comment'),
+
+    -- moderata tagged anacardo in Comment 2
+    ('a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1', 'f2b2c3d4-e5f6-4b7c-8d9e-2f3a4b5c6d7e', 'comment');
+
+INSERT INTO conversations (id, user1_id, user2_id) VALUES
+    (
+        '70f31f9b-632b-4c4a-bb3a-1f2c6013f001',
+        'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
+        'cfa53179-9085-4f33-86b3-5dc5f7a1465f'
+    ),
+    (
+        '70f31f9b-632b-4c4a-bb3a-1f2c6013f002',
+        'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
+        'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e'
+    ),
+    (
+        '70f31f9b-632b-4c4a-bb3a-1f2c6013f003',
+        'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
+        'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e'
+    );
+
+INSERT INTO dmessages (
+    id,
+    conversation_id,
+    sender_id,
+    content,
+    is_read
+) VALUES
+    -- Conversation 1: anacardo <-> moderata
+    (
+        '91e0f1a2-b3c4-4d5e-8f6a-1b2c3d4e5f01',
+        '70f31f9b-632b-4c4a-bb3a-1f2c6013f001',
+        'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
+        'Hey, wanted to thank you for the feedback on my post!',
+        TRUE
+    ),
+    (
+        '91e0f1a2-b3c4-4d5e-8f6a-1b2c3d4e5f02',
+        '70f31f9b-632b-4c4a-bb3a-1f2c6013f001',
+        'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
+        'No problem at all, it was a great read!',
+        FALSE
+    ),
+
+    -- Conversation 2: anacardo <-> soccerpunk
+    (
+        '91e0f1a2-b3c4-4d5e-8f6a-1b2c3d4e5f03',
+        '70f31f9b-632b-4c4a-bb3a-1f2c6013f002',
+        'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
+        'You’re coming to the game this weekend, right?',
+        FALSE
+    ),
+    (
+        '91e0f1a2-b3c4-4d5e-8f6a-1b2c3d4e5f04',
+        '70f31f9b-632b-4c4a-bb3a-1f2c6013f002',
+        'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
+        'Wouldn’t miss it for anything!',
+        TRUE
+    ),
+
+    -- Conversation 3: moderata <-> soccerpunk
+    (
+        '91e0f1a2-b3c4-4d5e-8f6a-1b2c3d4e5f05',
+        '70f31f9b-632b-4c4a-bb3a-1f2c6013f003',
+        'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
+        'Hey, can you moderate the forum tonight?',
+        FALSE
+    ),
+    (
+        '91e0f1a2-b3c4-4d5e-8f6a-1b2c3d4e5f06',
+        '70f31f9b-632b-4c4a-bb3a-1f2c6013f003',
+        'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
+        'Sure thing, I’ll be online after 8.',
+        TRUE
+    );
