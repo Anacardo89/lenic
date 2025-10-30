@@ -60,12 +60,8 @@ type DBRepo interface {
 	GetUserNotifs(ctx context.Context, username string, limit, offset int) ([]*NotificationWithUsers, error)
 	UpdateNotificationRead(ctx context.Context, ID uuid.UUID) error
 
-	//
-	// REVIEWING HERE
-	//
 	// UserTags
 	CreateUserTag(ctx context.Context, t *UserTag) error
-	GetUserTagByTarget(ctx context.Context, userID, targetID uuid.UUID) (*UserTag, error)
 	DeleteUserTag(ctx context.Context, userID uuid.UUID, targetID uuid.UUID) error
 
 	//HashTags
@@ -77,20 +73,14 @@ type DBRepo interface {
 	GetHashTagResourceByTarget(ctx context.Context, tagID, targetID uuid.UUID) (*HashTagResource, error)
 
 	// Conversations
-	CreateConversation(ctx context.Context, conv *Conversation) (uuid.UUID, error)
-	GetConversation(ctx context.Context, ID uuid.UUID) (*Conversation, error)
 	GetConversationAndSender(ctx context.Context, conversationID uuid.UUID, username string) (*Conversation, *User, error)
 	GetConversationAndUsers(ctx context.Context, user1, user2 string) (*Conversation, []*User, error)
 	GetConversationsAndOwner(ctx context.Context, user string, limit, offset int) (*User, []*ConversationsWithDMs, error)
 	GetConversationByUsers(ctx context.Context, user1ID, user2ID uuid.UUID) (*Conversation, error)
-	GetConversationsByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*Conversation, error)
 	UpdateConversation(ctx context.Context, ID uuid.UUID) error
 
 	// DMs
 	CreateDM(ctx context.Context, dm *DMessage) (uuid.UUID, error)
-	GetDM(ctx context.Context, ID uuid.UUID) (*DMessage, error)
-	GetConvoLastDMBySender(ctx context.Context, conversationID, senderID uuid.UUID) (*DMessage, error)
 	GetDMsByConversation(ctx context.Context, conersationID uuid.UUID, limit, offset int) ([]*DMessageWithUser, error)
 	ReadAllReceivedDMsInConvo(ctx context.Context, conversationID uuid.UUID, username string) error
-	UpdateDMRead(ctx context.Context, ID uuid.UUID) error
 }

@@ -7,6 +7,13 @@ import (
 )
 
 // UserTags
+
+// Endpoints:
+//
+// POST /action/post/{post_id}/comment
+// PUT /action/post/{post_id}/comment/{comment_id}
+// POST /action/post
+// PUT /action/post/{post_id}
 func (db *dbHandler) CreateUserTag(ctx context.Context, t *UserTag) error {
 
 	query := `
@@ -26,23 +33,10 @@ func (db *dbHandler) CreateUserTag(ctx context.Context, t *UserTag) error {
 	return err
 }
 
-func (db *dbHandler) GetUserTagByTarget(ctx context.Context, userID, targetID uuid.UUID) (*UserTag, error) {
-	query := `
-	SELECT *
-	FROM user_tags
-	WHERE user_id = $1 AND target_id = $2
-	;`
-
-	t := UserTag{}
-	err := db.pool.QueryRow(ctx, query, userID, targetID).
-		Scan(
-			&t.UserID,
-			&t.TargetID,
-			&t.ResourceTpe,
-		)
-	return &t, err
-}
-
+// Endpoints:
+//
+// DELETE /action/post/{post_id}/comment/{comment_id}
+// DELETE /action/post/{post_id}
 func (db *dbHandler) DeleteUserTag(ctx context.Context, userID uuid.UUID, targetID uuid.UUID) error {
 
 	query := `
@@ -55,6 +49,8 @@ func (db *dbHandler) DeleteUserTag(ctx context.Context, userID uuid.UUID, target
 }
 
 // HashTags
+
+// TODO: implement hashtags
 func (db *dbHandler) CreateHashtag(ctx context.Context, t *HashTag) (uuid.UUID, error) {
 	query := `
 	INSERT INTO hashtags (

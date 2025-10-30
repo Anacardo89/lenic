@@ -19,10 +19,10 @@ func InitDB(cfg config.DB) (DBRepo, error) {
 	return repo, nil
 }
 
-func BuildTestDBEnv(ctx context.Context) (DBRepo, func(), string, error) {
+func BuildTestDBEnv(ctx context.Context) (DBRepo, string, func(), string, error) {
 	dsn, closeDB, err := testutils.StartPostgresContainer(ctx)
 	if err != nil {
-		return nil, nil, "", err
+		return nil, "", nil, "", err
 	}
 	cfgDB := config.DB{
 		DSN:             dsn,
@@ -34,21 +34,32 @@ func BuildTestDBEnv(ctx context.Context) (DBRepo, func(), string, error) {
 	db, err := InitDB(cfgDB)
 	if err != nil {
 		closeDB()
-		return nil, nil, "", err
+		return nil, "", nil, "", err
 	}
 	migratePath, err := fs.MakeFilePath("db", "migrations")
 	if err != nil {
 		closeDB()
-		return nil, nil, "", err
+		return nil, "", nil, "", err
 	}
 	if err := testutils.MigrateDB(dsn, migratePath, testutils.MigrateUp); err != nil {
 		closeDB()
-		return nil, nil, "", err
+		return nil, "", nil, "", err
 	}
 	seedPath, err := fs.MakeFilePath("db", "seeds")
 	if err != nil {
 		closeDB()
-		return nil, nil, "", err
+		return nil, "", nil, "", err
 	}
-	return db, closeDB, seedPath, nil
+	return db, dsn, closeDB, seedPath, nil
+}
+
+func SeedDB(ctx context.Context, dsn, seed string) error {
+	db, err := testutils.ConnectDB(ctx, dsn)
+	if err != nil {
+		return err
+	}
+	if err := testutils.SeedDB(ctx, db, seed); err != nil {
+		return err
+	}
+	return nil
 }

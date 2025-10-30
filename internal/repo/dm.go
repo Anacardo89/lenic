@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 
 	"github.com/google/uuid"
@@ -11,47 +10,10 @@ import (
 )
 
 // Conversations
-func (db *dbHandler) CreateConversation(ctx context.Context, conv *Conversation) (uuid.UUID, error) {
 
-	query := `
-	INSERT INTO conversations (
-		id,
-		user1_id,
-		user2_id
-	)
-	VALUES ($1, $2)
-	RETURNING id
-	;`
-
-	ID := uuid.New()
-	err := db.pool.QueryRow(ctx, query,
-		ID,
-		conv.User1ID,
-		conv.User2ID,
-	).Scan(&ID)
-	return ID, err
-}
-
-func (db *dbHandler) GetConversation(ctx context.Context, ID uuid.UUID) (*Conversation, error) {
-
-	query := `
-	SELECT * 
-	FROM conversations
-	WHERE id = $1
-	;`
-
-	conv := Conversation{}
-	err := db.pool.QueryRow(ctx, query, ID).
-		Scan(
-			&conv.ID,
-			&conv.User1ID,
-			&conv.User2ID,
-			&conv.CreatedAt,
-			&conv.UpdatedAt,
-		)
-	return &conv, err
-}
-
+// Endpoints:
+//
+// POST /action/user/{user_encoded}/conversations/{conversation_id}/dms
 func (db *dbHandler) GetConversationAndSender(ctx context.Context, conversationID uuid.UUID, username string) (*Conversation, *User, error) {
 	query := `
 		SELECT 
@@ -83,6 +45,9 @@ func (db *dbHandler) GetConversationAndSender(ctx context.Context, conversationI
 	return &c, &u, err
 }
 
+// Endpoints:
+//
+// POST /action/user/{user_encoded}/conversations
 func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 string) (*Conversation, []*User, error) {
 	query1 := `
 	WITH ids AS (
@@ -144,6 +109,9 @@ func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 s
 	return &c, users, err
 }
 
+// Endpoints:
+//
+// GET /action/user/{user_encoded}/conversations
 func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, limit, offset int) (*User, []*ConversationsWithDMs, error) {
 
 	query1 := `
@@ -260,6 +228,9 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 	return &u, completeConvos, nil
 }
 
+// Endpoints:
+//
+// ws - dm
 func (db *dbHandler) GetConversationByUsers(ctx context.Context, user1ID, user2ID uuid.UUID) (*Conversation, error) {
 
 	query := `
@@ -281,43 +252,9 @@ func (db *dbHandler) GetConversationByUsers(ctx context.Context, user1ID, user2I
 	return &conv, err
 }
 
-func (db *dbHandler) GetConversationsByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*Conversation, error) {
-
-	query := `
-	SELECT *
-	FROM conversations
-	WHERE user1_id = $1 OR user2_id = $1
-	ORDER BY updated_at DESC
-	LIMIT $3
-	OFFSET $4
-	;`
-
-	convos := []*Conversation{}
-	rows, err := db.pool.Query(ctx, query, userID, limit, offset)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return convos, nil
-		}
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		convo := Conversation{}
-		err = rows.Scan(
-			&convo.ID,
-			&convo.User1ID,
-			&convo.User2ID,
-			&convo.CreatedAt,
-			&convo.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		convos = append(convos, &convo)
-	}
-	return convos, nil
-}
-
+// Endpoints:
+//
+// ws - dm
 func (db *dbHandler) UpdateConversation(ctx context.Context, ID uuid.UUID) error {
 
 	query := `
@@ -331,6 +268,10 @@ func (db *dbHandler) UpdateConversation(ctx context.Context, ID uuid.UUID) error
 }
 
 // DMs
+
+// Endpoints:
+//
+// POST /action/user/{user_encoded}/conversations/{conversation_id}/dms
 func (db *dbHandler) CreateDM(ctx context.Context, dm *DMessage) (uuid.UUID, error) {
 
 	query := `
@@ -354,50 +295,9 @@ func (db *dbHandler) CreateDM(ctx context.Context, dm *DMessage) (uuid.UUID, err
 	return ID, err
 }
 
-func (db *dbHandler) GetDM(ctx context.Context, ID uuid.UUID) (*DMessage, error) {
-
-	query := `
-	SELECT *
-	FROM dmessages
-	WHERE id = $1
-	;`
-
-	dm := DMessage{}
-	err := db.pool.QueryRow(ctx, query, ID).
-		Scan(
-			&dm.ID,
-			&dm.ConversationID,
-			&dm.SenderID,
-			&dm.Content,
-			&dm.IsRead,
-			&dm.CreatedAt,
-		)
-	return &dm, err
-}
-
-func (db *dbHandler) GetConvoLastDMBySender(ctx context.Context, conversationID, senderID uuid.UUID) (*DMessage, error) {
-
-	query := `
-	SELECT *
-	FROM dmessages
-	WHERE conversation_id = $1 AND sender_id = $2
-	ORDER BY created_at DESC
-	LIMIT 1
-	;`
-
-	dm := DMessage{}
-	err := db.pool.QueryRow(ctx, query, conversationID, senderID).
-		Scan(
-			&dm.ID,
-			&dm.ConversationID,
-			&dm.SenderID,
-			&dm.Content,
-			&dm.IsRead,
-			&dm.CreatedAt,
-		)
-	return &dm, err
-}
-
+// Endpoints:
+//
+// GET /action/user/{user_encoded}/conversations/{conversation_id}/dms
 func (db *dbHandler) GetDMsByConversation(ctx context.Context, conversationID uuid.UUID, limit, offset int) ([]*DMessageWithUser, error) {
 
 	query := `
@@ -448,6 +348,9 @@ func (db *dbHandler) GetDMsByConversation(ctx context.Context, conversationID uu
 	return dms, nil
 }
 
+// Endpoints:
+//
+// PUT /action/user/{user_encoded}/conversations/{conversation_id}/read
 func (db *dbHandler) ReadAllReceivedDMsInConvo(ctx context.Context, conversationID uuid.UUID, username string) error {
 	query := `
 		UPDATE dmessages m
@@ -460,17 +363,5 @@ func (db *dbHandler) ReadAllReceivedDMsInConvo(ctx context.Context, conversation
 	;`
 
 	_, err := db.pool.Exec(ctx, query, conversationID, username)
-	return err
-}
-
-func (db *dbHandler) UpdateDMRead(ctx context.Context, ID uuid.UUID) error {
-
-	query := `
-	UPDATE dmessages
-	SET is_read = TRUE
-	WHERE id = $1
-	;`
-
-	_, err := db.pool.Exec(ctx, query, ID)
 	return err
 }

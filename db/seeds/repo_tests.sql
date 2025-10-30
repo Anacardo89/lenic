@@ -1,11 +1,18 @@
 -- cleanup
-TRUNCATE TABLE comment_ratings;
-TRUNCATE TABLE comments;
-TRUNCATE TABLE post_ratings;
-TRUNCATE TABLE posts;
-TRUNCATE TABLE follows;
-TRUNCATE TABLE users;
+TRUNCATE TABLE
+    dmessages,
+    conversations,
+    user_tags,
+    comment_ratings,
+    post_ratings,
+    comments,
+    notifications,
+    follows,
+    posts,
+    users
+RESTART IDENTITY CASCADE;
 
+-- seed
 INSERT INTO users (
     id,
     username, 
@@ -50,6 +57,18 @@ INSERT INTO users (
         '$2a$10$XLgJUKvQmtOdcOmO2GPYw.Fj16.ls8QDEZyXyna1HPES8Ee8N.sA.',
         'Football, antifascism, and cold beer.',
         TRUE,
+        FALSE,
+        'user',
+        NOW()
+    ),
+    (
+        'd8e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6d',
+        'inactiveuser',
+        'Inactive User',
+        'inactive@example.com',
+        '$2a$10$XLgJUKvQmtOdcOmO2GPYw.Fj16.ls8QDEZyXyna1HPES8Ee8N.sA.',
+        'This user is inactive by default.',
+        FALSE,
         FALSE,
         'user',
         NOW()
@@ -132,7 +151,7 @@ INSERT INTO comments (
     -- Comments on Post 1: Thoughts on Local Politics
     (
         'e1a1b2c3-d4f5-4a6b-9c7d-1e2f3a4b5c6d',
-        'b1d3c0f7-5a1a-4f9b-9a4d-2a8e4f8b9f01',
+        'b1d3c0f7-5a1a-4f9b-9b2a-2a8e4f8b9f01',
         'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
         'Great insights, really makes me think!',
         2,
@@ -140,7 +159,7 @@ INSERT INTO comments (
     ),
     (
         'f2b2c3d4-e5f6-4b7c-8d9e-2f3a4b5c6d7e',
-        'b1d3c0f7-5a1a-4f9b-9a4d-2a8e4f8b9f01',
+        'b1d3c0f7-5a1a-4f9b-9b2a-2a8e4f8b9f01',
         'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
         'I have some different thoughts on this topic.',
         2,
@@ -213,7 +232,7 @@ INSERT INTO notifications (
 ) VALUES
     -- Follow request from moderata to soccerpunk
     (
-        'n1a1b2c3-d4f5-4e6f-9a7b-1c2d3e4f5a6b',
+        'c1a1b2c3-d4f5-4e6f-9a7b-1c2d3e4f5a6b',
         'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
         'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
         'follow_request',
@@ -225,7 +244,7 @@ INSERT INTO notifications (
 
     -- Follow response from anacardo to soccerpunk (accepted)
     (
-        'n2b2c3d4-e5f6-4a7b-8c9d-2d3e4f5a6b7c',
+        'c2b2c3d4-e5f6-4a7b-8c9d-2d3e4f5a6b7c',
         'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
         'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
         'follow_response',
@@ -237,7 +256,7 @@ INSERT INTO notifications (
 
     -- Comment on Post 1 by moderata, notify anacardo
     (
-        'n3c3d4e5-f6a7-4b8c-9d0e-3e4f5a6b7c8d',
+        'c3c3d4e5-f6a7-4b8c-9d0e-3e4f5a6b7c8d',
         'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
         'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
         'post_comment',
@@ -249,7 +268,7 @@ INSERT INTO notifications (
 
     -- Comment on Post 3 by anacardo, notify soccerpunk
     (
-        'n4d4e5f6-a7b8-4c9d-0e1f-4f5a6b7c8d9e',
+        'c4d4e5f6-a7b8-4c9d-0e1f-4f5a6b7c8d9e',
         'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
         'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
         'post_comment',
@@ -261,7 +280,7 @@ INSERT INTO notifications (
 
     -- Post rating notification: moderata liked Post 2, notify author (moderata themselves, for example)
     (
-        'n5e5f6a7-b8c9-4d0e-1f2a-5b6c7d8e9f0a',
+        'c5e5f6a7-b8c9-4d0e-1f2a-5b6c7d8e9f0a',
         'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
         'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
         'post_rating',
@@ -273,7 +292,7 @@ INSERT INTO notifications (
 
     -- Comment rating notification: soccerpunk upvoted Comment 2, notify author (moderata)
     (
-        'n6f6a7b8-c9d0-4e1f-2a3b-6c7d8e9f0a1b',
+        'c6f6a7b8-c9d0-4e1f-2a3b-6c7d8e9f0a1b',
         'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
         'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
         'comment_rating',

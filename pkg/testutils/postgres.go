@@ -2,15 +2,18 @@ package testutils
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"os"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/testcontainers/testcontainers-go"
 	testcontainer "github.com/testcontainers/testcontainers-go/modules/postgres"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 type MigrateDirection string
@@ -23,10 +26,15 @@ const (
 // starts a Postgres container and returns the dsn + close function.
 func StartPostgresContainer(ctx context.Context) (string, func(), error) {
 	// run container
-	pgContainer, err := testcontainer.Run(ctx, "postgres:16",
+	pgContainer, err := testcontainer.Run(ctx, "postgres:16-alpine",
 		testcontainer.WithDatabase("testdb"),
 		testcontainer.WithUsername("test"),
 		testcontainer.WithPassword("secret"),
+		testcontainers.WithWaitStrategy(
+			wait.ForLog("database system is ready to accept connections").
+				WithOccurrence(2).
+				WithStartupTimeout(5*time.Second),
+		),
 	)
 	if err != nil {
 		return "", nil, err
@@ -53,30 +61,25 @@ func ConnectDB(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 
 // migrates db with dsn and the migration path, as well as migrate direction
 func MigrateDB(dsn, migrationsPath string, direction MigrateDirection) error {
-
-	m, err := migrate.New(migrationsPath, dsn)
-	if err != nil {
-		return fmt.Errorf("failed to create migration instance: %w", err)
+	// Check if migration dir exists
+	if _, err := os.Stat(migrationsPath); os.IsNotExist(err) {
+		return fmt.Errorf("migration directory not found at: %s", migrationsPath)
 	}
-
+	// Use file source instead of iofs
+	m, err := migrate.New(fmt.Sprintf("file://%s", migrationsPath), dsn)
+	if err != nil {
+		return fmt.Errorf("error migrating: %s", err.Error())
+	}
+	// execute migration
 	if direction == MigrateUp {
-		if err := m.Up(); err != nil {
-			if err == migrate.ErrNoChange {
-				log.Println("No migrations to apply.")
-				return nil
-			}
-			return fmt.Errorf("migration failed: %w", err)
+		if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+			return err
 		}
 	} else {
-		if err := m.Down(); err != nil {
-			if err == migrate.ErrNoChange {
-				log.Println("No migrations to apply.")
-				return nil
-			}
-			return fmt.Errorf("migration failed: %w", err)
+		if err := m.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+			return err
 		}
 	}
-	log.Println("Database migrated successfully.")
 	return nil
 }
 

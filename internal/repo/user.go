@@ -31,7 +31,6 @@ func (db *dbHandler) CreateUser(ctx context.Context, u *User) (uuid.UUID, error)
 	VALUES ($1, $2, $3, $4)
 	RETURNING id
 	;`
-
 	ID := uuid.New()
 	if err := db.pool.QueryRow(ctx, query,
 		ID,
@@ -77,22 +76,23 @@ func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, erro
 	;`
 
 	u := User{}
-	err := db.pool.QueryRow(ctx, query, ID).
-		Scan(
-			&u.ID,
-			&u.Username,
-			&u.Email,
-			&u.PasswordHash,
-			&u.ProfilePic,
-			&u.Followers,
-			&u.Following,
-			&u.IsActive,
-			&u.IsVerified,
-			&u.UserRole,
-			&u.CreatedAt,
-			&u.UpdatedAt,
-		)
-	return &u, err
+	if err := db.pool.QueryRow(ctx, query, ID).Scan(
+		&u.ID,
+		&u.Username,
+		&u.Email,
+		&u.PasswordHash,
+		&u.ProfilePic,
+		&u.Followers,
+		&u.Following,
+		&u.IsActive,
+		&u.IsVerified,
+		&u.UserRole,
+		&u.CreatedAt,
+		&u.UpdatedAt,
+	); err != nil {
+		return nil, err
+	}
+	return &u, nil
 }
 
 // Endpoints:
@@ -136,7 +136,7 @@ func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*U
 	;`
 
 	u := User{}
-	err := db.pool.QueryRow(ctx, query, userName).Scan(
+	if err := db.pool.QueryRow(ctx, query, userName).Scan(
 		&u.ID,
 		&u.Username,
 		&u.Email,
@@ -149,8 +149,10 @@ func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*U
 		&u.UserRole,
 		&u.CreatedAt,
 		&u.UpdatedAt,
-	)
-	return &u, err
+	); err != nil {
+		return nil, err
+	}
+	return &u, nil
 }
 
 // Endpoints:
@@ -177,22 +179,23 @@ func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, e
 	;`
 
 	u := User{}
-	err := db.pool.QueryRow(ctx, query, email).
-		Scan(
-			&u.ID,
-			&u.Username,
-			&u.Email,
-			&u.PasswordHash,
-			&u.ProfilePic,
-			&u.Followers,
-			&u.Following,
-			&u.IsActive,
-			&u.IsVerified,
-			&u.UserRole,
-			&u.CreatedAt,
-			&u.UpdatedAt,
-		)
-	return &u, err
+	if err := db.pool.QueryRow(ctx, query, email).Scan(
+		&u.ID,
+		&u.Username,
+		&u.Email,
+		&u.PasswordHash,
+		&u.ProfilePic,
+		&u.Followers,
+		&u.Following,
+		&u.IsActive,
+		&u.IsVerified,
+		&u.UserRole,
+		&u.CreatedAt,
+		&u.UpdatedAt,
+	); err != nil {
+		return nil, err
+	}
+	return &u, nil
 }
 
 // Endpoints:
@@ -221,12 +224,11 @@ func (db *dbHandler) SearchUsersByUserName(ctx context.Context, username string)
 	defer rows.Close()
 	for rows.Next() {
 		u := User{}
-		err = rows.Scan(
+		if err := rows.Scan(
 			&u.ID,
 			&u.Username,
 			&u.ProfilePic,
-		)
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 		users = append(users, &u)
@@ -243,6 +245,7 @@ func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName s
 	SELECT
 		id,
 		username,
+		display_name,
 		email,
 		password_hash,
 		profile_pic,
@@ -270,9 +273,10 @@ func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName s
 
 	for rows.Next() {
 		u := User{}
-		err = rows.Scan(
+		if err := rows.Scan(
 			&u.ID,
 			&u.Username,
+			&u.DisplayName,
 			&u.Email,
 			&u.PasswordHash,
 			&u.ProfilePic,
@@ -283,8 +287,7 @@ func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName s
 			&u.UserRole,
 			&u.CreatedAt,
 			&u.UpdatedAt,
-		)
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 		users = append(users, &u)
@@ -305,8 +308,10 @@ func (db *dbHandler) SetUserActive(ctx context.Context, userName string) error {
 	WHERE username = $1
 	;`
 
-	_, err := db.pool.Exec(ctx, query, userName)
-	return err
+	if _, err := db.pool.Exec(ctx, query, userName); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Endpoints:
@@ -319,8 +324,10 @@ func (db *dbHandler) SetNewPassword(ctx context.Context, userID uuid.UUID, passH
 	SET password_hash = $2
 	WHERE id = $1
 	;`
-	_, err := db.pool.Exec(ctx, query, userID, passHash)
-	return err
+	if _, err := db.pool.Exec(ctx, query, userID, passHash); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Endpoints:
@@ -334,8 +341,10 @@ func (db *dbHandler) UpdateProfilePic(ctx context.Context, username string, prof
 	WHERE username = $1
 	;`
 
-	_, err := db.pool.Exec(ctx, query, username, profilePic)
-	return err
+	if _, err := db.pool.Exec(ctx, query, username, profilePic); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Follow
@@ -359,8 +368,10 @@ func (db *dbHandler) FollowUser(ctx context.Context, followerID uuid.UUID, follo
 	)
 	ON CONFLICT (follower_id, followed_id) DO NOTHING;
 	;`
-	_, err := db.pool.Exec(ctx, query, followerID, followedUsername)
-	return err
+	if _, err := db.pool.Exec(ctx, query, followerID, followedUsername); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Endpoints:
@@ -383,8 +394,10 @@ func (db *dbHandler) AcceptFollow(ctx context.Context, followerName, followedNam
 			WHERE username = $2
 		)
 	;`
-	_, err := db.pool.Exec(ctx, query, followerName, followedName)
-	return err
+	if _, err := db.pool.Exec(ctx, query, followerName, followedName); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Endpoints:
@@ -406,8 +419,10 @@ func (db *dbHandler) UnfollowUser(ctx context.Context, followerName, followedNam
 				WHERE username = $2
 			)
 	;`
-	_, err := db.pool.Exec(ctx, query, followerName, followedName)
-	return err
+	if _, err := db.pool.Exec(ctx, query, followerName, followedName); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Endpoints:
@@ -427,15 +442,13 @@ func (db *dbHandler) GetUserFollows(ctx context.Context, followerID, followedID 
 	;`
 
 	f := Follows{}
-	err := db.pool.QueryRow(ctx, query, followerID, followedID).
-		Scan(
-			&f.FollowerID,
-			&f.FollowedID,
-			&f.FollowStatus,
-			&f.CreatedAt,
-			&f.UpdatedAt,
-		)
-	if err != nil {
+	if err := db.pool.QueryRow(ctx, query, followerID, followedID).Scan(
+		&f.FollowerID,
+		&f.FollowedID,
+		&f.FollowStatus,
+		&f.CreatedAt,
+		&f.UpdatedAt,
+	); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
@@ -467,14 +480,13 @@ func (db *dbHandler) GetFollowers(ctx context.Context, followedID uuid.UUID) ([]
 
 	for rows.Next() {
 		f := Follows{}
-		err = rows.Scan(
+		if err := rows.Scan(
 			&f.FollowerID,
 			&f.FollowedID,
 			&f.FollowStatus,
 			&f.CreatedAt,
 			&f.UpdatedAt,
-		)
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 		follows = append(follows, &f)
@@ -505,14 +517,13 @@ func (db *dbHandler) GetFollowing(ctx context.Context, followerID uuid.UUID) ([]
 
 	for rows.Next() {
 		f := Follows{}
-		err = rows.Scan(
+		if err := rows.Scan(
 			&f.FollowerID,
 			&f.FollowedID,
 			&f.FollowStatus,
 			&f.CreatedAt,
 			&f.UpdatedAt,
-		)
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 		follows = append(follows, &f)
