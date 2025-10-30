@@ -502,7 +502,7 @@ func (db *dbHandler) GetFollowing(ctx context.Context, followerID uuid.UUID) ([]
 	query := `
 	SELECT *
 	FROM follows
-	WHERE follower_id = $1 AND follow_status = 'acceoted'
+	WHERE follower_id = $1 AND follow_status = 'accepted'
 	;`
 
 	follows := []*Follows{}

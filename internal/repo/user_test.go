@@ -9,6 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Anacardo89/lenic/pkg/testutils"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -637,6 +639,423 @@ func TestUpdateProfilePic(t *testing.T) {
 				return
 			}
 			require.Equal(t, tt.newProfile, user.ProfilePic)
+		})
+	}
+}
+
+func TestFollowUser(t *testing.T) {
+	// Init
+	ctx := context.Background()
+	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
+	require.NoError(t, err)
+	defer closeDB()
+	// Seed DB
+	seed := filepath.Join(seedPath, "repo_tests.sql")
+	err = SeedDB(ctx, dsn, seed)
+	require.NoError(t, err)
+
+	// DB for test query
+	db, err := testutils.ConnectDB(ctx, dsn)
+	require.NoError(t, err)
+
+	// UUIDs from seed
+	anacardoID := uuid.MustParse("a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1")
+	moderataID := uuid.MustParse("cfa53179-9085-4f33-86b3-5dc5f7a1465f")
+
+	tests := []struct {
+		name         string
+		followerID   uuid.UUID
+		followedUser string
+		wantErr      bool
+	}{
+		{
+			name:         "success - new follow request",
+			followerID:   moderataID,
+			followedUser: "anacardo",
+			wantErr:      false,
+		},
+		{
+			name:         "success - duplicate follow (DO NOTHING)",
+			followerID:   moderataID,
+			followedUser: "anacardo",
+			wantErr:      false,
+		},
+		{
+			name:         "fail - non-existent followed user",
+			followerID:   anacardoID,
+			followedUser: "ghostuser",
+			wantErr:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := repo.FollowUser(ctx, tt.followerID, tt.followedUser)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			// Verify follow exists in DB if followed user exists
+			if tt.followedUser != "ghostuser" {
+				query := `
+				SELECT follow_status
+				FROM follows f
+				JOIN users u ON u.id = f.followed_id
+				WHERE f.follower_id = $1 AND u.username = $2
+				;`
+				var status string
+				err := db.QueryRow(ctx, query, tt.followerID, tt.followedUser).Scan(&status)
+				require.NoError(t, err)
+				require.Equal(t, "pending", status)
+			}
+		})
+	}
+}
+
+func TestAcceptFollow(t *testing.T) {
+	// Init
+	ctx := context.Background()
+	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
+	require.NoError(t, err)
+	defer closeDB()
+	// Seed DB
+	seed := filepath.Join(seedPath, "repo_tests.sql")
+	err = SeedDB(ctx, dsn, seed)
+	require.NoError(t, err)
+
+	// DB for test query
+	db, err := testutils.ConnectDB(ctx, dsn)
+	require.NoError(t, err)
+
+	tests := []struct {
+		name            string
+		followerName    string
+		followedName    string
+		wantFinalStatus string
+		wantErr         bool
+	}{
+		{
+			name:            "success - accept pending follow",
+			followerName:    "moderata",
+			followedName:    "soccerpunk",
+			wantFinalStatus: "accepted",
+			wantErr:         false,
+		},
+		{
+			name:            "success - accept already accepted follow (idempotent)",
+			followerName:    "anacardo",
+			followedName:    "moderata",
+			wantFinalStatus: "accepted",
+			wantErr:         false,
+		},
+		{
+			name:            "fail - non-existent follow relation",
+			followerName:    "soccerpunk",
+			followedName:    "moderata",
+			wantFinalStatus: "",
+			wantErr:         false, // SQL executes but zero rows updated
+		},
+		{
+			name:            "fail - non-existent user",
+			followerName:    "ghostuser",
+			followedName:    "anacardo",
+			wantFinalStatus: "",
+			wantErr:         false, // SQL executes but zero rows updated
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := repo.AcceptFollow(ctx, tt.followerName, tt.followedName)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			// Verify the follow status if both users exist
+			query := `
+			SELECT f.follow_status
+			FROM follows f
+			JOIN users uf ON uf.id = f.follower_id
+			JOIN users ut ON ut.id = f.followed_id
+			WHERE uf.username = $1 AND ut.username = $2
+			;`
+			var status string
+			err = db.QueryRow(ctx, query, tt.followerName, tt.followedName).Scan(&status)
+			if tt.wantFinalStatus == "" {
+				require.Error(t, err) // no row found
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.wantFinalStatus, status)
+			}
+		})
+	}
+}
+
+func TestUnfollowUser(t *testing.T) {
+	// Init
+	ctx := context.Background()
+	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
+	require.NoError(t, err)
+	defer closeDB()
+	// Seed DB
+	seed := filepath.Join(seedPath, "repo_tests.sql")
+	err = SeedDB(ctx, dsn, seed)
+	require.NoError(t, err)
+
+	// DB for test query
+	db, err := testutils.ConnectDB(ctx, dsn)
+	require.NoError(t, err)
+
+	tests := []struct {
+		name         string
+		followerName string
+		followedName string
+		wantErr      bool
+	}{
+		{
+			name:         "success - delete existing follow",
+			followerName: "anacardo",
+			followedName: "moderata",
+			wantErr:      false,
+		},
+		{
+			name:         "success - delete pending follow",
+			followerName: "moderata",
+			followedName: "soccerpunk",
+			wantErr:      false,
+		},
+		{
+			name:         "success - delete non-existent follow",
+			followerName: "soccerpunk",
+			followedName: "moderata",
+			wantErr:      false, // SQL executes but zero rows deleted
+		},
+		{
+			name:         "success - non-existent user",
+			followerName: "ghostuser",
+			followedName: "anacardo",
+			wantErr:      false, // SQL executes but zero rows deleted
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := repo.UnfollowUser(ctx, tt.followerName, tt.followedName)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			// Verify follow does not exist anymore
+			query := `
+			SELECT COUNT(*)
+			FROM follows f
+			JOIN users uf ON uf.id = f.follower_id
+			JOIN users ut ON ut.id = f.followed_id
+			WHERE uf.username = $1 AND ut.username = $2
+			;`
+			var count int
+			err = db.QueryRow(ctx, query, tt.followerName, tt.followedName).Scan(&count)
+			require.NoError(t, err)
+			require.Equal(t, 0, count)
+		})
+	}
+}
+
+func TestGetUserFollows(t *testing.T) {
+	// Init
+	ctx := context.Background()
+	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
+	require.NoError(t, err)
+	defer closeDB()
+	// Seed DB
+	seed := filepath.Join(seedPath, "repo_tests.sql")
+	err = SeedDB(ctx, dsn, seed)
+	require.NoError(t, err)
+
+	// UUIDs from seed
+	anacardoID := uuid.MustParse("a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1")
+	moderataID := uuid.MustParse("cfa53179-9085-4f33-86b3-5dc5f7a1465f")
+	soccerpunkID := uuid.MustParse("f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e")
+
+	tests := []struct {
+		name       string
+		followerID uuid.UUID
+		followedID uuid.UUID
+		wantStatus string
+		wantNil    bool
+	}{
+		{
+			name:       "existing accepted follow",
+			followerID: anacardoID,
+			followedID: moderataID,
+			wantStatus: "accepted",
+			wantNil:    false,
+		},
+		{
+			name:       "existing pending follow",
+			followerID: moderataID,
+			followedID: soccerpunkID,
+			wantStatus: "pending",
+			wantNil:    false,
+		},
+		{
+			name:       "no follow exists",
+			followerID: soccerpunkID,
+			followedID: moderataID,
+			wantNil:    true,
+		},
+		{
+			name:       "non-existent users",
+			followerID: uuid.New(),
+			followedID: uuid.New(),
+			wantNil:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			follow, err := repo.GetUserFollows(ctx, tt.followerID, tt.followedID)
+			require.NoError(t, err)
+			if tt.wantNil {
+				require.Nil(t, follow)
+				return
+			}
+			require.NotNil(t, follow)
+			require.Equal(t, tt.wantStatus, follow.FollowStatus)
+			require.Equal(t, tt.followerID, follow.FollowerID)
+			require.Equal(t, tt.followedID, follow.FollowedID)
+		})
+	}
+}
+
+func TestGetFollowers(t *testing.T) {
+	// Init
+	ctx := context.Background()
+	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
+	require.NoError(t, err)
+	defer closeDB()
+	// Seed DB
+	seed := filepath.Join(seedPath, "repo_tests.sql")
+	err = SeedDB(ctx, dsn, seed)
+	require.NoError(t, err)
+
+	// UUIDs from seed
+	anacardoID := uuid.MustParse("a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1")
+	moderataID := uuid.MustParse("cfa53179-9085-4f33-86b3-5dc5f7a1465f")
+	soccerpunkID := uuid.MustParse("f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e")
+
+	tests := []struct {
+		name       string
+		followedID uuid.UUID
+		wantCount  int
+		wantIDs    []uuid.UUID
+	}{
+		{
+			name:       "followers of moderata",
+			followedID: moderataID,
+			wantCount:  1,
+			wantIDs:    []uuid.UUID{anacardoID},
+		},
+		{
+			name:       "followers of anacardo",
+			followedID: anacardoID,
+			wantCount:  1,
+			wantIDs:    []uuid.UUID{soccerpunkID},
+		},
+		{
+			name:       "followers of soccerpunk",
+			followedID: soccerpunkID,
+			wantCount:  0,
+			wantIDs:    []uuid.UUID{},
+		},
+		{
+			name:       "non-existent user",
+			followedID: uuid.New(),
+			wantCount:  0,
+			wantIDs:    []uuid.UUID{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			follows, err := repo.GetFollowers(ctx, tt.followedID)
+			require.NoError(t, err)
+			require.Len(t, follows, tt.wantCount)
+
+			for i, f := range follows {
+				require.Equal(t, tt.wantIDs[i], f.FollowerID)
+				require.Equal(t, tt.followedID, f.FollowedID)
+				require.Equal(t, "accepted", f.FollowStatus)
+			}
+		})
+	}
+}
+
+func TestGetFollowing(t *testing.T) {
+	// Init
+	ctx := context.Background()
+	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
+	require.NoError(t, err)
+	defer closeDB()
+	// Seed DB
+	seed := filepath.Join(seedPath, "repo_tests.sql")
+	err = SeedDB(ctx, dsn, seed)
+	require.NoError(t, err)
+
+	// UUIDs from seed
+	anacardoID := uuid.MustParse("a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1")
+	moderataID := uuid.MustParse("cfa53179-9085-4f33-86b3-5dc5f7a1465f")
+	soccerpunkID := uuid.MustParse("f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e")
+
+	tests := []struct {
+		name       string
+		followerID uuid.UUID
+		wantCount  int
+		wantIDs    []uuid.UUID
+	}{
+		{
+			name:       "anacardo following",
+			followerID: anacardoID,
+			wantCount:  1,
+			wantIDs:    []uuid.UUID{moderataID}, // from seed, accepted
+		},
+		{
+			name:       "moderata following",
+			followerID: moderataID,
+			wantCount:  0, // pending, not accepted
+			wantIDs:    []uuid.UUID{},
+		},
+		{
+			name:       "soccerpunk following",
+			followerID: soccerpunkID,
+			wantCount:  1,
+			wantIDs:    []uuid.UUID{anacardoID}, // accepted
+		},
+		{
+			name:       "non-existent follower",
+			followerID: uuid.New(),
+			wantCount:  0,
+			wantIDs:    []uuid.UUID{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			follows, err := repo.GetFollowing(ctx, tt.followerID)
+			require.NoError(t, err)
+			require.Len(t, follows, tt.wantCount)
+
+			for i, f := range follows {
+				require.Equal(t, tt.followerID, f.FollowerID)
+				require.Equal(t, tt.wantIDs[i], f.FollowedID)
+				require.Equal(t, "accepted", f.FollowStatus)
+			}
 		})
 	}
 }

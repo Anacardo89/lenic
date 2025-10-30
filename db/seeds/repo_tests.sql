@@ -119,7 +119,7 @@ INSERT INTO posts (
         'Quick recap of the weekend football games and highlights.',
         '',
         1,
-        TRUE,
+        FALSE,
         TRUE
     );
 
