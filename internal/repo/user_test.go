@@ -3,7 +3,6 @@ package repo
 import (
 	"context"
 	"errors"
-	"path/filepath"
 	"testing"
 
 	"github.com/google/uuid"
@@ -14,14 +13,9 @@ import (
 )
 
 func TestCreateUser(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -64,13 +58,13 @@ func TestCreateUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			id, err := repo.CreateUser(ctx, tt.input)
+			id, err := Repo.CreateUser(ctx, tt.input)
 
 			if tt.wantErr == nil {
 				require.NoError(t, err)
 				require.NotEqual(t, uuid.Nil, id)
 				// Verify user exists in DB
-				user, err := repo.GetUserByID(ctx, id)
+				user, err := Repo.GetUserByID(ctx, id)
 				require.NoError(t, err)
 				require.Equal(t, tt.input.Username, user.Username)
 				require.Equal(t, tt.input.Email, user.Email)
@@ -89,14 +83,9 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUserByID(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -157,7 +146,7 @@ func TestGetUserByID(t *testing.T) {
 				t.Fatalf("unexpected parse error: %v", parseErr)
 			}
 
-			user, err := repo.GetUserByID(ctx, id)
+			user, err := Repo.GetUserByID(ctx, id)
 			if tt.wantErr {
 				require.Error(t, err)
 				require.Nil(t, user)
@@ -176,14 +165,9 @@ func TestGetUserByID(t *testing.T) {
 }
 
 func TestGetUserByUserName(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -228,7 +212,7 @@ func TestGetUserByUserName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			user, err := repo.GetUserByUserName(ctx, tt.inputUserName)
+			user, err := Repo.GetUserByUserName(ctx, tt.inputUserName)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -249,14 +233,9 @@ func TestGetUserByUserName(t *testing.T) {
 }
 
 func TestGetUserByEmail(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -301,7 +280,7 @@ func TestGetUserByEmail(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			user, err := repo.GetUserByEmail(ctx, tt.inputEmail)
+			user, err := Repo.GetUserByEmail(ctx, tt.inputEmail)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -322,14 +301,9 @@ func TestGetUserByEmail(t *testing.T) {
 }
 
 func TestSearchUsersByUserName(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -360,7 +334,7 @@ func TestSearchUsersByUserName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			users, err := repo.SearchUsersByUserName(ctx, tt.inputPattern)
+			users, err := Repo.SearchUsersByUserName(ctx, tt.inputPattern)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -386,14 +360,9 @@ func TestSearchUsersByUserName(t *testing.T) {
 }
 
 func TestSearchUsersByDisplayName(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -424,7 +393,7 @@ func TestSearchUsersByDisplayName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			users, err := repo.SearchUsersByDisplayName(ctx, tt.inputPattern)
+			users, err := Repo.SearchUsersByDisplayName(ctx, tt.inputPattern)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -457,14 +426,9 @@ func TestSearchUsersByDisplayName(t *testing.T) {
 }
 
 func TestSetUserActive(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -495,7 +459,7 @@ func TestSetUserActive(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := repo.SetUserActive(ctx, tt.username)
+			err := Repo.SetUserActive(ctx, tt.username)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -503,7 +467,7 @@ func TestSetUserActive(t *testing.T) {
 			require.NoError(t, err)
 
 			// Verify the is_active field in the database
-			user, getErr := repo.GetUserByUserName(ctx, tt.username)
+			user, getErr := Repo.GetUserByUserName(ctx, tt.username)
 			if tt.expectTrue {
 				require.NoError(t, getErr)
 				require.True(t, user.IsActive)
@@ -516,14 +480,9 @@ func TestSetUserActive(t *testing.T) {
 }
 
 func TestSetNewPassword(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -565,7 +524,7 @@ func TestSetNewPassword(t *testing.T) {
 				t.Fatalf("unexpected UUID parse error: %v", err)
 			}
 
-			err = repo.SetNewPassword(ctx, userUUID, tt.newPass)
+			err = Repo.SetNewPassword(ctx, userUUID, tt.newPass)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -574,7 +533,7 @@ func TestSetNewPassword(t *testing.T) {
 			require.NoError(t, err)
 
 			// Verify password hash in DB
-			user, err := repo.GetUserByID(ctx, userUUID)
+			user, err := Repo.GetUserByID(ctx, userUUID)
 			if tt.name == "fail - non-existent user" {
 				require.Error(t, err)
 				return
@@ -586,14 +545,9 @@ func TestSetNewPassword(t *testing.T) {
 }
 
 func TestUpdateProfilePic(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -624,7 +578,7 @@ func TestUpdateProfilePic(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := repo.UpdateProfilePic(ctx, tt.username, tt.newProfile)
+			err := Repo.UpdateProfilePic(ctx, tt.username, tt.newProfile)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -632,7 +586,7 @@ func TestUpdateProfilePic(t *testing.T) {
 			require.NoError(t, err)
 
 			// Verify the profile pic in DB for existing users
-			user, err := repo.GetUserByUserName(ctx, tt.username)
+			user, err := Repo.GetUserByUserName(ctx, tt.username)
 			if err != nil {
 				// If the user doesn’t exist, QueryRow will return an error
 				require.Equal(t, tt.username == "ghostuser", true)
@@ -644,18 +598,13 @@ func TestUpdateProfilePic(t *testing.T) {
 }
 
 func TestFollowUser(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	// DB for test query
-	db, err := testutils.ConnectDB(ctx, dsn)
+	db, err := testutils.ConnectDB(ctx, TestDSN)
 	require.NoError(t, err)
 
 	// UUIDs from seed
@@ -690,7 +639,7 @@ func TestFollowUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := repo.FollowUser(ctx, tt.followerID, tt.followedUser)
+			err := Repo.FollowUser(ctx, tt.followerID, tt.followedUser)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -715,18 +664,13 @@ func TestFollowUser(t *testing.T) {
 }
 
 func TestAcceptFollow(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	// DB for test query
-	db, err := testutils.ConnectDB(ctx, dsn)
+	db, err := testutils.ConnectDB(ctx, TestDSN)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -768,7 +712,7 @@ func TestAcceptFollow(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := repo.AcceptFollow(ctx, tt.followerName, tt.followedName)
+			err := Repo.AcceptFollow(ctx, tt.followerName, tt.followedName)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -796,18 +740,13 @@ func TestAcceptFollow(t *testing.T) {
 }
 
 func TestUnfollowUser(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	// DB for test query
-	db, err := testutils.ConnectDB(ctx, dsn)
+	db, err := testutils.ConnectDB(ctx, TestDSN)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -844,7 +783,7 @@ func TestUnfollowUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := repo.UnfollowUser(ctx, tt.followerName, tt.followedName)
+			err := Repo.UnfollowUser(ctx, tt.followerName, tt.followedName)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -868,14 +807,9 @@ func TestUnfollowUser(t *testing.T) {
 }
 
 func TestGetUserFollows(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	// UUIDs from seed
@@ -920,7 +854,7 @@ func TestGetUserFollows(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			follow, err := repo.GetUserFollows(ctx, tt.followerID, tt.followedID)
+			follow, err := Repo.GetUserFollows(ctx, tt.followerID, tt.followedID)
 			require.NoError(t, err)
 			if tt.wantNil {
 				require.Nil(t, follow)
@@ -935,14 +869,9 @@ func TestGetUserFollows(t *testing.T) {
 }
 
 func TestGetFollowers(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	// UUIDs from seed
@@ -984,7 +913,7 @@ func TestGetFollowers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			follows, err := repo.GetFollowers(ctx, tt.followedID)
+			follows, err := Repo.GetFollowers(ctx, tt.followedID)
 			require.NoError(t, err)
 			require.Len(t, follows, tt.wantCount)
 
@@ -998,14 +927,9 @@ func TestGetFollowers(t *testing.T) {
 }
 
 func TestGetFollowing(t *testing.T) {
-	// Init
-	ctx := context.Background()
-	repo, dsn, closeDB, seedPath, err := BuildTestDBEnv(ctx)
-	require.NoError(t, err)
-	defer closeDB()
 	// Seed DB
-	seed := filepath.Join(seedPath, "repo_tests.sql")
-	err = SeedDB(ctx, dsn, seed)
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
 
 	// UUIDs from seed
@@ -1047,7 +971,7 @@ func TestGetFollowing(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			follows, err := repo.GetFollowing(ctx, tt.followerID)
+			follows, err := Repo.GetFollowing(ctx, tt.followerID)
 			require.NoError(t, err)
 			require.Len(t, follows, tt.wantCount)
 

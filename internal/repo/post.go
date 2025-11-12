@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -29,15 +30,17 @@ func (db *dbHandler) CreatePost(ctx context.Context, p *Post) (uuid.UUID, error)
 	;`
 
 	var ID uuid.UUID
-	err := db.pool.QueryRow(ctx, query,
+	if err := db.pool.QueryRow(ctx, query,
 		p.ID,
 		p.AuthorID,
 		p.Title,
 		p.Content,
 		p.PostImage,
 		p.IsPublic,
-	).Scan(&ID)
-	return ID, err
+	).Scan(&ID); err != nil {
+		return uuid.Nil, err
+	}
+	return ID, nil
 }
 
 // Endpoints:
@@ -128,26 +131,38 @@ func (db *dbHandler) GetPostAuthorFromComment(ctx context.Context, commentID uui
 	;`
 
 	var u User
-	err := db.pool.QueryRow(ctx, query, commentID).Scan(
+	if err := db.pool.QueryRow(ctx, query, commentID).Scan(
 		&u.ID,
 		&u.Username,
 		&u.ProfilePic,
-	)
-	return &u, err
+	); err != nil {
+		return nil, err
+	}
+	return &u, nil
 }
 
 // Endpoints:
 //
 // /user/{encoded_username}
 func (db *dbHandler) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
-
 	query := `
-	SELECT *
+	SELECT
+		id,
+		author_id,
+		title,
+		content,
+		post_image,
+		rating,
+		is_public,
+		is_active,
+		created_at,
+		updated_at,
+		deleted_at
 	FROM posts
-	WHERE author_id = $1 AND is_active = TRUE
+	WHERE author_id = $1
+		AND is_active = TRUE
 	ORDER BY created_at DESC
 	;`
-
 	posts := []*Post{}
 	rows, err := db.pool.Query(ctx, query, userID)
 	if err != nil {
@@ -185,14 +200,25 @@ func (db *dbHandler) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Pos
 //
 // /user/{encoded_username}
 func (db *dbHandler) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) ([]*Post, error) {
-
 	query := `
-	SELECT * 
+	SELECT
+		id,
+		author_id,
+		title,
+		content,
+		post_image,
+		rating,
+		is_public,
+		is_active,
+		created_at,
+		updated_at,
+		deleted_at
 	FROM posts
-	WHERE author_id = $1 AND is_public = TRUE AND is_active = TRUE
+	WHERE author_id = $1
+		AND is_public = TRUE
+		AND is_active = TRUE
 	ORDER BY created_at DESC
 	;`
-
 	posts := []*Post{}
 	rows, err := db.pool.Query(ctx, query, userID)
 	if err != nil {
@@ -233,13 +259,24 @@ func (db *dbHandler) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) (
 func (db *dbHandler) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 
 	query := `
-	SELECT * 
+	SELECT
+		id,
+		author_id,
+		title,
+		content,
+		post_image,
+		rating,
+		is_public,
+		is_active,
+		created_at,
+		updated_at,
+		deleted_at 
 	FROM posts
 	WHERE id = $1
 	;`
 
 	p := Post{}
-	err := db.pool.QueryRow(ctx, query, ID).
+	if err := db.pool.QueryRow(ctx, query, ID).
 		Scan(
 			&p.ID,
 			&p.AuthorID,
@@ -252,8 +289,10 @@ func (db *dbHandler) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 			&p.CreatedAt,
 			&p.UpdatedAt,
 			&p.DeletedAt,
-		)
-	return &p, err
+		); err != nil {
+		return nil, err
+	}
+	return &p, nil
 }
 
 // Endpoints:
@@ -353,7 +392,6 @@ func (db *dbHandler) GetPostForPage(ctx context.Context, ID, userID uuid.UUID) (
 //
 // PUT /action/post/{post_id}
 func (db *dbHandler) UpdatePost(ctx context.Context, post *Post) error {
-
 	query := `
 	UPDATE posts
 	SET title = $2,
@@ -361,14 +399,19 @@ func (db *dbHandler) UpdatePost(ctx context.Context, post *Post) error {
 		is_public = $4
 	WHERE id = $1
 	;`
-
-	_, err := db.pool.Exec(ctx, query,
+	tag, err := db.pool.Exec(ctx, query,
 		post.ID,
 		post.Title,
 		post.Content,
 		post.IsPublic,
 	)
-	return err
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("no post found with id %d", post.ID)
+	}
+	return nil
 }
 
 // Endpoints:
@@ -386,12 +429,14 @@ func (db *dbHandler) DisablePost(ctx context.Context, ID uuid.UUID) (*Post, erro
 		content
 	;`
 	var p Post
-	err := db.pool.QueryRow(ctx, query, ID).Scan(
+	if err := db.pool.QueryRow(ctx, query, ID).Scan(
 		&p.ID,
 		&p.Title,
 		&p.Content,
-	)
-	return &p, err
+	); err != nil {
+		return nil, err
+	}
+	return &p, nil
 }
 
 // Post Ratings
@@ -416,15 +461,16 @@ func (db *dbHandler) RatePostUp(ctx context.Context, targetID, userID uuid.UUID)
 			ELSE 1
 		END
 	;`
-	_, err := db.pool.Exec(ctx, query, targetID, userID)
-	return err
+	if _, err := db.pool.Exec(ctx, query, targetID, userID); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Endpoints:
 //
 // POST /action/post/{post_id}/down
 func (db *dbHandler) RatePostDown(ctx context.Context, targetID, userID uuid.UUID) error {
-
 	query := `
 	INSERT INTO post_ratings (
 		target_id,
@@ -440,7 +486,8 @@ func (db *dbHandler) RatePostDown(ctx context.Context, targetID, userID uuid.UUI
 			ELSE -1
 		END
 	;`
-
-	_, err := db.pool.Exec(ctx, query, targetID, userID)
-	return err
+	if _, err := db.pool.Exec(ctx, query, targetID, userID); err != nil {
+		return err
+	}
+	return nil
 }
