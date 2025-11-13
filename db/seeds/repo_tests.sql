@@ -98,7 +98,7 @@ INSERT INTO posts (
         'Thoughts on Local Politics',
         'Sharing some ideas about our local elections and activism.',
         '',
-        1,
+        0,
         TRUE,
         TRUE
     ),
@@ -108,7 +108,7 @@ INSERT INTO posts (
         'Moderation Tips',
         'A few tips on keeping our forums safe and welcoming.',
         '',
-        2,
+        0,
         TRUE,
         TRUE
     ),
@@ -118,14 +118,14 @@ INSERT INTO posts (
         'Weekend Football Recap',
         'Quick recap of the weekend football games and highlights.',
         '',
-        1,
+        0,
         FALSE,
         TRUE
     );
 
 INSERT INTO post_ratings (target_id, user_id, rating_value) VALUES
     -- Post 1 ratings (final rating: 1)
-    ('b1d3c0f7-5a1a-4f9b-9b2a-2a8e4f8b9f01', 'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1', 1),
+    ('b1d3c0f7-5a1a-4f9b-9b2a-2a8e4f8b9f01', 'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1', 0),
     ('b1d3c0f7-5a1a-4f9b-9b2a-2a8e4f8b9f01', 'cfa53179-9085-4f33-86b3-5dc5f7a1465f', 1),
     ('b1d3c0f7-5a1a-4f9b-9b2a-2a8e4f8b9f01', 'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e', -1),
 
@@ -154,7 +154,7 @@ INSERT INTO comments (
         'b1d3c0f7-5a1a-4f9b-9b2a-2a8e4f8b9f01',
         'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
         'Great insights, really makes me think!',
-        2,
+        0,
         TRUE
     ),
     (
@@ -162,7 +162,7 @@ INSERT INTO comments (
         'b1d3c0f7-5a1a-4f9b-9b2a-2a8e4f8b9f01',
         'f7a92b5b-4b7e-4787-9c0b-2b0b6cb86b4e',
         'I have some different thoughts on this topic.',
-        2,
+        0,
         TRUE
     ),
 
@@ -172,7 +172,7 @@ INSERT INTO comments (
         'c2e4d1f8-6b2b-4a8c-8c3b-3b9f5a9c0d12',
         'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
         'These tips are really helpful, thanks for sharing!',
-        2,
+        0,
         TRUE
     ),
 
@@ -182,7 +182,7 @@ INSERT INTO comments (
         'd3f5e2a9-7c3c-4b7d-9d4c-4c0a6b1d1e23',
         'cfa53179-9085-4f33-86b3-5dc5f7a1465f',
         'Exciting games this weekend, can’t wait for the next!',
-        1,
+        0,
         TRUE
     ),
     (
@@ -190,7 +190,7 @@ INSERT INTO comments (
         'd3f5e2a9-7c3c-4b7d-9d4c-4c0a6b1d1e23',
         'a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1',
         'I missed the matches, thanks for the recap!',
-        3,
+        0,
         TRUE
     );
 

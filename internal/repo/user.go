@@ -56,7 +56,6 @@ func (db *dbHandler) CreateUser(ctx context.Context, u *User) (uuid.UUID, error)
 //	/ws - rate_post
 //	as well as CreateSession and ValidateSession
 func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, error) {
-
 	query := `
 	SELECT
 		id,
@@ -74,7 +73,6 @@ func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, erro
 	FROM users
 	WHERE id = $1
 	;`
-
 	u := User{}
 	if err := db.pool.QueryRow(ctx, query, ID).Scan(
 		&u.ID,
@@ -116,7 +114,6 @@ func (db *dbHandler) GetUserByID(ctx context.Context, ID uuid.UUID) (*User, erro
 // ws - follow_request
 // ws - follow_accept
 func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*User, error) {
-
 	query := `
 	SELECT
 		id,
@@ -134,7 +131,6 @@ func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*U
 	FROM users
 	WHERE username = $1
 	;`
-
 	u := User{}
 	if err := db.pool.QueryRow(ctx, query, userName).Scan(
 		&u.ID,
@@ -159,7 +155,6 @@ func (db *dbHandler) GetUserByUserName(ctx context.Context, userName string) (*U
 //
 // POST /action/forgot-password
 func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, error) {
-
 	query := `
 	SELECT
 		id,
@@ -177,7 +172,6 @@ func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, e
 	FROM users
 	WHERE email = $1
 	;`
-
 	u := User{}
 	if err := db.pool.QueryRow(ctx, query, email).Scan(
 		&u.ID,
@@ -202,7 +196,6 @@ func (db *dbHandler) GetUserByEmail(ctx context.Context, email string) (*User, e
 //
 // GET /action/search/user
 func (db *dbHandler) SearchUsersByUserName(ctx context.Context, username string) ([]*User, error) {
-
 	query := `
 	SELECT
 		id,
@@ -211,7 +204,6 @@ func (db *dbHandler) SearchUsersByUserName(ctx context.Context, username string)
 	FROM users
 	WHERE username LIKE $1
 	;`
-
 	likeUser := "%" + username + "%"
 	users := []*User{}
 	rows, err := db.pool.Query(ctx, query, likeUser)
@@ -233,6 +225,9 @@ func (db *dbHandler) SearchUsersByUserName(ctx context.Context, username string)
 		}
 		users = append(users, &u)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return users, nil
 }
 
@@ -240,7 +235,6 @@ func (db *dbHandler) SearchUsersByUserName(ctx context.Context, username string)
 // 1- change username to displayName as seen name in frontend
 // 2- implement search based on display name
 func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName string) ([]*User, error) {
-
 	query := `
 	SELECT
 		id,
@@ -259,7 +253,6 @@ func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName s
 	FROM users
 	WHERE display_name LIKE $1
 	;`
-
 	likeUser := "%" + displayName + "%"
 	users := []*User{}
 	rows, err := db.pool.Query(ctx, query, likeUser)
@@ -270,7 +263,6 @@ func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName s
 		return nil, err
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		u := User{}
 		if err := rows.Scan(
@@ -292,6 +284,9 @@ func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName s
 		}
 		users = append(users, &u)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return users, nil
 }
 
@@ -301,13 +296,11 @@ func (db *dbHandler) SearchUsersByDisplayName(ctx context.Context, displayName s
 //
 // TODO: set is_active to be equivalent to deleted and is_verified to be the current is_active
 func (db *dbHandler) SetUserActive(ctx context.Context, userName string) error {
-
 	query := `
 	UPDATE users
 	SET is_active = TRUE
 	WHERE username = $1
 	;`
-
 	if _, err := db.pool.Exec(ctx, query, userName); err != nil {
 		return err
 	}
@@ -334,13 +327,11 @@ func (db *dbHandler) SetNewPassword(ctx context.Context, userID uuid.UUID, passH
 //
 // /action/user/{user_encoded}/profile-pic
 func (db *dbHandler) UpdateProfilePic(ctx context.Context, username string, profilePic string) error {
-
 	query := `
 	UPDATE users
 	SET profile_pic = $2
 	WHERE username = $1
 	;`
-
 	if _, err := db.pool.Exec(ctx, query, username, profilePic); err != nil {
 		return err
 	}
@@ -429,7 +420,6 @@ func (db *dbHandler) UnfollowUser(ctx context.Context, followerName, followedNam
 //
 // /user/{encoded_username}
 func (db *dbHandler) GetUserFollows(ctx context.Context, followerID, followedID uuid.UUID) (*Follows, error) {
-
 	query := `
 	SELECT
 		follower_id,
@@ -440,7 +430,6 @@ func (db *dbHandler) GetUserFollows(ctx context.Context, followerID, followedID 
 	FROM follows
 	WHERE follower_id = $1 AND followed_id = $2
 	;`
-
 	f := Follows{}
 	if err := db.pool.QueryRow(ctx, query, followerID, followedID).Scan(
 		&f.FollowerID,
@@ -461,13 +450,11 @@ func (db *dbHandler) GetUserFollows(ctx context.Context, followerID, followedID 
 //
 // /user/{encoded_username}/followers
 func (db *dbHandler) GetFollowers(ctx context.Context, followedID uuid.UUID) ([]*Follows, error) {
-
 	query := `
 	SELECT *
 	FROM follows
 	WHERE followed_id = $1 AND follow_status = 'accepted'
 	;`
-
 	follows := []*Follows{}
 	rows, err := db.pool.Query(ctx, query, followedID)
 	if err != nil {
@@ -477,7 +464,6 @@ func (db *dbHandler) GetFollowers(ctx context.Context, followedID uuid.UUID) ([]
 		return nil, err
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		f := Follows{}
 		if err := rows.Scan(
@@ -491,6 +477,9 @@ func (db *dbHandler) GetFollowers(ctx context.Context, followedID uuid.UUID) ([]
 		}
 		follows = append(follows, &f)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return follows, nil
 }
 
@@ -498,13 +487,11 @@ func (db *dbHandler) GetFollowers(ctx context.Context, followedID uuid.UUID) ([]
 //
 // /user/{encoded_username}/following
 func (db *dbHandler) GetFollowing(ctx context.Context, followerID uuid.UUID) ([]*Follows, error) {
-
 	query := `
 	SELECT *
 	FROM follows
 	WHERE follower_id = $1 AND follow_status = 'accepted'
 	;`
-
 	follows := []*Follows{}
 	rows, err := db.pool.Query(ctx, query, followerID)
 	if err != nil {
@@ -514,7 +501,6 @@ func (db *dbHandler) GetFollowing(ctx context.Context, followerID uuid.UUID) ([]
 		return nil, err
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		f := Follows{}
 		if err := rows.Scan(
@@ -527,6 +513,9 @@ func (db *dbHandler) GetFollowing(ctx context.Context, followerID uuid.UUID) ([]
 			return nil, err
 		}
 		follows = append(follows, &f)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 	return follows, nil
 }

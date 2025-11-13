@@ -72,9 +72,9 @@ func (h *APIHandler) AddComment(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 				ut := &repo.UserTag{
-					UserID:      u.ID,
-					TargetID:    c.ID,
-					ResourceTpe: repo.ResourceComment.String(),
+					UserID:       u.ID,
+					TargetID:     c.ID,
+					ResourceType: repo.ResourceComment.String(),
 				}
 				err = h.db.CreateUserTag(h.ctx, ut)
 				if err != nil {
@@ -159,9 +159,9 @@ func (h *APIHandler) EditComment(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 				ut := &repo.UserTag{
-					UserID:      u.ID,
-					TargetID:    c.ID,
-					ResourceTpe: repo.ResourceComment.String(),
+					UserID:       u.ID,
+					TargetID:     c.ID,
+					ResourceType: repo.ResourceComment.String(),
 				}
 				err = h.db.CreateUserTag(h.ctx, ut)
 				if err != nil {

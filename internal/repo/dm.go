@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/google/uuid"
 
@@ -30,10 +29,9 @@ func (db *dbHandler) GetConversationAndSender(ctx context.Context, conversationI
 	WHERE c.id = $1
 		AND (u.id = c.user1_id OR u.id = c.user2_id);
 	;`
-
 	var c Conversation
 	var u User
-	err := db.pool.QueryRow(ctx, query, conversationID, username).Scan(
+	if err := db.pool.QueryRow(ctx, query, conversationID, username).Scan(
 		&c.ID,
 		&c.User1ID,
 		&c.User2ID,
@@ -41,8 +39,10 @@ func (db *dbHandler) GetConversationAndSender(ctx context.Context, conversationI
 		&u.ID,
 		&u.Username,
 		&u.ProfilePic,
-	)
-	return &c, &u, err
+	); err != nil {
+		return nil, nil, err
+	}
+	return &c, &u, nil
 }
 
 // Endpoints:
@@ -71,7 +71,6 @@ func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 s
 		DO UPDATE SET user1_id = conversations.user1_id
 	RETURNING id
 	;`
-
 	query2 := `
 	SELECT c.id, c.user1_id, c.user2_id, c.updated_at,
 		u1.id, u1.username, u1.profile_pic,
@@ -81,20 +80,18 @@ func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 s
 	JOIN users u2 ON u2.id = c.user2_id
 	WHERE c.id = $1
 	;`
-
 	cID := uuid.New()
 	var c Conversation
 	users := []*User{
 		new(User),
 		new(User),
 	}
-	err := db.pool.QueryRow(ctx, query1, cID, user1, user2).Scan(
+	if err := db.pool.QueryRow(ctx, query1, cID, user1, user2).Scan(
 		&cID,
-	)
-	if err != nil {
+	); err != nil {
 		return nil, nil, err
 	}
-	err = db.pool.QueryRow(ctx, query2, cID).Scan(
+	if err := db.pool.QueryRow(ctx, query2, cID).Scan(
 		&c.ID,
 		&c.User1ID,
 		&c.User2ID,
@@ -105,15 +102,16 @@ func (db *dbHandler) GetConversationAndUsers(ctx context.Context, user1, user2 s
 		&users[1].ID,
 		&users[1].Username,
 		&users[1].ProfilePic,
-	)
-	return &c, users, err
+	); err != nil {
+		return nil, nil, err
+	}
+	return &c, users, nil
 }
 
 // Endpoints:
 //
 // GET /action/user/{user_encoded}/conversations
 func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, limit, offset int) (*User, []*ConversationsWithDMs, error) {
-
 	query1 := `
 	SELECT
 		id,
@@ -122,7 +120,6 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 	FROM users
 	WHERE username = $1
 	;`
-
 	query2 := `
 	SELECT
 		id,
@@ -135,38 +132,27 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 	LIMIT $2
 	OFFSET $3
 	;`
-
 	query3 := `
-	SELECT
-		u.id,
-		u.username,
-		u.profile_pic,
-		COALESCE(
-			(
-				SELECT json_agg(
-					json_build_object(
-						'id', m.id,
-						'conversation_id', m.conversation_id,
-						'sender_id', m.sender_id,
-						'content', m.content,
-						'is_read', m.is_read,
-						'created_at', m.created_at
-					) ORDER BY m.created_at DESC
-				)
-				FROM dmessages m
-				WHERE m.conversation_id = c.id
-				LIMIT 1000
-			), '[]'::json
-		) AS messages
-	FROM users u
-	JOIN conversations c
-		ON u.id = CASE
-			WHEN c.user1_id = $1 THEN c.user2_id
-			ELSE c.user1_id
-		END
-	WHERE c.id = $2
+	SELECT 
+		id, 
+		username, 
+		profile_pic 
+	FROM users
+	WHERE id = $1
 	;`
-
+	query4 := `
+	SELECT
+		id,
+		conversation_id,
+		sender_id,
+		content,
+		is_read,
+		created_at
+	FROM dmessages 
+	WHERE conversation_id = $1 
+	ORDER BY created_at DESC
+	LIMIT 1000
+	;`
 	var u User
 	if err := db.pool.QueryRow(ctx, query1, user).Scan(
 		&u.ID,
@@ -175,7 +161,6 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 	); err != nil {
 		return nil, nil, err
 	}
-
 	rows, err := db.pool.Query(ctx, query2, u.ID, limit, offset)
 	if err != nil {
 		return nil, nil, err
@@ -193,38 +178,53 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 		}
 		convos = append(convos, &c)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, nil, err
+	}
 	rows.Close()
-
-	var completeConvos []*ConversationsWithDMs
-	for _, c := range convos {
-		rows, err = db.pool.Query(ctx, query3, u.ID, c.ID)
+	var completeConvos = make([]*ConversationsWithDMs, len(convos))
+	for i, c := range convos {
+		var otherUserID uuid.UUID
+		if c.User1ID == u.ID {
+			otherUserID = c.User2ID
+		} else {
+			otherUserID = c.User1ID
+		}
+		completeConvos[i] = &ConversationsWithDMs{}
+		completeConvos[i].ID = c.ID
+		completeConvos[i].UpdatedAt = c.UpdatedAt
+		completeConvos[i].OtherUser = new(User)
+		if err := db.pool.QueryRow(ctx, query3, otherUserID).Scan(
+			&completeConvos[i].OtherUser.ID,
+			&completeConvos[i].OtherUser.Username,
+			&completeConvos[i].OtherUser.ProfilePic,
+		); err != nil {
+			return nil, nil, err
+		}
+		rows, err := db.pool.Query(ctx, query4, c.ID)
 		if err != nil {
 			return nil, nil, err
 		}
+		defer rows.Close()
+		messages := []*DMessage{}
 		for rows.Next() {
-			var dmJSON []byte
-			var convo ConversationsWithDMs
-			messages := make([]*DMessage, 0)
-			var otherUser User
-			convo.Messages = messages
-			if err := rows.Scan(
-				&otherUser.ID,
-				&otherUser.Username,
-				&otherUser.ProfilePic,
-				&dmJSON,
-			); err != nil {
-				return nil, nil, err
-			} else {
-				convo.ID = c.ID
-				convo.OtherUser = &otherUser
-				if err := json.Unmarshal(dmJSON, &convo.Messages); err != nil {
-					return nil, nil, err
-				}
-			}
-			completeConvos = append(completeConvos, &convo)
-		}
-	}
+			message := DMessage{}
+			rows.Scan(
+				&message.ID,
+				&message.ConversationID,
+				&message.SenderID,
+				&message.Content,
+				&message.IsRead,
+				&message.CreatedAt,
+			)
+			messages = append(messages, &message)
 
+		}
+		if err := rows.Err(); err != nil {
+			return nil, nil, err
+		}
+		completeConvos[i].Messages = messages
+	}
 	return &u, completeConvos, nil
 }
 
@@ -232,39 +232,45 @@ func (db *dbHandler) GetConversationsAndOwner(ctx context.Context, user string, 
 //
 // ws - dm
 func (db *dbHandler) GetConversationByUsers(ctx context.Context, user1ID, user2ID uuid.UUID) (*Conversation, error) {
-
 	query := `
-	SELECT *
+	SELECT
+		id,
+		user1_id,
+		user2_id,
+		created_at,
+		updated_at
 	FROM conversations
 	WHERE user1_id = $1 AND user2_id = $2
+		OR user1_id = $2 AND user2_id = $1
 	;`
-
 	min, max := helpers.OrderUUIDs(user1ID, user2ID)
 	conv := Conversation{}
-	err := db.pool.QueryRow(ctx, query, min, max).
+	if err := db.pool.QueryRow(ctx, query, min, max).
 		Scan(
 			&conv.ID,
 			&conv.User1ID,
 			&conv.User2ID,
 			&conv.CreatedAt,
 			&conv.UpdatedAt,
-		)
-	return &conv, err
+		); err != nil {
+		return nil, err
+	}
+	return &conv, nil
 }
 
 // Endpoints:
 //
 // ws - dm
 func (db *dbHandler) UpdateConversation(ctx context.Context, ID uuid.UUID) error {
-
 	query := `
 	UPDATE conversations
 	SET updated_at = NOW()
 	WHERE id = $1
 	;`
-
-	_, err := db.pool.Exec(ctx, query, ID)
-	return err
+	if _, err := db.pool.Exec(ctx, query, ID); err != nil {
+		return err
+	}
+	return nil
 }
 
 // DMs
@@ -273,7 +279,6 @@ func (db *dbHandler) UpdateConversation(ctx context.Context, ID uuid.UUID) error
 //
 // POST /action/user/{user_encoded}/conversations/{conversation_id}/dms
 func (db *dbHandler) CreateDM(ctx context.Context, dm *DMessage) (uuid.UUID, error) {
-
 	query := `
 	INSERT INTO dmessages (
 		id,
@@ -284,22 +289,22 @@ func (db *dbHandler) CreateDM(ctx context.Context, dm *DMessage) (uuid.UUID, err
 	VALUES ($1, $2, $3, $4)
 	RETURNING id
 	;`
-
 	ID := uuid.New()
-	err := db.pool.QueryRow(ctx, query,
+	if err := db.pool.QueryRow(ctx, query,
 		ID,
 		dm.ConversationID,
 		dm.SenderID,
 		dm.Content,
-	).Scan(&ID)
-	return ID, err
+	).Scan(&ID); err != nil {
+		return uuid.Nil, err
+	}
+	return ID, nil
 }
 
 // Endpoints:
 //
 // GET /action/user/{user_encoded}/conversations/{conversation_id}/dms
 func (db *dbHandler) GetDMsByConversation(ctx context.Context, conversationID uuid.UUID, limit, offset int) ([]*DMessageWithUser, error) {
-
 	query := `
 	SELECT 
 		m.id,
@@ -318,14 +323,12 @@ func (db *dbHandler) GetDMsByConversation(ctx context.Context, conversationID uu
 	LIMIT $2
 	OFFSET $3
 	;`
-
 	var dms []*DMessageWithUser
 	rows, err := db.pool.Query(ctx, query, conversationID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		dm := DMessageWithUser{
 			Sender: &User{},
@@ -345,6 +348,9 @@ func (db *dbHandler) GetDMsByConversation(ctx context.Context, conversationID uu
 		}
 		dms = append(dms, &dm)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return dms, nil
 }
 
@@ -361,7 +367,8 @@ func (db *dbHandler) ReadAllReceivedDMsInConvo(ctx context.Context, conversation
 			AND m.sender_id != u.id
 			AND m.is_read = FALSE;
 	;`
-
-	_, err := db.pool.Exec(ctx, query, conversationID, username)
-	return err
+	if _, err := db.pool.Exec(ctx, query, conversationID, username); err != nil {
+		return err
+	}
+	return nil
 }

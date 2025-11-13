@@ -19,7 +19,7 @@ func (db *dbHandler) CreateComment(ctx context.Context, c *Comment) error {
 		author_id,
 		content
 	)
-	VALUES ($1, $2, $3)
+	VALUES ($1, $2, $3, $4)
 	RETURNING
 		id,
 		post_id,
@@ -29,9 +29,8 @@ func (db *dbHandler) CreateComment(ctx context.Context, c *Comment) error {
 		is_active,
 		created_at
 	;`
-
 	ID := uuid.New()
-	err := db.pool.QueryRow(ctx, query,
+	if err := db.pool.QueryRow(ctx, query,
 		ID,
 		c.PostID,
 		c.AuthorID,
@@ -44,8 +43,10 @@ func (db *dbHandler) CreateComment(ctx context.Context, c *Comment) error {
 		&c.Rating,
 		&c.IsActive,
 		&c.CreatedAt,
-	)
-	return err
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Endpoints:
@@ -53,15 +54,22 @@ func (db *dbHandler) CreateComment(ctx context.Context, c *Comment) error {
 // ws - comment_rating
 // ws - comment_tag
 func (db *dbHandler) GetComment(ctx context.Context, ID uuid.UUID) (*Comment, error) {
-
 	query := `
-	SELECT *
+	SELECT
+		id,
+		post_id,
+		author_id,
+		content,
+		rating,
+		is_active,
+		created_at,
+		updated_at
 	FROM comments
 	WHERE id = $1
+		AND is_active = TRUE
 	;`
-
 	comment := Comment{}
-	err := db.pool.QueryRow(ctx, query, ID).
+	if err := db.pool.QueryRow(ctx, query, ID).
 		Scan(
 			&comment.ID,
 			&comment.PostID,
@@ -71,9 +79,10 @@ func (db *dbHandler) GetComment(ctx context.Context, ID uuid.UUID) (*Comment, er
 			&comment.IsActive,
 			&comment.CreatedAt,
 			&comment.UpdatedAt,
-			&comment.DeletedAt,
-		)
-	return &comment, err
+		); err != nil {
+		return nil, err
+	}
+	return &comment, nil
 }
 
 // Endpoints:
@@ -91,10 +100,10 @@ func (db *dbHandler) UpdateComment(ctx context.Context, c *Comment) error {
 		content,
 		rating,
 		is_active,
-		created_at
+		created_at,
+		updated_at
 	;`
-
-	err := db.pool.QueryRow(ctx, query,
+	if err := db.pool.QueryRow(ctx, query,
 		c.ID,
 		c.Content,
 	).Scan(
@@ -105,31 +114,35 @@ func (db *dbHandler) UpdateComment(ctx context.Context, c *Comment) error {
 		&c.Rating,
 		&c.IsActive,
 		&c.CreatedAt,
-	)
-	return err
+		&c.UpdatedAt,
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Endpoints:
 //
 // DELETE /action/post/{post_id}/comment/{comment_id}
 func (db *dbHandler) DisableComment(ctx context.Context, ID uuid.UUID) (*Comment, error) {
-
 	query := `
 	UPDATE comments
-	SET active = FALSE,
+	SET is_active = FALSE,
 		deleted_at = NOW()
 	WHERE id = $1
+		AND is_active = TRUE
 	RETURNING
 		id,
 		content
 	;`
-
 	var c Comment
-	err := db.pool.QueryRow(ctx, query, ID).Scan(
+	if err := db.pool.QueryRow(ctx, query, ID).Scan(
 		&c.ID,
 		&c.Content,
-	)
-	return &c, err
+	); err != nil {
+		return nil, err
+	}
+	return &c, nil
 }
 
 // Comment Ratings
@@ -138,7 +151,6 @@ func (db *dbHandler) DisableComment(ctx context.Context, ID uuid.UUID) (*Comment
 //
 // POST /action/post/{post_id}/comment/{comment_id}/up
 func (db *dbHandler) RateCommentUp(ctx context.Context, targetID, userID uuid.UUID) error {
-
 	query := `
 	INSERT INTO comment_ratings (
 		target_id,
@@ -154,16 +166,16 @@ func (db *dbHandler) RateCommentUp(ctx context.Context, targetID, userID uuid.UU
 			ELSE 1
 		END
 	;`
-
-	_, err := db.pool.Exec(ctx, query, targetID, userID)
-	return err
+	if _, err := db.pool.Exec(ctx, query, targetID, userID); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Endpoints:
 //
 // POST /action/post/{post_id}/comment/{comment_id}/down
 func (db *dbHandler) RateCommentDown(ctx context.Context, targetID, userID uuid.UUID) error {
-
 	query := `
 	INSERT INTO comment_ratings (
 		target_id,
@@ -179,7 +191,8 @@ func (db *dbHandler) RateCommentDown(ctx context.Context, targetID, userID uuid.
 			ELSE -1
 		END
 	;`
-
-	_, err := db.pool.Exec(ctx, query, targetID, userID)
-	return err
+	if _, err := db.pool.Exec(ctx, query, targetID, userID); err != nil {
+		return err
+	}
+	return nil
 }

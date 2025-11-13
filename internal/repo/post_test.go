@@ -3,9 +3,12 @@ package repo
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Anacardo89/lenic/pkg/testutils"
 )
 
 func TestCreatePost(t *testing.T) {
@@ -149,6 +152,7 @@ func TestGetFeed(t *testing.T) {
 }
 
 func TestGetPostAuthorFromComment(t *testing.T) {
+	// Seed DB
 	ctx := context.Background()
 	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
@@ -211,6 +215,7 @@ func TestGetPostAuthorFromComment(t *testing.T) {
 }
 
 func TestGetUserPosts(t *testing.T) {
+	// Seed DB
 	ctx := context.Background()
 	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
@@ -268,6 +273,7 @@ func TestGetUserPosts(t *testing.T) {
 }
 
 func TestGetUserPublicPosts(t *testing.T) {
+	// Seed DB
 	ctx := context.Background()
 	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
@@ -323,6 +329,7 @@ func TestGetUserPublicPosts(t *testing.T) {
 }
 
 func TestGetPost(t *testing.T) {
+	// Seed DB
 	ctx := context.Background()
 	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
@@ -372,6 +379,7 @@ func TestGetPost(t *testing.T) {
 }
 
 func TestGetPostForPage(t *testing.T) {
+	// Seed DB
 	ctx := context.Background()
 	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
@@ -393,7 +401,7 @@ func TestGetPostForPage(t *testing.T) {
 			expectedTitle:      "Thoughts on Local Politics",
 			expectedAuthor:     "anacardo",
 			expectedComments:   2,
-			expectedUserRating: 1,
+			expectedUserRating: 0,
 		},
 		{
 			name:               "Post 1 page for moderator moderata",
@@ -431,6 +439,7 @@ func TestGetPostForPage(t *testing.T) {
 }
 
 func TestUpdatePost(t *testing.T) {
+	// Seed DB
 	ctx := context.Background()
 	err := SeedDB(ctx, TestDSN, SeedPath)
 	require.NoError(t, err)
@@ -488,6 +497,203 @@ func TestUpdatePost(t *testing.T) {
 			require.Equal(t, tt.newTitle, updatedPost.Title)
 			require.Equal(t, tt.newContent, updatedPost.Content)
 			require.Equal(t, tt.newPublic, updatedPost.IsPublic)
+		})
+	}
+}
+
+func TestDisablePost(t *testing.T) {
+	// Seed DB
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
+	require.NoError(t, err)
+
+	// DB for test query
+	db, err := testutils.ConnectDB(ctx, TestDSN)
+	require.NoError(t, err)
+
+	tests := []struct {
+		name      string
+		postID    uuid.UUID
+		expectErr bool
+	}{
+		{
+			name:   "Disable existing post (Post 1)",
+			postID: uuid.MustParse("b1d3c0f7-5a1a-4f9b-9b2a-2a8e4f8b9f01"),
+		},
+		{
+			name:      "Non-existent post returns error",
+			postID:    uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			disabledPost, err := Repo.DisablePost(ctx, tt.postID)
+			if tt.expectErr {
+				require.Error(t, err)
+				require.Nil(t, disabledPost)
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, disabledPost)
+			require.Equal(t, tt.postID, disabledPost.ID)
+			require.NotEmpty(t, disabledPost.Title)
+			require.NotEmpty(t, disabledPost.Content)
+
+			// Verify in DB that the post is inactive and has deleted_at set
+			var (
+				isActive  bool
+				deletedAt *time.Time
+			)
+			err = db.QueryRow(ctx, `SELECT is_active, deleted_at FROM posts WHERE id = $1;`,
+				tt.postID).Scan(&isActive, &deletedAt)
+			require.NoError(t, err)
+			require.False(t, isActive)
+			require.NotNil(t, deletedAt)
+		})
+	}
+}
+
+func TestRatePostUp(t *testing.T) {
+	// Seed DB
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
+	require.NoError(t, err)
+
+	// DB for test query
+	db, err := testutils.ConnectDB(ctx, TestDSN)
+	require.NoError(t, err)
+
+	postID := uuid.MustParse("b1d3c0f7-5a1a-4f9b-9b2a-2a8e4f8b9f01")
+	userID := uuid.MustParse("a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1") // "anacardo"
+
+	tests := []struct {
+		name          string
+		targetID      uuid.UUID
+		userID        uuid.UUID
+		expectedValue int
+		expectErr     bool
+		setup         func() // optional setup before test
+	}{
+		{
+			name:          "First upvote creates rating = 1",
+			targetID:      postID,
+			userID:        userID,
+			expectedValue: 1,
+		},
+		{
+			name:          "Second upvote toggles rating to 0",
+			targetID:      postID,
+			userID:        userID,
+			expectedValue: 0,
+		},
+		{
+			name:          "Third upvote toggles rating back to 1",
+			targetID:      postID,
+			userID:        userID,
+			expectedValue: 1,
+		},
+		{
+			name:      "Invalid post ID returns error",
+			targetID:  uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+			userID:    userID,
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.setup != nil {
+				tt.setup()
+			}
+
+			err := Repo.RatePostUp(ctx, tt.targetID, tt.userID)
+
+			if tt.expectErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+
+			var ratingValue int
+			err = db.QueryRow(ctx, `SELECT rating_value FROM post_ratings WHERE target_id = $1 AND user_id = $2;`,
+				tt.targetID, tt.userID).Scan(&ratingValue)
+			require.NoError(t, err)
+			require.Equal(t, tt.expectedValue, ratingValue)
+		})
+	}
+}
+
+func TestRatePostDown(t *testing.T) {
+	// Seed DB
+	ctx := context.Background()
+	err := SeedDB(ctx, TestDSN, SeedPath)
+	require.NoError(t, err)
+
+	// Connect to DB for assertions
+	db, err := testutils.ConnectDB(ctx, TestDSN)
+	require.NoError(t, err)
+
+	postID := uuid.MustParse("b1d3c0f7-5a1a-4f9b-9b2a-2a8e4f8b9f01")
+	userID := uuid.MustParse("a1f92e18-1d8f-4f0f-9a4d-3b9e3b26b7b1") // "anacardo"
+
+	tests := []struct {
+		name          string
+		targetID      uuid.UUID
+		userID        uuid.UUID
+		expectedValue int
+		expectErr     bool
+		setup         func()
+	}{
+		{
+			name:          "First downvote creates rating = -1",
+			targetID:      postID,
+			userID:        userID,
+			expectedValue: -1,
+		},
+		{
+			name:          "Second downvote toggles rating to 0",
+			targetID:      postID,
+			userID:        userID,
+			expectedValue: 0,
+		},
+		{
+			name:          "Third downvote toggles rating back to -1",
+			targetID:      postID,
+			userID:        userID,
+			expectedValue: -1,
+		},
+		{
+			name:      "Invalid post ID returns error",
+			targetID:  uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+			userID:    userID,
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.setup != nil {
+				tt.setup()
+			}
+
+			err := Repo.RatePostDown(ctx, tt.targetID, tt.userID)
+
+			if tt.expectErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+
+			var ratingValue int
+			err = db.QueryRow(ctx, `SELECT rating_value FROM post_ratings WHERE target_id = $1 AND user_id = $2;`,
+				tt.targetID, tt.userID).Scan(&ratingValue)
+			require.NoError(t, err)
+			require.Equal(t, tt.expectedValue, ratingValue)
 		})
 	}
 }

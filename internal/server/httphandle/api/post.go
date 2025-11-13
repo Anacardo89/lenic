@@ -96,9 +96,9 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 				ut := &repo.UserTag{
-					UserID:      u.ID,
-					TargetID:    pID,
-					ResourceTpe: repo.ResourcePost.String(),
+					UserID:       u.ID,
+					TargetID:     pID,
+					ResourceType: repo.ResourcePost.String(),
 				}
 				if err := h.db.CreateUserTag(h.ctx, ut); err != nil {
 					fail("dberr: could not insert usertag", err, false, http.StatusInternalServerError, "")
@@ -186,9 +186,9 @@ func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 				ut := &repo.UserTag{
-					UserID:      u.ID,
-					TargetID:    pID,
-					ResourceTpe: repo.ResourcePost.String(),
+					UserID:       u.ID,
+					TargetID:     pID,
+					ResourceType: repo.ResourcePost.String(),
 				}
 				if err := h.db.CreateUserTag(h.ctx, ut); err != nil {
 					fail("dberr: could not insert usertag", err, false, http.StatusInternalServerError, "")

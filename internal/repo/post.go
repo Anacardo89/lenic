@@ -15,7 +15,6 @@ import (
 //
 // POST /action/post
 func (db *dbHandler) CreatePost(ctx context.Context, p *Post) (uuid.UUID, error) {
-
 	query := `
 	INSERT INTO posts (
 		id,
@@ -28,7 +27,6 @@ func (db *dbHandler) CreatePost(ctx context.Context, p *Post) (uuid.UUID, error)
 	VALUES ($1, $2, $3, $4, $5, $6)
 	RETURNING id
 	;`
-
 	var ID uuid.UUID
 	if err := db.pool.QueryRow(ctx, query,
 		p.ID,
@@ -83,7 +81,6 @@ func (db *dbHandler) GetFeed(ctx context.Context, username string) ([]*Post, err
 		p.rating DESC,
 		p.created_at DESC
 	;`
-
 	posts := []*Post{}
 	rows, err := db.pool.Query(ctx, query, username)
 	if err != nil {
@@ -112,6 +109,9 @@ func (db *dbHandler) GetFeed(ctx context.Context, username string) ([]*Post, err
 		}
 		posts = append(posts, &p)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return posts, nil
 }
 
@@ -129,7 +129,6 @@ func (db *dbHandler) GetPostAuthorFromComment(ctx context.Context, commentID uui
 	JOIN users u ON p.author_id = u.id
 	WHERE c.id = $1
 	;`
-
 	var u User
 	if err := db.pool.QueryRow(ctx, query, commentID).Scan(
 		&u.ID,
@@ -156,8 +155,7 @@ func (db *dbHandler) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Pos
 		is_public,
 		is_active,
 		created_at,
-		updated_at,
-		deleted_at
+		updated_at
 	FROM posts
 	WHERE author_id = $1
 		AND is_active = TRUE
@@ -172,7 +170,6 @@ func (db *dbHandler) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Pos
 		return nil, err
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		p := Post{}
 		err = rows.Scan(
@@ -186,12 +183,14 @@ func (db *dbHandler) GetUserPosts(ctx context.Context, userID uuid.UUID) ([]*Pos
 			&p.IsActive,
 			&p.CreatedAt,
 			&p.UpdatedAt,
-			&p.DeletedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
 		posts = append(posts, &p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 	return posts, nil
 }
@@ -211,8 +210,7 @@ func (db *dbHandler) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) (
 		is_public,
 		is_active,
 		created_at,
-		updated_at,
-		deleted_at
+		updated_at
 	FROM posts
 	WHERE author_id = $1
 		AND is_public = TRUE
@@ -228,7 +226,6 @@ func (db *dbHandler) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) (
 		return nil, err
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		p := Post{}
 		err = rows.Scan(
@@ -242,12 +239,14 @@ func (db *dbHandler) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) (
 			&p.IsActive,
 			&p.CreatedAt,
 			&p.UpdatedAt,
-			&p.DeletedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
 		posts = append(posts, &p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 	return posts, nil
 }
@@ -257,7 +256,6 @@ func (db *dbHandler) GetUserPublicPosts(ctx context.Context, userID uuid.UUID) (
 // /action/image
 // ws - post_rating
 func (db *dbHandler) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
-
 	query := `
 	SELECT
 		id,
@@ -269,12 +267,11 @@ func (db *dbHandler) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 		is_public,
 		is_active,
 		created_at,
-		updated_at,
-		deleted_at 
+		updated_at
 	FROM posts
 	WHERE id = $1
+		AND is_active = TRUE
 	;`
-
 	p := Post{}
 	if err := db.pool.QueryRow(ctx, query, ID).
 		Scan(
@@ -288,7 +285,6 @@ func (db *dbHandler) GetPost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 			&p.IsActive,
 			&p.CreatedAt,
 			&p.UpdatedAt,
-			&p.DeletedAt,
 		); err != nil {
 		return nil, err
 	}
@@ -353,7 +349,8 @@ func (db *dbHandler) GetPostForPage(ctx context.Context, ID, userID uuid.UUID) (
 		WHERE c.is_active = TRUE
 		GROUP BY c.id, cu.id
 	) AS cdata ON cdata.post_id = p.id
-	WHERE p.id = $1 AND p.is_active = TRUE
+	WHERE p.id = $1
+		AND p.is_active = TRUE
 	GROUP BY p.id, u.id
 	;`
 	var (
@@ -398,6 +395,7 @@ func (db *dbHandler) UpdatePost(ctx context.Context, post *Post) error {
 		content = $3,
 		is_public = $4
 	WHERE id = $1
+		AND is_active = TRUE
 	;`
 	tag, err := db.pool.Exec(ctx, query,
 		post.ID,
@@ -420,9 +418,10 @@ func (db *dbHandler) UpdatePost(ctx context.Context, post *Post) error {
 func (db *dbHandler) DisablePost(ctx context.Context, ID uuid.UUID) (*Post, error) {
 	query := `
 	UPDATE posts
-	SET active = FALSE,
+	SET is_active = FALSE,
 		deleted_at = NOW()
 	WHERE id = $1
+		AND is_active = TRUE
 	RETURNING
 		id,
 		title,
@@ -445,7 +444,6 @@ func (db *dbHandler) DisablePost(ctx context.Context, ID uuid.UUID) (*Post, erro
 //
 // POST /action/post/{post_id}/up
 func (db *dbHandler) RatePostUp(ctx context.Context, targetID, userID uuid.UUID) error {
-
 	query := `
 	INSERT INTO post_ratings (
 		target_id,

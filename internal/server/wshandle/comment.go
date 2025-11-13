@@ -45,7 +45,7 @@ func (h *WSHandler) handleCommentOnPost(msg Message) {
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: cID.String(),
-		ParentID:   msg.ParentID,
+		ParentID:   &msg.ParentID,
 	}
 	if err := h.db.CreateNotification(h.ctx, n); err != nil {
 		fail("dberr: could not create notification", err)

@@ -17,7 +17,6 @@ import (
 // ws - post_tag
 // ws - comment_tag
 func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) error {
-
 	query := `
 	INSERT INTO notifications (
 		id,
@@ -42,7 +41,7 @@ func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) er
 		updated_at
 	;`
 	ID := uuid.New()
-	err := db.pool.QueryRow(ctx, query,
+	if err := db.pool.QueryRow(ctx, query,
 		ID,
 		n.UserID,
 		n.FromUserID,
@@ -61,8 +60,10 @@ func (db *dbHandler) CreateNotification(ctx context.Context, n *Notification) er
 		&n.IsRead,
 		&n.CreatedAt,
 		&n.UpdatedAt,
-	)
-	return err
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Endpoints:
@@ -86,15 +87,16 @@ func (db *dbHandler) DeleteFollowNotification(ctx context.Context, username, fro
 				WHERE username = $2
 			)
 	;`
-	_, err := db.pool.Exec(ctx, query, username, fromUsername)
-	return err
+	if _, err := db.pool.Exec(ctx, query, username, fromUsername); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Endpoints:
 //
 // GET /action/user/{user_encoded}/notifications
 func (db *dbHandler) GetUserNotifs(ctx context.Context, username string, limit, offset int) ([]*NotificationWithUsers, error) {
-
 	query := `
 	SELECT 
 		n.id,
@@ -105,9 +107,9 @@ func (db *dbHandler) GetUserNotifs(ctx context.Context, username string, limit, 
 		n.is_read,
 		n.created_at,
 		n.updated_at,
-		u.id          AS user_id,
-		u.username    AS user_username,
-		u.profile_pic AS user_profile_pic,
+		u.id           AS user_id,
+		u.username     AS user_username,
+		u.profile_pic  AS user_profile_pic,
 		fu.id          AS from_user_id,
 		fu.username    AS from_user_username,
 		fu.profile_pic AS from_user_profile_pic
@@ -120,7 +122,6 @@ func (db *dbHandler) GetUserNotifs(ctx context.Context, username string, limit, 
 	ORDER BY n.created_at DESC
 	LIMIT $2 OFFSET $3
 	;`
-
 	notifs := []*NotificationWithUsers{}
 	rows, err := db.pool.Query(ctx, query, username, limit, offset)
 	if err != nil {
@@ -130,7 +131,6 @@ func (db *dbHandler) GetUserNotifs(ctx context.Context, username string, limit, 
 		return nil, err
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		n := NotificationWithUsers{}
 		err = rows.Scan(
@@ -154,6 +154,9 @@ func (db *dbHandler) GetUserNotifs(ctx context.Context, username string, limit, 
 		}
 		notifs = append(notifs, &n)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return notifs, nil
 }
 
@@ -161,13 +164,13 @@ func (db *dbHandler) GetUserNotifs(ctx context.Context, username string, limit, 
 //
 // PUT /action/user/{user_encoded}/notifications/{notif_id}/read
 func (db *dbHandler) UpdateNotificationRead(ctx context.Context, ID uuid.UUID) error {
-
 	query := `
 	UPDATE notifications
 	SET is_read = TRUE
 	WHERE id = $1
 	;`
-
-	_, err := db.pool.Exec(ctx, query, ID)
-	return err
+	if _, err := db.pool.Exec(ctx, query, ID); err != nil {
+		return err
+	}
+	return nil
 }

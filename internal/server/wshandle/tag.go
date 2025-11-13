@@ -46,7 +46,7 @@ func (h *WSHandler) HandlePostTag(msg Message, taggedUser string) {
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: msg.ResourceID,
-		ParentID:   "",
+		ParentID:   nil,
 	}
 	if err := h.db.CreateNotification(h.ctx, n); err != nil {
 		fail("dberr: could not create notification", err)
@@ -114,7 +114,7 @@ func (h *WSHandler) HandleCommentTag(msg Message, taggedUser string) {
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: msg.ResourceID,
-		ParentID:   msg.ParentID,
+		ParentID:   &msg.ParentID,
 	}
 	if err := h.db.CreateNotification(h.ctx, n); err != nil {
 		fail("dberr: could not create notification", err)
