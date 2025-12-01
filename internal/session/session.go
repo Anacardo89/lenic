@@ -20,17 +20,25 @@ type SessionManager struct {
 	ctx      context.Context
 	cfg      config.Session
 	mu       sync.Mutex
-	db       repo.DBRepository
+	db       repo.DBRepo
 	store    *sessions.CookieStore
 	sessions map[uuid.UUID]*Session
 }
 
-func NewSessionManager(ctx context.Context, cfg config.Session, db repo.DBRepository) *SessionManager {
+func NewSessionManager(ctx context.Context, cfg config.Session, db repo.DBRepo) *SessionManager {
+	store := sessions.NewCookieStore([]byte(cfg.Secret))
+	store.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   int(cfg.Duration.Seconds()),
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	}
 	return &SessionManager{
 		ctx:      ctx,
 		cfg:      cfg,
 		db:       db,
-		store:    sessions.NewCookieStore([]byte(cfg.Secret)),
+		store:    store,
 		sessions: make(map[uuid.UUID]*Session),
 	}
 }
@@ -96,8 +104,8 @@ func (s *SessionManager) ValidateSession(w http.ResponseWriter, r *http.Request)
 	if !ok {
 		return session
 	}
-	sessionID, err := uuid.Parse(sessionIDVal.(string))
-	if err != nil {
+	sessionID, ok := sessionIDVal.(uuid.UUID)
+	if !ok {
 		return session
 	}
 	s.mu.Lock()
@@ -126,6 +134,7 @@ func (s *SessionManager) ValidateSession(w http.ResponseWriter, r *http.Request)
 
 	s.mu.Lock()
 	s.sessions[sessionID] = session
+	s.mu.Unlock()
 
 	return session
 }
@@ -136,7 +145,7 @@ func (s *SessionManager) DeleteSession(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 	sessionIDVal := lenicSession.Values["session_id"]
-	sessionID, err := uuid.Parse(sessionIDVal.(string))
+	sessionID := sessionIDVal.(uuid.UUID)
 	if err != nil {
 		return err
 	}

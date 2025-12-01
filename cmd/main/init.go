@@ -6,7 +6,7 @@ import (
 	"github.com/Anacardo89/lenic/pkg/db"
 )
 
-func initDB(cfg config.DB) (repo.DBRepository, error) {
+func initDB(cfg config.DB) (repo.DBRepo, error) {
 	pool, err := db.Connect(cfg)
 	if err != nil {
 		return nil, err

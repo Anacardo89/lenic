@@ -21,10 +21,13 @@ type ImageManager struct {
 	cfg *config.Img
 }
 
-func NewImgManager(cfg *config.Img) *ImageManager {
+func NewImgManager(cfg *config.Img) (*ImageManager, error) {
+	if err := os.MkdirAll(cfg.BasePath, 0755); err != nil {
+		return nil, err
+	}
 	return &ImageManager{
 		cfg: cfg,
-	}
+	}, nil
 }
 
 func (m *ImageManager) SaveImg(file io.Reader, filename string) error {

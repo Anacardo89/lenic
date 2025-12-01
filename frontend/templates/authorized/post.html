@@ -13,13 +13,13 @@
 </head>
 <body>
     <header>
-        <input type="hidden" id="session-username" value="{{.Session.User.UserName}}">
+        <input type="hidden" id="session-username" value="{{.Session.User.Username}}">
         <input type="hidden" id="session-encoded" value="{{.Session.User.EncodedName}}">
         <div class="logo">
             <h1 class="home-link"><a href="/user/{{.Session.User.EncodedName}}/feed">L E N I C</a></h1>
             <p class="logo-bottom">Cinel do avesso</p>
         </div>
-        {{if not .Session.Authenticated}}
+        {{if not .Session.IsAuthenticated}}
             <div class="header-buttons">
                 <a href="/login"><button class="header-button">Login</button></a>
                 <a href="/register"><button class="header-button">Register</button></a>
@@ -57,7 +57,7 @@
                 <div class="vertical-bar"></div>
                 <a class="user-profile-button" href="/user/{{.Session.User.EncodedName}}">
                     {{if .Session.User.ProfilePic}}
-                        <img class="profile-pic-mini" src="/action/profile-pic?user-encoded={{.Session.User.EncodedName}}" alt="Profile Pic" />
+                        <img class="profile-pic-mini" src="/action/profile-pic/mini?encoded_username={{.Session.User.EncodedName}}" alt="Profile Pic" />
                     {{else}}
                         <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
                     {{end}}
@@ -66,28 +66,28 @@
         {{end}}
     </header>
     <main>
-        <input type="hidden" id="post-guid" value="{{.Post.GUID}}">
+        <input type="hidden" id="post-id" value="{{.Post.ID}}">
         <div class="main-container">
             <div class="content">
                 <div class="post-content">
                     <div class="author-info-inline">
                         <a href="/user/{{.Post.Author.EncodedName}}" onclick="event.stopPropagation();">
                             {{if .Post.Author.ProfilePic}}
-                                <img class="profile-pic-mini" src="/action/profile-pic?user-encoded={{.Post.Author.EncodedName}}" alt="Profile Pic">
+                                <img class="profile-pic-mini" src="/action/profile-pic/mini?encoded_username={{.Post.Author.EncodedName}}" alt="Profile Pic">
                             {{else}}
                                 <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
                             {{end}}
                         </a>
-                        <div class="author-name-date"><a href="/user/{{.Post.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Post.Author.UserName}}</strong></a>   -   <strong>{{.Post.Date}}</strong></div>
+                        <div class="author-name-date"><a href="/user/{{.Post.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Post.Author.Username}}</strong></a>   -   <strong>{{.Post.Date}}</strong></div>
                     </div>
                     <h1>{{.Post.Title}}</h1>
                     <div class="post-text-image">
                         <div id="post-text"><p>{{.Post.Content}}</p></div>
                         {{if .Post.Image}}
-                            <img class="post-image" src="/action/image?guid={{.Post.GUID}}" alt="Post Image">
+                            <img class="post-image" src="/action/image?post_id={{.Post.ID}}" alt="Post Image">
                         {{end}}
                     </div>
-                    {{if eq .Post.Author.UserName .Session.User.UserName}}
+                    {{if eq .Post.Author.Username .Session.User.Username}}
                         <div id="post-edit-container">
                             <form id="post-edit-form">
                                 <input type="text" id="edit-post-title" name="post-title" value="{{.Post.Title}}">
@@ -108,7 +108,7 @@
                     <div class="rating-container">
                         <div class="rating-text">Rating</div>
                         <div class="rating"><strong>{{.Post.Rating}}</strong></div>
-                        {{if $.Session.Authenticated}}
+                        {{if $.Session.IsAuthenticated}}
                             <div class="rate-buttons">
                                 <button id="post-rate-up-button"><i class="fa-solid fa-thumbs-up"></i></button>
                                 <input type="hidden" id="post-rating-hidden" value="{{.Post.UserRating}}" />
@@ -116,7 +116,7 @@
                             </div>
                         {{end}}
                     </div>
-                    {{if eq .Post.Author.UserName .Session.User.UserName}}
+                    {{if eq .Post.Author.Username .Session.User.Username}}
                         <div class="post-buttons">
                             <button id="post-editor-button">Edit</button>
                             <button id="post-deleter-button">Delete</button>
@@ -125,7 +125,7 @@
                 </div>
             </div>
             <div class="comment-section">
-                {{if .Session.Authenticated}}
+                {{if .Session.IsAuthenticated}}
                     <div class="add-comment-form">
                         <div><p><strong>ADD A COMMENT:</strong></p></div>
                         <div class="comment-form">
@@ -139,25 +139,25 @@
                 {{end}}
                 <div class="comments">
                     {{range .Post.Comments}}
-                        <div class="comment-container" id="comment-{{.Id}}" data-id="{{.Id}}">
+                        <div class="comment-container" id="comment-{{.ID}}" data-id="{{.ID}}">
                             <div class="comment-content">
                                 <div class="author-info-inline">
                                     <a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();">
                                         {{if .Author.ProfilePic}}
-                                            <img class="profile-pic-mini" src="/action/profile-pic?user-encoded={{.Author.EncodedName}}" alt="Profile Pic">
+                                            <img class="profile-pic-mini" src="/action/profile-pic/mini?encoded_username={{.Author.EncodedName}}" alt="Profile Pic">
                                         {{else}}
                                             <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
                                         {{end}}
                                     </a>
-                                    <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.UserName}}</strong></a>   -   <strong>{{.Date}}</strong></div>
+                                    <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.Username}}</strong></a>   -   <strong>{{.Date}}</strong></div>
                                 </div>
-                                <div class="comment-text" id="comment-text-{{.Id}}"><p>{{.Content}}</p></div>
-                                {{if eq .Author.UserName $.Session.User.UserName}}
-                                    <div class="comment-edit-container" id="comment-editor-{{.Id}}">
+                                <div class="comment-text" id="comment-text-{{.ID}}"><p>{{.Content}}</p></div>
+                                {{if eq .Author.Username $.Session.User.Username}}
+                                    <div class="comment-edit-container" id="comment-editor-{{.ID}}">
                                         <form class="comment-edit-form">
-                                            <input type="hidden" class="comment_id" value="{{.Id}}" />
-                                            <textarea id="edit-comment-{{.Id}}" type="textarea" class="edit_comment" name="comment">{{.Content}}</textarea>
-                                            <div id="suggestionBox-editComment-{{.Id}}" class="suggestion-box"></div>
+                                            <input type="hidden" class="comment_id" value="{{.ID}}" />
+                                            <textarea id="edit-comment-{{.ID}}" type="textarea" class="edit_comment" name="comment">{{.Content}}</textarea>
+                                            <div id="suggestionBox-editComment-{{.ID}}" class="suggestion-box"></div>
                                             <input type="submit" value="Confirm" />
                                         </form>
                                     </div>
@@ -166,19 +166,19 @@
                                 <div class="comment-rating-container">
                                     <div class="comment-rating-text">Rating</div>
                                     <div class="comment-rating"><strong>{{.Rating}}</strong></div>
-                                    {{if $.Session.Authenticated}}
+                                    {{if $.Session.IsAuthenticated}}
                                         <div class="comment-rate-buttons">
-                                            <button id="comment-rate-up-button-{{.Id}}"><i class="comment-rate-up-button fa-solid fa-thumbs-up" data-id="{{.Id}}"></i></button>
-                                            <input type="hidden" class="comment-rating-hidden" data-id="{{.Id}}" value="{{.UserRating}}" />
-                                            <button id="comment-rate-down-button-{{.Id}}"><i class="comment-rate-down-button fa-solid fa-thumbs-down" data-id="{{.Id}}"></i></button>
+                                            <button id="comment-rate-up-button-{{.ID}}"><i class="comment-rate-up-button fa-solid fa-thumbs-up" data-id="{{.ID}}"></i></button>
+                                            <input type="hidden" class="comment-rating-hidden" data-id="{{.ID}}" value="{{.UserRating}}" />
+                                            <button id="comment-rate-down-button-{{.ID}}"><i class="comment-rate-down-button fa-solid fa-thumbs-down" data-id="{{.ID}}"></i></button>
                                         </div>
                                     {{end}}
                                 </div>
                             </div>
-                            {{if eq .Author.UserName $.Session.User.UserName}}
+                            {{if eq .Author.Username $.Session.User.Username}}
                                 <div class="comment-buttons">
-                                    <button class="comment-editor-button" data-id="{{.Id}}">Edit</button>
-                                    <button class="comment-deleter-button" data-id="{{.Id}}">Delete</button>
+                                    <button class="comment-editor-button" data-id="{{.ID}}">Edit</button>
+                                    <button class="comment-deleter-button" data-id="{{.ID}}">Delete</button>
                                 </div>
                             {{end}}
                         </div>
@@ -189,7 +189,7 @@
         <div id="modal-post-image">
             <div class="modal-border">
                 <div class="image-modal-content">
-                    <img id="post-image-big" src="/action/image?guid={{.Post.GUID}}" alt="Post Image">
+                    <img id="post-image-big" src="/action/image?post_id={{.Post.ID}}" alt="Post Image">
                     <button id="close-image-modal">Close</button>
                 </div>
             </div>

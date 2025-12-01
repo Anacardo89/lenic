@@ -5,9 +5,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/pkg/crypto"
-	"github.com/google/uuid"
 )
 
 // POST /action/forgot-password
@@ -33,7 +34,7 @@ func (h *APIHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// DB operations
-	uDB, err := h.db.GetUserByEmail(h.ctx, r.FormValue("user_email"))
+	uDB, err := h.db.GetUserByEmail(h.ctx, r.FormValue("email"))
 	if err == sql.ErrNoRows {
 		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid params")
 		return
@@ -45,7 +46,7 @@ func (h *APIHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Send recovery email
-	mailSubject, mailBody := helpers.BuildPasswordRecoveryMail(h.mail.Host, string(h.mail.Port), uDB.Username, token)
+	mailSubject, mailBody := helpers.BuildPasswordRecoveryMail(h.cfg.Host, h.cfg.Port, uDB.Username, token)
 	errs := h.mail.Send([]string{uDB.Email}, mailSubject, mailBody)
 	if len(errs) != 0 {
 		for _, err := range errs {
@@ -54,7 +55,7 @@ func (h *APIHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/home", http.StatusFound)
 }
 
 // /action/recover-password
@@ -105,7 +106,7 @@ func (h *APIHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/home", http.StatusFound)
 }
 
 // /action/change-password
@@ -135,13 +136,13 @@ func (h *APIHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Get user from DB
-	uDB, err := h.db.GetUserByUserName(r.Context(), r.FormValue("user_name"))
+	uDB, err := h.db.GetUserByUserName(r.Context(), r.FormValue("username"))
 	if err != nil {
 		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid user")
 		return
 	}
 	// Validate old password
-	if !crypto.ValidatePassword(uDB.PasswordHash, r.FormValue("old_password")) {
+	if err := crypto.ValidatePassword(uDB.PasswordHash, r.FormValue("old_password")); err != nil {
 		fail("wrong password", err, true, http.StatusUnauthorized, "wrong password")
 		return
 	}
@@ -157,5 +158,5 @@ func (h *APIHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	http.Redirect(w, r, "/home", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/home", http.StatusFound)
 }

@@ -141,9 +141,9 @@ textarea {
 }
 
 @keyframes blink {
-    0% { background-color: rgb(254 186 109 / 75%); }
-    50% { background-color: azure; }
-    100% { background-color: rgb(254 186 109 / 75%); }
+    0% { background-color: #464646; }
+    50% { background-color: #090909; }
+    100% { background-color: #464646; }
 }
 
 .blink {

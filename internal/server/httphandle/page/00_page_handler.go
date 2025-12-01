@@ -11,14 +11,14 @@ import (
 type PageHandler struct {
 	ctx context.Context
 	log *logger.Logger
-	db  repo.DBRepository
+	db  repo.DBRepo
 	sm  *session.SessionManager
 }
 
 func NewHandler(
 	ctx context.Context,
 	l *logger.Logger,
-	db repo.DBRepository,
+	db repo.DBRepo,
 	sm *session.SessionManager,
 ) *PageHandler {
 	return &PageHandler{
@@ -27,8 +27,4 @@ func NewHandler(
 		db:  db,
 		sm:  sm,
 	}
-}
-
-func (h *PageHandler) decodeUser() (string, error) {
-	return "", nil
 }

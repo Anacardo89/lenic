@@ -1,6 +1,11 @@
 package middleware
 
-import "net/http"
+import (
+	"bufio"
+	"fmt"
+	"net"
+	"net/http"
+)
 
 type LogRW struct {
 	http.ResponseWriter
@@ -36,4 +41,12 @@ func (rw *LogRW) Write(b []byte) (int, error) {
 func (rw *LogRW) WriteHeader(status int) {
 	rw.status = status
 	rw.ResponseWriter.WriteHeader(status)
+}
+
+// Implements http.Hijacker
+func (rw *LogRW) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hj, ok := rw.ResponseWriter.(http.Hijacker); ok {
+		return hj.Hijack()
+	}
+	return nil, nil, fmt.Errorf("http.ResponseWriter does not support Hijacker")
 }

@@ -2,11 +2,15 @@ package main
 
 import (
 	"context"
+	"encoding/gob"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/google/uuid"
 
 	"github.com/Anacardo89/lenic/config"
 	"github.com/Anacardo89/lenic/internal/auth"
@@ -31,11 +35,19 @@ func main() {
 	// Dependencies
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	cwd, _ := os.Getwd()
+	fmt.Println("Current working dir:", cwd)
+	gob.Register(uuid.UUID{})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
-	logg := logger.NewLogger(cfg.Log)
+	logg, err := logger.NewLogger(cfg.Log)
+	if err != nil {
+		log.Fatalf("failed start logger: %v", err)
+	}
 	dbRepo, err := initDB(cfg.DB)
 	if err != nil {
 		logg.Error("failed to init db", "error", err)
@@ -45,11 +57,14 @@ func main() {
 	tokenMan := auth.NewTokenManager(&cfg.Token)
 	sm := session.NewSessionManager(context.Background(), cfg.Session, dbRepo)
 	mailClient := mail.NewClient(cfg.Mail)
-	im := img.NewImgManager(&cfg.Img)
-
-	wsh := wshandle.NewHandler(dbRepo, logg, sm, wsconnman.NewWSConnMan())
-	ah := api.NewHandler(context.Background(), logg, &cfg.Server, dbRepo, tokenMan, sm, wsh, mailClient, im)
-	ph := page.NewHandler(context.Background(), logg, dbRepo, sm)
+	im, err := img.NewImgManager(&cfg.Img)
+	if err != nil {
+		logg.Error("failed to start image manager", "error", err)
+		os.Exit(1)
+	}
+	wsh := wshandle.NewHandler(ctx, dbRepo, logg, sm, wsconnman.NewWSConnMan())
+	ah := api.NewHandler(ctx, logg, &cfg.Server, dbRepo, tokenMan, sm, wsh, mailClient, im)
+	ph := page.NewHandler(ctx, logg, dbRepo, sm)
 	mw := middleware.NewMiddlewareHandler(sm, logg, cfg.Server.WriteTimeout)
 
 	srv := server.NewServer(cfg.Server, logg, ah, ph, mw, wsh)

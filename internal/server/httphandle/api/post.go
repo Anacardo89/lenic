@@ -12,6 +12,7 @@ import (
 
 	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/internal/middleware"
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/internal/server/wshandle"
 	"github.com/Anacardo89/lenic/internal/session"
@@ -63,7 +64,7 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 		IsPublic:  isPublic,
 	}
 	// Handle image
-	file, header, err := r.FormFile("post_image")
+	file, header, err := r.FormFile("post-image")
 	if err != nil && err != http.ErrMissingFile {
 		fail("could not get image", err, true, http.StatusBadRequest, "invalid params")
 		return
@@ -96,19 +97,21 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 				ut := &repo.UserTag{
-					UserID:      u.ID,
-					TargetID:    pID,
-					ResourceTpe: repo.ResourcePost.String(),
+					UserID:       u.ID,
+					TargetID:     pID,
+					ResourceType: repo.ResourcePost.String(),
 				}
 				if err := h.db.CreateUserTag(h.ctx, ut); err != nil {
 					fail("dberr: could not insert usertag", err, false, http.StatusInternalServerError, "")
 					continue
 				}
+				noParent := ""
 				wsMsg := wshandle.Message{
 					FromUserName: session.User.Username,
-					Type:         "post_tag",
+					Type:         models.NotifPostTag.String(),
 					Msg:          " has tagged you in their post",
 					ResourceID:   pID.String(),
+					ParentID:     noParent,
 				}
 				h.wsHandler.HandlePostTag(wsMsg, mention)
 			}
@@ -118,7 +121,7 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// PUT /action/post/{Post_GUID}
+// PUT /action/post/{post_id}
 func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -186,9 +189,9 @@ func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 				ut := &repo.UserTag{
-					UserID:      u.ID,
-					TargetID:    pID,
-					ResourceTpe: repo.ResourcePost.String(),
+					UserID:       u.ID,
+					TargetID:     pID,
+					ResourceType: repo.ResourcePost.String(),
 				}
 				if err := h.db.CreateUserTag(h.ctx, ut); err != nil {
 					fail("dberr: could not insert usertag", err, false, http.StatusInternalServerError, "")
@@ -208,7 +211,7 @@ func (h *APIHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// DELETE /action/post/{Post_GUID}
+// DELETE /action/post/{post_id}
 func (h *APIHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -262,7 +265,7 @@ func (h *APIHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// POST /action/post/{Post_GUID}/up
+// POST /action/post/{post_id}/up
 func (h *APIHandler) RatePostUp(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -301,7 +304,7 @@ func (h *APIHandler) RatePostUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// POST /action/post/{Post_GUID}/down
+// POST /action/post/{post_id}/down
 func (h *APIHandler) RatePostDown(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {

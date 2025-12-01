@@ -5,18 +5,34 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/Anacardo89/lenic/pkg/testutils"
 	"github.com/caarlos0/env/v9"
+	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
 
 func LoadConfig() (*Config, error) {
 	cfg := DefaultConfig()
-	cfgPath := os.Getenv("CFG_PATH")
-	if cfgPath == "" {
-		cfgPath = "/lenic/config.yaml"
+	appEnv := os.Getenv("APP_ENV")
+	var rootPath string
+	if appEnv == "local" {
+		var err error
+		rootPath, err = testutils.GetProjectRoot()
+		if err != nil {
+			log.Println("failed to get project root")
+			return nil, err
+		}
 	}
+	cfg.RootPath = rootPath
+	if err := godotenv.Load(filepath.Join(rootPath, ".env")); err != nil {
+		log.Println("No env file found, relying on default env variables")
+	}
+	cfgPath := os.Getenv("CFG_PATH")
+	cfgFile := os.Getenv("CFG_FILE")
+	cfgPath = filepath.Join(rootPath, cfgPath, cfgFile)
 	f, err := os.Open(cfgPath)
 	if err != nil {
 		return nil, err
@@ -42,6 +58,7 @@ func LoadConfig() (*Config, error) {
 func DefaultConfig() *Config {
 	return &Config{
 		Server: Server{
+			Host:            "localhost",
 			Port:            "8080",
 			ReadTimeout:     5,  // seconds
 			WriteTimeout:    10, // seconds
@@ -56,7 +73,7 @@ func DefaultConfig() *Config {
 			Duration: 60, // minutes
 		},
 		DB: DB{
-			DSN:             "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
+			DSN:             "postgres://user:pass@db:5432/dbname?sslmode=disable",
 			MaxConns:        10,
 			MinConns:        2,
 			MaxConnLifetime: 30, // minutes

@@ -8,7 +8,7 @@ type dbHandler struct {
 	pool *pgxpool.Pool
 }
 
-func NewDBRepo(pool *pgxpool.Pool) DBRepository {
+func NewDBRepo(pool *pgxpool.Pool) DBRepo {
 	return &dbHandler{
 		pool: pool,
 	}

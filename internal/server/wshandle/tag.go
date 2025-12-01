@@ -9,6 +9,12 @@ import (
 	"github.com/Anacardo89/lenic/internal/repo"
 )
 
+// Endpoints:
+//
+// POST /action/post
+// PUT /action/post/{post_id}
+//
+// ws - post_tag
 func (h *WSHandler) HandlePostTag(msg Message, taggedUser string) {
 	// Error Handling
 	fail := func(logMsg string, e error) {
@@ -34,13 +40,14 @@ func (h *WSHandler) HandlePostTag(msg Message, taggedUser string) {
 		fail("dberr: could not get user", err)
 		return
 	}
+	noParent := ""
 	n := &repo.Notification{
 		UserID:     uDB.ID,
 		FromUserID: fuDB.ID,
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: msg.ResourceID,
-		ParentID:   "",
+		ParentID:   &noParent,
 	}
 	if err := h.db.CreateNotification(h.ctx, n); err != nil {
 		fail("dberr: could not create notification", err)
@@ -61,6 +68,12 @@ func (h *WSHandler) HandlePostTag(msg Message, taggedUser string) {
 	}
 }
 
+// Endpoints:
+//
+// POST /action/post/{post_id}/comment
+// PUT /action/post/{post_id}/comment/{comment_id}
+//
+// ws - comment_tag
 func (h *WSHandler) HandleCommentTag(msg Message, taggedUser string) {
 	// Error Handling
 	fail := func(logMsg string, e error) {
@@ -102,7 +115,7 @@ func (h *WSHandler) HandleCommentTag(msg Message, taggedUser string) {
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: msg.ResourceID,
-		ParentID:   msg.ParentID,
+		ParentID:   &msg.ParentID,
 	}
 	if err := h.db.CreateNotification(h.ctx, n); err != nil {
 		fail("dberr: could not create notification", err)

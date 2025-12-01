@@ -6,6 +6,7 @@ import (
 	"github.com/Anacardo89/lenic/internal/models"
 )
 
+// ws - dm
 func (h *WSHandler) handleDM(msg Message) {
 	// Error Handling
 	fail := func(logMsg string, e error) {

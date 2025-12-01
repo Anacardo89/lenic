@@ -9,7 +9,7 @@ export const session_encoded = $('#session-encoded').val();
 
 
 $(document).ready(function() {
-    const userName = localStorage.getItem('user_name');
+    const userName = localStorage.getItem('username');
     if (userName) {
         wsoc.connectWS(userName);
     }
@@ -40,7 +40,7 @@ function readAllNotifs() {
                 console.log('Notification marked as read.');
             },
             error: function(xhr) {
-                localStorage.removeItem('user_name');
+                localStorage.removeItem('username');
                 wsoc.closeWS();
                 const errorMessage = xhr.responseText;
                 alert(errorMessage);
@@ -64,12 +64,12 @@ function logout() {
         method: 'POST',
         success: function() {
             console.log('Logout successful'); 
-            localStorage.removeItem('user_name');
+            localStorage.removeItem('username');
             wsoc.closeWS();
             window.location.href = '/home';
         },
         error: function(xhr) {
-            localStorage.removeItem('user_name');
+            localStorage.removeItem('username');
             wsoc.closeWS();
             const errorMessage = xhr.responseText;
             alert(errorMessage);
@@ -158,7 +158,7 @@ $(document).ready(function() {
         const notifButton = $('.notif-button');
         notifications.forEach(function(notification) {
             let notif = null;
-            switch (notification.type) {
+            switch (notification.notif_type) {
             case wsoc.TYPE_COMMENT_RATE:
                 notif = notifs.makeCommentRateNotif(notification);
                 if (!notification.is_read) {
@@ -202,7 +202,7 @@ $(document).ready(function() {
                 }
                 break;
             default:
-                console.warn('Unknown message type:', message.type);
+                console.warn('Unknown message type:', notification.notif_type);
             }
             notifContainer.append(notif);
         });
@@ -210,13 +210,13 @@ $(document).ready(function() {
 
     // Scroll event handler
     function handleScroll() {
-      const scrollHeight = $container[0].scrollHeight;
-      const scrollTop = $container.scrollTop();
-      const clientHeight = $container.height();
+        const scrollHeight = $container[0].scrollHeight;
+        const scrollTop = $container.scrollTop();
+        const clientHeight = $container.height();
 
-      if (scrollHeight - scrollTop === clientHeight) {
-        fetchNotifications();
-      }
+        if (scrollHeight - scrollTop === clientHeight) {
+            fetchNotifications();
+        }
     }
 
     // Attach scroll event listener
@@ -570,7 +570,7 @@ function makeSearchResult(user) {
     if (user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + user.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + user.encoded
     }
     const username = document.createElement('div');
     username.innerHTML = '<strong>' + user.username + '</strong>';

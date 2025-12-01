@@ -12,12 +12,12 @@ export const MSG_COMMENT_ON_POST = ' has commented on your post';
 export const MSG_FOLLOW_ACCEPT = ' has accepted your follow request.';
 export const MSG_FOLLOW_REQUEST = ' has requested to follow you.';
 
-export const TYPE_COMMENT_RATE = 'rate_comment';
-export const TYPE_POST_RATE = 'rate_post';
+export const TYPE_COMMENT_RATE = 'comment_rating';
+export const TYPE_POST_RATE = 'post_rating';
 export const TYPE_COMMENT_TAG = 'comment_tag';
 export const TYPE_POST_TAG = 'post_tag';
-export const TYPE_COMMENT_ON_POST = 'comment_on_post';
-export const TYPE_FOLLOW_ACCEPT = 'follow_accept';
+export const TYPE_COMMENT_ON_POST = 'post_comment';
+export const TYPE_FOLLOW_ACCEPT = 'follow_response';
 export const TYPE_FOLLOW_REQUEST = 'follow_request';
 export const TYPE_DM = 'dm';
 
@@ -29,7 +29,7 @@ export function connectWS(user_name) {
         return;
     }
 
-    const wsUrl = `wss://${window.location.host}/ws?user_name=${user_name}`;
+    const wsUrl = `ws://${window.location.host}/ws?username=${user_name}`;
     ws = new WebSocket(wsUrl);
 
     ws.onopen = function() {
@@ -42,7 +42,7 @@ export function connectWS(user_name) {
         const dmButton = $('.dm-button');
         console.log(message);
 
-        switch (message.type) {
+        switch (message.notif_type) {
             case TYPE_COMMENT_RATE:
                 handleRateComment(message);
                 if (!message.is_read) {
@@ -90,8 +90,8 @@ export function connectWS(user_name) {
                 const $dmTitle = $('#dm-title');
                 const $dmContent = $('#dm-content');
                 if (!$dmWindow.hasClass('hidden')) {
-                    if ($dmTitle.text() === message.fromuser.username) {
-                        DMChatModule.appendMessage(message.msg, 'received');
+                    if ($dmTitle.text() === message.from_user.username) {
+                        DMChatModule.appendMessage(message.notif_text, 'received');
                         $dmContent.scrollTop($dmContent[0].scrollHeight);
                         DMChatModule.readConversation(message.resource_id);
                     }    
@@ -101,7 +101,7 @@ export function connectWS(user_name) {
                 }
                 break;
             default:
-                console.warn('Unknown message type:', message.type);
+                console.warn('Unknown message type:', message.notif_type);
         }
         console.log('Message from server:', event.data);
     };

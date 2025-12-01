@@ -76,7 +76,7 @@ type Post struct {
 	Content    template.HTML `json:"content"`
 	Image      string        `json:"img"`
 	Rating     int           `json:"rating"`
-	UserRating int           `json:"user_ratinmg"`
+	UserRating int           `json:"user_rating"`
 	Date       string        `json:"date"`
 	IsPublic   bool          `json:"is_public"`
 	Comments   []*Comment    `json:"comments"`
@@ -110,10 +110,11 @@ const (
 	NotifFollowRequest  NotifType = "follow_request"
 	NotifFollowResponse NotifType = "follow_response"
 	NotifComment        NotifType = "post_comment"
-	NotifPostMention    NotifType = "post_mention"
-	NotifCommentMention NotifType = "comment_mention"
+	NotifPostTag        NotifType = "post_tag"
+	NotifCommentTag     NotifType = "comment_tag"
 	NotifPostRating     NotifType = "post_rating"
 	NotifCommentRating  NotifType = "comment_rating"
+	NotifDM             NotifType = "dm"
 )
 
 func (n NotifType) String() string {

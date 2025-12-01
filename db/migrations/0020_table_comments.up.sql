@@ -1,5 +1,5 @@
 CREATE TABLE comments (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,
     post_id UUID NOT NULL REFERENCES posts(id),
     author_id UUID NOT NULL REFERENCES users(id),
     content TEXT,

@@ -17,6 +17,7 @@ type FeedPage struct {
 	Posts   []*models.Post
 }
 
+// /user/{encoded_username}/feed
 func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -68,7 +69,7 @@ func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 		post.Content = template.HTML(post.RawContent)
 		feed.Posts = append(feed.Posts, post)
 	}
-	t, err := template.ParseFiles("templates/authorized/feed.html")
+	t, err := template.ParseFiles("./templates/authorized/feed.html")
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

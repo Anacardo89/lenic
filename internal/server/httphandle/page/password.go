@@ -17,7 +17,7 @@ import (
 )
 
 func (h *PageHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
-	body, err := os.ReadFile("templates/forgot-password.html")
+	body, err := os.ReadFile("../frontend/templates/forgot-password.html")
 	if err != nil {
 		h.log.Error("/forgot-password - Could not parse template", "error", err)
 		redirect.RedirectToError(w, r, err.Error())
@@ -31,6 +31,7 @@ type RecoverPasswdPage struct {
 	Token string
 }
 
+// /recover-password/{encoded_username}
 func (h *PageHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -72,7 +73,7 @@ func (h *PageHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		User:  u,
 		Token: token,
 	}
-	t, err := template.ParseFiles("templates/recover-password.html")
+	t, err := template.ParseFiles("./templates/recover-password.html")
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return
@@ -103,7 +104,7 @@ func (h *PageHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	t, err := template.ParseFiles("templates/authorized/change-password.html")
+	t, err := template.ParseFiles("./templates/authorized/change-password.html")
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

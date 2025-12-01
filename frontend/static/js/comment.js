@@ -1,6 +1,6 @@
 import {positionSuggestionBox, insertAtCaret} from './tag.js';
 import { session_username } from './auth.js';
-import { guid } from './post.js';
+import { postID } from './post.js';
 import  * as wsoc from './wsManager.js';
 
 
@@ -95,7 +95,7 @@ $(document).ready(function() {
 function addComment() {
     const formData = $('#add-comment-form').serialize();
     $.ajax({
-        url: '/action/post/' + guid + '/comment',
+        url: '/action/post/' + postID + '/comment',
         method: 'POST',
         data: formData,
         success: function(response) {
@@ -105,7 +105,7 @@ function addComment() {
                 type: wsoc.TYPE_COMMENT_ON_POST,
                 msg: wsoc.MSG_COMMENT_ON_POST,
                 resource_id: response.data,
-                parent_id: guid
+                parent_id: postID
             };
             wsoc.sendWSmsg(message);
             location.reload();
@@ -130,7 +130,7 @@ function editComment(formElement) {
     let id = form.find('.comment_id').val();
     let edited_comment = form.find('.edit_comment').val();
     $.ajax({
-        url: '/action/post/' + guid + '/comment/' + id,
+        url: '/action/post/' + postID + '/comment/' + id,
         method: 'PUT',
         data: {
             comment: edited_comment
@@ -148,7 +148,7 @@ function editComment(formElement) {
 function deleteComment(commentElement) {
     let commentId = commentElement.data('id');
     $.ajax({
-        url: '/action/post/' + guid + '/comment/' + commentId,
+        url: '/action/post/' + postID + '/comment/' + commentId,
         method: 'DELETE',
         success: function() {
             location.reload();
@@ -162,7 +162,7 @@ function deleteComment(commentElement) {
 // Rate comment Up
 function rateCommentUp(id) {
     $.ajax({
-        url: '/action/post/' + guid + '/comment/' + id + '/up',
+        url: '/action/post/' + postID + '/comment/' + id + '/up',
         method: 'POST',
         success: function() {
             const message = {
@@ -170,7 +170,7 @@ function rateCommentUp(id) {
                 type: wsoc.TYPE_COMMENT_RATE,
                 msg: wsoc.MSG_COMMENT_RATE,
                 resource_id: String(id),
-                parent_id: guid
+                parent_id: postID
             };
             wsoc.sendWSmsg(message);
             location.reload()
@@ -185,7 +185,7 @@ function rateCommentUp(id) {
 // Rate comment Down
 function rateCommentDown(id) {
     $.ajax({
-        url: '/action/post/' + guid + '/comment/' + id + '/down',
+        url: '/action/post/' + postID + '/comment/' + id + '/down',
         method: 'POST',
         success: function() {
             const message = {
@@ -193,7 +193,7 @@ function rateCommentDown(id) {
                 type: wsoc.TYPE_COMMENT_RATE,
                 msg: wsoc.MSG_COMMENT_RATE,
                 resource_id: String(id),
-                parent_id: guid
+                parent_id: postID
             };
             wsoc.sendWSmsg(message);
             location.reload()
@@ -223,7 +223,7 @@ function highlightComment(commentId) {
         commentElement.classList.add('blink');
         setTimeout(function() {
             commentElement.classList.remove('blink');
-            commentElement.style.backgroundColor = 'white';
+            commentElement.style.backgroundColor = '#464646';
         }, 3000);
     } else {
         console.log('Element not found:', commentId);
@@ -292,7 +292,7 @@ function makeSuggestionResultNewComment(user) {
     if (user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + user.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + user.encoded
     }
     const username = document.createElement('div');
     username.innerHTML = '<strong>' + user.username + '</strong>';
@@ -368,7 +368,7 @@ function makeSuggestionResultEditComment(user, commentId) {
         if (user.profile_pic === '') {
             profilePic.attr('src', '/static/img/no-profile-pic.jpg');
         } else {
-            profilePic.attr('src', '/action/profile-pic?user-encoded=' + user.encoded);
+            profilePic.attr('src', '/action/profile-pic?encoded_username=' + user.encoded);
         }
 
         const username = $('<div>').html('<strong>' + user.username + '</strong>');

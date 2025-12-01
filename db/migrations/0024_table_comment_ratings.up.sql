@@ -1,5 +1,5 @@
 CREATE TABLE comment_ratings (
-    target_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    target_id UUID NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     rating_value SMALLINT NOT NULL DEFAULT 0 CHECK (rating_value IN (-1, 0, 1)),
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

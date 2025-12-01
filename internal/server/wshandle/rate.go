@@ -9,6 +9,7 @@ import (
 	"github.com/Anacardo89/lenic/internal/repo"
 )
 
+// ws - post_rating
 func (h *WSHandler) handlePostRate(msg Message) {
 	// Error Handling
 	fail := func(logMsg string, e error) {
@@ -43,13 +44,14 @@ func (h *WSHandler) handlePostRate(msg Message) {
 	if uDB.ID == fuDB.ID {
 		return
 	}
+	noParent := ""
 	n := &repo.Notification{
 		UserID:     uDB.ID,
 		FromUserID: fuDB.ID,
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: msg.ResourceID,
-		ParentID:   "",
+		ParentID:   &noParent,
 	}
 	if err := h.db.CreateNotification(h.ctx, n); err != nil {
 		fail("dberr: could not create notification", err)
@@ -70,6 +72,7 @@ func (h *WSHandler) handlePostRate(msg Message) {
 	}
 }
 
+// ws - comment_rating
 func (h *WSHandler) handleCommentRate(msg Message) {
 	// Error Handling
 	fail := func(logMsg string, e error) {
@@ -109,7 +112,7 @@ func (h *WSHandler) handleCommentRate(msg Message) {
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: msg.ResourceID,
-		ParentID:   msg.ParentID,
+		ParentID:   &msg.ParentID,
 	}
 	if err := h.db.CreateNotification(h.ctx, n); err != nil {
 		fail("dberr: could not create notification", err)

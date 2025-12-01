@@ -66,7 +66,7 @@ function addProfilePic() {
     const imageFile = $('#profile-image')[0].files[0];
 
     if (imageFile) {
-        formData.append('profile-image', imageFile);
+        formData.append('profile_image', imageFile);
     }
     
     $.ajax({

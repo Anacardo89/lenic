@@ -8,6 +8,7 @@ import (
 	"github.com/Anacardo89/lenic/internal/repo"
 )
 
+// ws - follow_request
 func (h *WSHandler) handleFollowRequest(msg Message) {
 	// Error Handling
 	fail := func(logMsg string, e error) {
@@ -39,13 +40,14 @@ func (h *WSHandler) handleFollowRequest(msg Message) {
 		fail("dberr: could not get user", err)
 		return
 	}
+	noParent := ""
 	n := &repo.Notification{
 		UserID:     uDB.ID,
 		FromUserID: fuDB.ID,
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: msg.ResourceID,
-		ParentID:   "",
+		ParentID:   &noParent,
 	}
 	if err := h.db.CreateNotification(h.ctx, n); err != nil {
 		fail("dberr: could not create notification", err)
@@ -66,6 +68,7 @@ func (h *WSHandler) handleFollowRequest(msg Message) {
 	}
 }
 
+// ws - follow_response
 func (h *WSHandler) handleFollowAccept(msg Message) {
 	// Error Handling
 	fail := func(logMsg string, e error) {
@@ -97,13 +100,14 @@ func (h *WSHandler) handleFollowAccept(msg Message) {
 		fail("dberr: could not get user", err)
 		return
 	}
+	noParent := ""
 	n := &repo.Notification{
 		UserID:     uDB.ID,
 		FromUserID: fuDB.ID,
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: msg.ResourceID,
-		ParentID:   "",
+		ParentID:   &noParent,
 	}
 	if err := h.db.CreateNotification(h.ctx, n); err != nil {
 		fail("dberr: could not create notification", err)

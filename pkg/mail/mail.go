@@ -7,14 +7,14 @@ import (
 	"github.com/Anacardo89/lenic/config"
 )
 
-const (
-	mailMsg = `
-	From: %s\r\n
-	To: %s\r\n
-	Subject: %s\r\n\r\n
-	%s
-	`
-)
+const mailMsg = `From: %s
+To: %s
+Subject: %s
+MIME-Version: 1.0
+Content-Type: text/html; charset="UTF-8"
+
+%s
+`
 
 type Client struct {
 	Host     string
@@ -40,7 +40,7 @@ func (c *Client) Send(to []string, subject, body string) []error {
 		msg := []byte(fmt.Sprintf(mailMsg, c.Username, t, subject, body))
 		err := smtp.SendMail(addr, auth, c.Username, []string{t}, msg)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("error sending mail to: %s", t))
+			errs = append(errs, fmt.Errorf("error sending mail to: %s, error: %s", t, err))
 		}
 	}
 	return errs

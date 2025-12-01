@@ -7,8 +7,14 @@ import (
 )
 
 // UserTags
-func (db *dbHandler) CreateUserTag(ctx context.Context, t *UserTag) error {
 
+// Endpoints:
+//
+// POST /action/post/{post_id}/comment
+// PUT /action/post/{post_id}/comment/{comment_id}
+// POST /action/post
+// PUT /action/post/{post_id}
+func (db *dbHandler) CreateUserTag(ctx context.Context, t *UserTag) error {
 	query := `
 	INSERT INTO user_tags (
 		user_id,
@@ -17,80 +23,77 @@ func (db *dbHandler) CreateUserTag(ctx context.Context, t *UserTag) error {
 	)
 	VALUES ($1, $2, $3)
 	;`
-
-	_, err := db.pool.Exec(ctx, query,
+	if _, err := db.pool.Exec(ctx, query,
 		t.UserID,
 		t.TargetID,
-		t.ResourceTpe,
-	)
-	return err
+		t.ResourceType,
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (db *dbHandler) GetUserTagByTarget(ctx context.Context, userID, targetID uuid.UUID) (*UserTag, error) {
-	query := `
-	SELECT *
-	FROM user_tags
-	WHERE user_id = $1 AND target_id = $2
-	;`
-
-	t := UserTag{}
-	err := db.pool.QueryRow(ctx, query, userID, targetID).
-		Scan(
-			&t.UserID,
-			&t.TargetID,
-			&t.ResourceTpe,
-		)
-	return &t, err
-}
-
+// Endpoints:
+//
+// DELETE /action/post/{post_id}/comment/{comment_id}
+// DELETE /action/post/{post_id}
 func (db *dbHandler) DeleteUserTag(ctx context.Context, userID uuid.UUID, targetID uuid.UUID) error {
-
 	query := `
 	DELETE FROM user_tags
 	WHERE user_id = $1 AND target_id = $2
 	;`
-
-	_, err := db.pool.Exec(ctx, query, userID, targetID)
-	return err
+	if _, err := db.pool.Exec(ctx, query, userID, targetID); err != nil {
+		return err
+	}
+	return nil
 }
 
 // HashTags
+
+// TODO: implement hashtags
 func (db *dbHandler) CreateHashtag(ctx context.Context, t *HashTag) (uuid.UUID, error) {
 	query := `
-	INSERT INTO hashtags (tag_name)
-	VALUES ($1)
+	INSERT INTO hashtags (
+		id,
+		tag_name
+	)
+	VALUES ($1, $2)
 	ON CONFLICT (tag_name) DO NOTHING
 	RETURNING id
 	;`
-
-	var ID uuid.UUID
-	err := db.pool.QueryRow(ctx, query,
+	ID := uuid.New()
+	if err := db.pool.QueryRow(ctx, query,
+		ID,
 		t.TagName,
-	).Scan(&ID)
-	return ID, err
+	).Scan(&ID); err != nil {
+		return uuid.Nil, err
+	}
+	return ID, nil
 }
 
 func (db *dbHandler) GetHashTagByName(ctx context.Context, tagName string) (*HashTag, error) {
-
 	query := `
-	SELECT *
+	SELECT
+		id,
+		tag_name,
+		created_at
 	FROM hashtags
 	WHERE tag_name = $1
 	;`
-
 	t := HashTag{}
-	err := db.pool.QueryRow(ctx, query, tagName).
+	if err := db.pool.QueryRow(ctx, query, tagName).
 		Scan(
 			&t.ID,
 			&t.TagName,
 			&t.CreatedAt,
-		)
-	return &t, err
+		); err != nil {
+		return nil, err
+	}
+	return &t, nil
 }
 
 // HashTag Resources
 func (db *dbHandler) CreateHashTagResource(ctx context.Context, t *HashTagResource) error {
-
 	query := `
 	INSERT INTO hashtag_resources (
 		tag_id,
@@ -99,29 +102,30 @@ func (db *dbHandler) CreateHashTagResource(ctx context.Context, t *HashTagResour
 	)
 	VALUES ($1, $2, $3)
 	;`
-
-	_, err := db.pool.Exec(ctx, query,
+	if _, err := db.pool.Exec(ctx, query,
 		t.TagID,
 		t.TargetID,
-		t.ResourceTpe,
-	)
-	return err
+		t.ResourceType,
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (db *dbHandler) GetHashTagResourceByTarget(ctx context.Context, tagID, targetID uuid.UUID) (*HashTagResource, error) {
-
 	query := `
 	SELECT *
 	FROM hashtag_resources
 	WHERE tag_id = $1 AND target_id = $2
 	;`
-
 	t := HashTagResource{}
-	err := db.pool.QueryRow(ctx, query, tagID, targetID).
+	if err := db.pool.QueryRow(ctx, query, tagID, targetID).
 		Scan(
 			&t.TagID,
 			&t.TargetID,
-			&t.ResourceTpe,
-		)
-	return &t, err
+			&t.ResourceType,
+		); err != nil {
+		return nil, err
+	}
+	return &t, nil
 }

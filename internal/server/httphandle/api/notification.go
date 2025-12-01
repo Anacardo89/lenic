@@ -57,6 +57,10 @@ func (h *APIHandler) GetNotifs(w http.ResponseWriter, r *http.Request) {
 	for _, notif := range notifsDB {
 		u := models.FromDBUserNotif(&notif.User)
 		fromU := models.FromDBUserNotif(&notif.FromUser)
+		noParent := ""
+		if notif.Notification.ParentID == nil {
+			notif.Notification.ParentID = &noParent
+		}
 		n := models.FromDBNotification(&notif.Notification, *u, *fromU)
 		notifs = append(notifs, n)
 	}

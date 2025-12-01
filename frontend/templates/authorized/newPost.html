@@ -13,13 +13,13 @@
 </head>
 <body>
     <header>
-        <input type="hidden" id="session-username" value="{{.Session.User.UserName}}">
+        <input type="hidden" id="session-username" value="{{.Session.User.Username}}">
         <input type="hidden" id="session-encoded" value="{{.Session.User.EncodedName}}">
         <div class="logo">
             <h1 class="home-link"><a href="/user/{{.Session.User.EncodedName}}/feed">L E N I C</a></h1>
             <p class="logo-bottom">Cinel do avesso</p>
         </div>
-        {{if not .Session.Authenticated}}
+        {{if not .Session.IsAuthenticated}}
             <div class="header-buttons">
                 <a href="/login"><button class="header-button">Login</button></a>
                 <a href="/register"><button class="header-button">Register</button></a>
@@ -57,7 +57,7 @@
                 </div>
                 <a href="/user/{{.Session.User.EncodedName}}">
                     {{if .Session.User.ProfilePic}}
-                        <img class="session-profile-pic" src="/action/profile-pic?user-encoded={{.Session.User.EncodedName}}" alt="Profile Pic" />
+                        <img class="session-profile-pic" src="/action/profile-pic/mini?encoded_username={{.Session.User.EncodedName}}" alt="Profile Pic" />
                     {{else}}
                         <img class="session-profile-pic" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
                     {{end}}

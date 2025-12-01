@@ -1,5 +1,5 @@
 CREATE TABLE dmessages (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,
     conversation_id UUID NOT NULL REFERENCES conversations(id),
     sender_id UUID NOT NULL REFERENCES users(id),
     content TEXT NOT NULL,

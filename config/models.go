@@ -3,16 +3,18 @@ package config
 import "time"
 
 type Config struct {
-	Server  Server  `yaml:"server"`
-	Session Session `yaml:"pagination"`
-	Token   Token   `yaml:"token"`
-	DB      DB      `yaml:"db"`
-	Log     Log     `yaml:"logging"`
-	Img     Img     `yaml:"img"`
-	Mail    Mail
+	Server   Server  `yaml:"server"`
+	Session  Session `yaml:"pagination"`
+	Token    Token   `yaml:"token"`
+	DB       DB      `yaml:"db"`
+	Log      Log     `yaml:"logging"`
+	Img      Img     `yaml:"img"`
+	Mail     Mail
+	RootPath string
 }
 
 type Server struct {
+	Host            string        `env:"HOST" envDefault:"localhost"`
 	Port            string        `env:"PORT" envDefault:"8080"`
 	ReadTimeout     time.Duration `yaml:"read_timeout"`     // seconds
 	WriteTimeout    time.Duration `yaml:"write_timeout"`    // seconds
@@ -30,7 +32,7 @@ type Token struct {
 }
 
 type DB struct {
-	DSN             string        `env:"DB_DSN" envDefault:"postgres://user:pass@localhost:5432/dbname?sslmode=disable"`
+	DSN             string        `env:"DB_DSN" envDefault:"postgres://user:pass@db:5432/dbname?sslmode=disable"`
 	MaxConns        int32         `yaml:"max_conns"`
 	MinConns        int32         `yaml:"min_conns"`
 	MaxConnLifetime time.Duration `yaml:"max_conn_lifetime"`  // minutes

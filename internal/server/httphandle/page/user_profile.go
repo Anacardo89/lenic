@@ -1,26 +1,27 @@
 package page
 
 import (
-	"database/sql"
 	"encoding/base64"
 	"errors"
 	"html/template"
 	"net/http"
 
+	"github.com/gorilla/mux"
+
 	"github.com/Anacardo89/lenic/internal/middleware"
 	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/internal/session"
-	"github.com/gorilla/mux"
 )
 
 type ProfilePage struct {
 	Session *session.Session
 	User    *models.User
 	Posts   []*models.Post
-	Follows string
+	Follows int
 }
 
+// /user/{encoded_username}
 func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -59,10 +60,8 @@ func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	fDB, err := h.db.GetUserFollows(r.Context(), session.User.ID, uDB.ID)
 	if err != nil {
-		if err != sql.ErrNoRows {
-			fail("dberr: could not get follows", err, true, http.StatusInternalServerError, "internal error")
-			return
-		}
+		fail("dberr: could not get follows", err, true, http.StatusInternalServerError, "internal error")
+		return
 	}
 	var pDB []*repo.Post
 	if (session.User.ID == uDB.ID) ||
@@ -89,7 +88,7 @@ func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 	if fDB != nil {
 		followStatus = fDB.FollowStatus
 	} else {
-		followStatus = models.StatusPending.String()
+		followStatus = ""
 	}
 	for _, post := range pDB {
 		p := models.FromDBPost(post, *un)
@@ -100,9 +99,15 @@ func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 		Session: session,
 		User:    u,
 		Posts:   posts,
-		Follows: followStatus,
 	}
-	t, err := template.ParseFiles("templates/authorized/user-profile.html")
+	if followStatus == "" {
+		pp.Follows = -1
+	} else if followStatus == "pending" {
+		pp.Follows = 0
+	} else if followStatus == "accepted" {
+		pp.Follows = 1
+	}
+	t, err := template.ParseFiles("./templates/authorized/user-profile.html")
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

@@ -4,7 +4,7 @@ WORKDIR $APP_PATH
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -o lenic ./cmd
+RUN go build -o lenic ./cmd/main
 
 
 FROM debian:trixie-slim
@@ -15,6 +15,8 @@ RUN rm -rf /var/lib/apt/lists/*
 COPY --from=builder $APP_PATH .
 COPY frontend/templates/ $APP_PATH/templates
 COPY frontend/static/ $APP_PATH/static
+ENV APP_ENV=docker
+ENV ROOT_PATH=/lenic
 
 ENV PORT=8080
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/gorilla/websocket"
 )
 
@@ -18,13 +19,13 @@ type Message struct {
 func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 	conn, err := h.wsConnMann.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		h.log.Error("failed to upgrade conn to websocket:", err)
+		h.log.Error("failed to upgrade conn to websocket", "error", err)
 		return
 	}
 
 	username := r.URL.Query().Get("username")
 	if username == "" {
-		h.log.Error("no user provided", err)
+		h.log.Error("no user provided", "error", err)
 		return
 	}
 
@@ -45,9 +46,9 @@ func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-				h.log.Info("connection closed normally:", err)
+				h.log.Info("connection closed normally", "error", err)
 			} else {
-				h.log.Error("could not read message:", err)
+				h.log.Error("could not read message:", "error", err)
 			}
 			break
 		}
@@ -55,27 +56,27 @@ func (h *WSHandler) HandleWSMsg(w http.ResponseWriter, r *http.Request) {
 		var msg Message
 		err = json.Unmarshal(message, &msg)
 		if err != nil {
-			h.log.Error("could not unmarshal message:", err)
+			h.log.Error("could not unmarshal message", "error", err)
 			continue
 		}
 
 		h.log.Info("received message from user %s: %s\n", username, string(message))
 
 		switch msg.Type {
-		case "rate_comment":
+		case models.NotifCommentRating.String():
 			h.handleCommentRate(msg)
-		case "rate_post":
+		case models.NotifPostRating.String():
 			h.handlePostRate(msg)
-		case "comment_on_post":
+		case models.NotifComment.String():
 			h.handleCommentOnPost(msg)
-		case "follow_accept":
+		case models.NotifFollowResponse.String():
 			h.handleFollowAccept(msg)
-		case "follow_request":
+		case models.NotifFollowRequest.String():
 			h.handleFollowRequest(msg)
-		case "dm":
+		case models.NotifDM.String():
 			h.handleDM(msg)
 		default:
-			h.log.Warn("unknown message type:", msg.Type)
+			h.log.Warn("unknown message type", "msg type", msg.Type)
 		}
 	}
 }

@@ -16,7 +16,7 @@ import (
 type APIHandler struct {
 	ctx          context.Context
 	cfg          *config.Server
-	db           repo.DBRepository
+	db           repo.DBRepo
 	tokenManager *auth.TokenManager
 	sm           *session.SessionManager
 	wsHandler    *wshandle.WSHandler
@@ -29,7 +29,7 @@ func NewHandler(
 	ctx context.Context,
 	l *logger.Logger,
 	cfg *config.Server,
-	db repo.DBRepository,
+	db repo.DBRepo,
 	tm *auth.TokenManager,
 	sm *session.SessionManager,
 	wsHandler *wshandle.WSHandler,

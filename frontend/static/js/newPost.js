@@ -17,9 +17,9 @@ function addPost() {
     if (imageFile) {
         formData.append('post-image', imageFile);
     }
-    formData.append('post-title', postTitle);
-    formData.append('post-content', postContent);
-    formData.append('post-visibility', visibility);
+    formData.append('title', postTitle);
+    formData.append('content', postContent);
+    formData.append('is_public', visibility);
     
     $.ajax({
         url: '/action/post',
@@ -100,7 +100,7 @@ function makeSuggestionResult(user) {
     if (user.profile_pic === '') {
         profilePic.src = '/static/img/no-profile-pic.jpg';
     } else {
-        profilePic.src = '/action/profile-pic?user-encoded=' + user.encoded
+        profilePic.src = '/action/profile-pic?encoded_username=' + user.encoded
     }
     const username = document.createElement('div');
     username.innerHTML = '<strong>' + user.username + '</strong>';

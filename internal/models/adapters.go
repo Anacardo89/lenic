@@ -82,7 +82,7 @@ func FromDBNotification(n *repo.Notification, u, fromU UserNotif) *Notification 
 		NotifType:  NotifType(n.NotifType),
 		NotifText:  n.NotifText,
 		ResourceID: n.ResourceID,
-		ParentID:   n.ParentID,
+		ParentID:   *n.ParentID,
 		IsRead:     n.IsRead,
 	}
 }
@@ -104,7 +104,7 @@ func FromDBConversationWithUser(c *repo.ConversationsWithDMs, u1 UserNotif, isRe
 		User1:     u1,
 		User2:     *FromDBUserNotif(c.OtherUser),
 		IsRead:    isRead,
-		CreatedAt: c.CreatedAt,
+		CreatedAt: c.UpdatedAt,
 	}
 }
 

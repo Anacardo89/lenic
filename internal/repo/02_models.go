@@ -104,7 +104,7 @@ type Notification struct {
 	NotifType  string
 	NotifText  string
 	ResourceID string
-	ParentID   string
+	ParentID   *string
 	IsRead     bool
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
@@ -136,9 +136,9 @@ func (r ResourceType) String() string {
 }
 
 type UserTag struct {
-	UserID      uuid.UUID
-	TargetID    uuid.UUID
-	ResourceTpe string
+	UserID       uuid.UUID
+	TargetID     uuid.UUID
+	ResourceType string
 }
 
 type HashTag struct {
@@ -148,9 +148,9 @@ type HashTag struct {
 }
 
 type HashTagResource struct {
-	TagID       uuid.UUID
-	TargetID    uuid.UUID
-	ResourceTpe string
+	TagID        uuid.UUID
+	TargetID     uuid.UUID
+	ResourceType string
 }
 
 // Conversations
@@ -174,7 +174,7 @@ type DMessage struct {
 
 type ConversationsWithDMs struct {
 	ID        uuid.UUID
-	CreatedAt time.Time
+	UpdatedAt time.Time
 	OtherUser *User
 	Messages  []*DMessage
 }

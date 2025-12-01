@@ -24,6 +24,7 @@ type FollowingPage struct {
 	Following []*models.User
 }
 
+// /user/{encoded_username}/followers
 func (h *PageHandler) UserFollowers(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -80,7 +81,7 @@ func (h *PageHandler) UserFollowers(w http.ResponseWriter, r *http.Request) {
 		u := models.FromDBUser(uDB)
 		fp.Followers = append(fp.Followers, u)
 	}
-	t, err := template.ParseFiles("templates/authorized/followers.html")
+	t, err := template.ParseFiles("./templates/authorized/followers.html")
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return
@@ -88,6 +89,7 @@ func (h *PageHandler) UserFollowers(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, fp)
 }
 
+// /user/{encoded_username}/following
 func (h *PageHandler) UserFollowing(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
 	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
@@ -144,7 +146,7 @@ func (h *PageHandler) UserFollowing(w http.ResponseWriter, r *http.Request) {
 		u := models.FromDBUser(dbUser)
 		fp.Following = append(fp.Following, u)
 	}
-	t, err := template.ParseFiles("templates/authorized/following.html")
+	t, err := template.ParseFiles("./templates/authorized/following.html")
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return
