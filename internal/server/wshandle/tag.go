@@ -40,13 +40,14 @@ func (h *WSHandler) HandlePostTag(msg Message, taggedUser string) {
 		fail("dberr: could not get user", err)
 		return
 	}
+	noParent := ""
 	n := &repo.Notification{
 		UserID:     uDB.ID,
 		FromUserID: fuDB.ID,
 		NotifType:  msg.Type,
 		NotifText:  msg.Msg,
 		ResourceID: msg.ResourceID,
-		ParentID:   nil,
+		ParentID:   &noParent,
 	}
 	if err := h.db.CreateNotification(h.ctx, n); err != nil {
 		fail("dberr: could not create notification", err)

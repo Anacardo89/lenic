@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/Anacardo89/lenic/pkg/testutils"
 	"github.com/caarlos0/env/v9"
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
@@ -14,13 +16,23 @@ import (
 
 func LoadConfig() (*Config, error) {
 	cfg := DefaultConfig()
-	if err := godotenv.Load("../.env"); err != nil {
-		log.Println("No dev.env file found, relying on OS env variables")
+	appEnv := os.Getenv("APP_ENV")
+	var rootPath string
+	if appEnv == "local" {
+		var err error
+		rootPath, err = testutils.GetProjectRoot()
+		if err != nil {
+			log.Println("failed to get project root")
+			return nil, err
+		}
+	}
+	cfg.RootPath = rootPath
+	if err := godotenv.Load(filepath.Join(rootPath, ".env")); err != nil {
+		log.Println("No env file found, relying on default env variables")
 	}
 	cfgPath := os.Getenv("CFG_PATH")
-	if cfgPath == "" {
-		cfgPath = "/lenic/config.yaml"
-	}
+	cfgFile := os.Getenv("CFG_FILE")
+	cfgPath = filepath.Join(rootPath, cfgPath, cfgFile)
 	f, err := os.Open(cfgPath)
 	if err != nil {
 		return nil, err

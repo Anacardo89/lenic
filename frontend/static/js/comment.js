@@ -223,7 +223,7 @@ function highlightComment(commentId) {
         commentElement.classList.add('blink');
         setTimeout(function() {
             commentElement.classList.remove('blink');
-            commentElement.style.backgroundColor = 'white';
+            commentElement.style.backgroundColor = '#464646';
         }, 3000);
     } else {
         console.log('Element not found:', commentId);

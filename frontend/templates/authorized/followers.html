@@ -58,7 +58,7 @@
                 <div class="vertical-bar"></div>
                 <a class="user-profile-button" href="/user/{{.Session.User.EncodedName}}">
                     {{if .Session.User.ProfilePic}}
-                        <img class="profile-pic-mini" src="/action/profile-pic?encoded_username={{.Session.User.EncodedName}}" alt="Profile Pic" />
+                        <img class="profile-pic-mini" src="/action/profile-pic/mini?encoded_username={{.Session.User.EncodedName}}" alt="Profile Pic" />
                     {{else}}
                         <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
                     {{end}}

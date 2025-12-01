@@ -28,7 +28,3 @@ func NewHandler(
 		sm:  sm,
 	}
 }
-
-func (h *PageHandler) decodeUser() (string, error) {
-	return "", nil
-}

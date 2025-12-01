@@ -17,41 +17,6 @@ type PostPage struct {
 	Post    *models.Post
 }
 
-func (h *PageHandler) NewPost(w http.ResponseWriter, r *http.Request) {
-	// Error Handling
-	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
-		h.log.Error(logMsg, "error", e,
-			"status_code", status,
-			"method", r.Method,
-			"path", r.URL.Path,
-			"client_ip", r.RemoteAddr,
-		)
-		if writeError {
-			http.Error(w, outMsg, status)
-		}
-	}
-	//
-
-	// Execution
-	// Get session
-	session, ok := r.Context().Value(middleware.CtxKeySession).(*session.Session)
-	if !ok {
-		fail("session type mismatch", errors.New("session type mismatch"), true, http.StatusUnauthorized, "invalid session")
-		return
-	}
-	// Response
-	postp := PostPage{
-		Session: session,
-		Post:    &models.Post{},
-	}
-	t, err := template.ParseFiles("templates/authorized/newPost.html")
-	if err != nil {
-		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
-		return
-	}
-	t.Execute(w, postp)
-}
-
 // /post/{post_id}
 func (h *PageHandler) Post(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
@@ -105,7 +70,7 @@ func (h *PageHandler) Post(w http.ResponseWriter, r *http.Request) {
 		Post:    p,
 		Session: session,
 	}
-	t, err := template.ParseFiles("../frontend/templates/authorized/post.html")
+	t, err := template.ParseFiles("./templates/authorized/post.html")
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

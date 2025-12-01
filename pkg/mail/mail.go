@@ -40,7 +40,7 @@ func (c *Client) Send(to []string, subject, body string) []error {
 		msg := []byte(fmt.Sprintf(mailMsg, c.Username, t, subject, body))
 		err := smtp.SendMail(addr, auth, c.Username, []string{t}, msg)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("error sending mail to: %s", t))
+			errs = append(errs, fmt.Errorf("error sending mail to: %s, error: %s", t, err))
 		}
 	}
 	return errs

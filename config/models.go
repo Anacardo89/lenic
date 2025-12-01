@@ -3,13 +3,14 @@ package config
 import "time"
 
 type Config struct {
-	Server  Server  `yaml:"server"`
-	Session Session `yaml:"pagination"`
-	Token   Token   `yaml:"token"`
-	DB      DB      `yaml:"db"`
-	Log     Log     `yaml:"logging"`
-	Img     Img     `yaml:"img"`
-	Mail    Mail
+	Server   Server  `yaml:"server"`
+	Session  Session `yaml:"pagination"`
+	Token    Token   `yaml:"token"`
+	DB       DB      `yaml:"db"`
+	Log      Log     `yaml:"logging"`
+	Img      Img     `yaml:"img"`
+	Mail     Mail
+	RootPath string
 }
 
 type Server struct {

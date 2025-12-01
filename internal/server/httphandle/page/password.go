@@ -73,7 +73,7 @@ func (h *PageHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		User:  u,
 		Token: token,
 	}
-	t, err := template.ParseFiles("../frontend/templates/recover-password.html")
+	t, err := template.ParseFiles("./templates/recover-password.html")
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return
@@ -104,7 +104,7 @@ func (h *PageHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	t, err := template.ParseFiles("../frontend/templates/authorized/change-password.html")
+	t, err := template.ParseFiles("./templates/authorized/change-password.html")
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

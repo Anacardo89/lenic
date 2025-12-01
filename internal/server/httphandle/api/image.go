@@ -68,6 +68,61 @@ func (h *APIHandler) GetPostImage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// /action/image/mini
+func (h *APIHandler) GetMiniPostImage(w http.ResponseWriter, r *http.Request) {
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
+	// Input validation
+	pID, err := uuid.Parse(r.URL.Query().Get("post_id"))
+	if err != nil {
+		fail("parsing post uuid from URL", err, true, http.StatusBadRequest, "invalid path")
+		return
+	}
+	// DB operations
+	pDB, err := h.db.GetPost(r.Context(), pID)
+	if err != nil {
+		fail("dberr: could not get post", err, true, http.StatusBadRequest, "invalid params")
+		return
+	}
+	// Early return if no image
+	if pDB.PostImage == "" {
+		w.WriteHeader(200)
+		return
+	}
+	// Get img
+	imgFile, err := h.img.GetImg(false, pDB.PostImage)
+	if err != nil {
+		fail("failed to get image", err, true, http.StatusInternalServerError, "internal error")
+		return
+	}
+	defer imgFile.Close()
+	// Determine MIME type
+	ext := filepath.Ext(pDB.PostImage)
+	mimeType := mime.TypeByExtension(ext)
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+	w.Header().Set("Content-Type", mimeType)
+	// Stream file directly to response
+	if _, err := io.Copy(w, imgFile); err != nil {
+		fail("failed to write image to response", err, false, http.StatusInternalServerError, "internal error")
+		return
+	}
+}
+
 // /action/profile-pic
 func (h *APIHandler) GetProfilePic(w http.ResponseWriter, r *http.Request) {
 	// Error Handling
@@ -105,6 +160,62 @@ func (h *APIHandler) GetProfilePic(w http.ResponseWriter, r *http.Request) {
 	}
 	// Get img
 	imgFile, err := h.img.GetImg(true, uDB.ProfilePic)
+	if err != nil {
+		fail("failed to get image", err, true, http.StatusInternalServerError, "internal error")
+		return
+	}
+	defer imgFile.Close()
+	// Determine MIME type
+	ext := filepath.Ext(uDB.ProfilePic)
+	mimeType := mime.TypeByExtension(ext)
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+	w.Header().Set("Content-Type", mimeType)
+	// Stream file directly to response
+	if _, err := io.Copy(w, imgFile); err != nil {
+		fail("failed to write image to response", err, false, http.StatusInternalServerError, "internal error")
+		return
+	}
+}
+
+// /action/profile-pic/mini
+func (h *APIHandler) GetMiniProfilePic(w http.ResponseWriter, r *http.Request) {
+	// Error Handling
+	fail := func(logMsg string, e error, writeError bool, status int, outMsg string) {
+		h.log.Error(logMsg, "error", e,
+			"status_code", status,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"client_ip", r.RemoteAddr,
+		)
+		if writeError {
+			http.Error(w, outMsg, status)
+		}
+	}
+	//
+
+	// Execution
+	// Input validation
+	bytes, err := base64.URLEncoding.DecodeString(r.URL.Query().Get("encoded_username"))
+	if err != nil {
+		fail("could not decode user", err, true, http.StatusBadRequest, "invalid user")
+		return
+	}
+	username := string(bytes)
+	// DB operations
+	uDB, err := h.db.GetUserByUserName(h.ctx, username)
+	if err != nil {
+		fail("dberr: could not get user", err, true, http.StatusBadRequest, "invalid params")
+		return
+	}
+	h.log.Info("uDB", "object", uDB)
+	if uDB.ProfilePic == "" {
+		w.WriteHeader(200)
+		return
+	}
+	// Get img
+	imgFile, err := h.img.GetImg(false, uDB.ProfilePic)
 	if err != nil {
 		fail("failed to get image", err, true, http.StatusInternalServerError, "internal error")
 		return

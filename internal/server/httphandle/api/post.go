@@ -12,6 +12,7 @@ import (
 
 	"github.com/Anacardo89/lenic/internal/helpers"
 	"github.com/Anacardo89/lenic/internal/middleware"
+	"github.com/Anacardo89/lenic/internal/models"
 	"github.com/Anacardo89/lenic/internal/repo"
 	"github.com/Anacardo89/lenic/internal/server/wshandle"
 	"github.com/Anacardo89/lenic/internal/session"
@@ -104,11 +105,13 @@ func (h *APIHandler) AddPost(w http.ResponseWriter, r *http.Request) {
 					fail("dberr: could not insert usertag", err, false, http.StatusInternalServerError, "")
 					continue
 				}
+				noParent := ""
 				wsMsg := wshandle.Message{
 					FromUserName: session.User.Username,
-					Type:         "post_tag",
+					Type:         models.NotifPostTag.String(),
 					Msg:          " has tagged you in their post",
 					ResourceID:   pID.String(),
+					ParentID:     noParent,
 				}
 				h.wsHandler.HandlePostTag(wsMsg, mention)
 			}

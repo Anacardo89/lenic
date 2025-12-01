@@ -319,7 +319,7 @@ func (db *dbHandler) GetDMsByConversation(ctx context.Context, conversationID uu
 	JOIN users u
 		ON u.id = m.sender_id
 	WHERE m.conversation_id = $1
-	ORDER BY m.created_at DESC
+	ORDER BY m.created_at ASC
 	LIMIT $2
 	OFFSET $3
 	;`

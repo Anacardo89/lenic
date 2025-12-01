@@ -58,7 +58,7 @@
                 <div class="vertical-bar"></div>
                 <a class="user-profile-button" href="/user/{{.Session.User.EncodedName}}">
                     {{if .Session.User.ProfilePic}}
-                        <img class="profile-pic-mini" src="/action/profile-pic?encoded_username={{.Session.User.EncodedName}}" alt="Profile Pic" />
+                        <img class="profile-pic-mini" src="/action/profile-pic/mini?encoded_username={{.Session.User.EncodedName}}" alt="Profile Pic" />
                     {{else}}
                         <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
                     {{end}}
@@ -93,9 +93,9 @@
                         <div class="post-preview" onclick="location.href='/post/{{.ID}}';">
                             <div class="post-preview-content">
                                 <div class="author-info-inline">
-                                    <a href="/user/{{.Author.EncodedName}}">
+                                    <a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();">
                                         {{if .Author.ProfilePic}}
-                                            <img class="profile-pic-mini" src="/action/profile-pic?encoded_username={{.Author.EncodedName}}" alt="Profile Pic">
+                                            <img class="profile-pic-mini" src="/action/profile-pic/mini?encoded_username={{.Author.EncodedName}}" alt="Profile Pic">
                                         {{else}}
                                             <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
                                         {{end}}
@@ -108,7 +108,7 @@
                                         <div>{{.TruncatedText}}</div>
                                     </div>
                                     {{if .Image}}
-                                        <img class="post-pic-mini" src="/action/image?post_id={{.ID}}" alt="Post Image">
+                                        <img class="post-pic-mini" src="/action/image/mini?post_id={{.ID}}" alt="Post Image">
                                     {{end}}
                                 </div>
                                 <br>

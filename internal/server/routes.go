@@ -23,7 +23,6 @@ func NewRouter(ah *api.APIHandler, ph *page.PageHandler, wsh *wshandle.WSHandler
 	r.HandleFunc("/login", ph.Login).Schemes("http")
 	r.HandleFunc("/register", ph.Register).Schemes("http")
 	r.HandleFunc("/error", ph.Error).Schemes("http")
-	r.Handle("/newPost", mw.Auth(http.HandlerFunc(ph.NewPost))).Schemes("http")
 	r.Handle("/post/{post_id}", mw.Auth(http.HandlerFunc(ph.Post))).Schemes("http")
 	r.Handle("/user/{encoded_username}", mw.Auth(http.HandlerFunc(ph.UserProfile))).Schemes("http")
 	r.Handle("/user/{encoded_username}/feed", mw.Auth(http.HandlerFunc(ph.Feed))).Schemes("http")
@@ -75,13 +74,15 @@ func NewRouter(ah *api.APIHandler, ph *page.PageHandler, wsh *wshandle.WSHandler
 	authRoutes.HandleFunc("/change-password", ah.ChangePassword).Methods("POST").Schemes("http")
 	// Image
 	authRoutes.HandleFunc("/image", ah.GetPostImage).Schemes("http")
+	authRoutes.HandleFunc("/image/mini", ah.GetMiniPostImage).Schemes("http")
 	authRoutes.HandleFunc("/profile-pic", ah.GetProfilePic).Schemes("http")
+	authRoutes.HandleFunc("/profile-pic/mini", ah.GetMiniProfilePic).Schemes("http")
 
 	// Websocket
 	r.Handle("/ws", mw.Auth(http.HandlerFunc(wsh.HandleWSMsg)))
 
 	// Static
-	staticDir := "../frontend/static"
+	staticDir := "./static"
 	r.PathPrefix("/static/").Handler(
 		http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))),
 	)
