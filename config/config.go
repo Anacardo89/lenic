@@ -30,9 +30,8 @@ func LoadConfig() (*Config, error) {
 	if err := godotenv.Load(filepath.Join(rootPath, ".env")); err != nil {
 		log.Println("No env file found, relying on default env variables")
 	}
-	cfgPath := os.Getenv("CFG_PATH")
 	cfgFile := os.Getenv("CFG_FILE")
-	cfgPath = filepath.Join(rootPath, cfgPath, cfgFile)
+	cfgPath := filepath.Join(rootPath, cfgFile)
 	f, err := os.Open(cfgPath)
 	if err != nil {
 		return nil, err
