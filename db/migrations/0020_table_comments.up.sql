@@ -1,0 +1,11 @@
+CREATE TABLE comments (
+    id UUID PRIMARY KEY,
+    post_id UUID NOT NULL REFERENCES posts(id),
+    author_id UUID NOT NULL REFERENCES users(id),
+    content TEXT,
+    rating INTEGER NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMPTZ
+);

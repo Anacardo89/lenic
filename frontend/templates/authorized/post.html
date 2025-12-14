@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lenic</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/header.css">
+    <link rel="stylesheet" href="/static/css/post.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- FontAwesome Link -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <header>
+        <input type="hidden" id="session-username" value="{{.Session.User.Username}}">
+        <input type="hidden" id="session-encoded" value="{{.Session.User.EncodedName}}">
+        <div class="logo">
+            <h1 class="home-link"><a href="/user/{{.Session.User.EncodedName}}/feed">L E N I C</a></h1>
+            <p class="logo-bottom">Cinel do avesso</p>
+        </div>
+        {{if not .Session.IsAuthenticated}}
+            <div class="header-buttons">
+                <a href="/login"><button class="header-button">Login</button></a>
+                <a href="/register"><button class="header-button">Register</button></a>
+            </div>
+        {{else}}
+            <div class="logout">
+                <div class="search-container">
+                    <div class="search-input-button-container">
+                        <input class="search-input" id="search-input" type="text" name="search" />
+                        <button class="search-button" id="search-button"><i class="fa-solid fa-magnifying-glass fa-2x"></i></button>
+                    </div>
+                    <div class="search-dropdown">
+                        <div class="search-body" id="search-body">
+                            <!-- Search items in here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="dm-container">
+                    <button class="dm-button"><i class="fa-solid fa-envelope fa-2x"></i></button>
+                    <div class="dm-dropdown">
+                        <div class="dm-body">
+                            <!-- Conversation items in here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="notif-container">
+                    <button class="notif-button"><i class="fa-solid fa-bell fa-2x"></i></button>
+                    <div class="notif-dropdown">
+                        <div class="notif-body">
+                            <button class="notif-readAll">Read All</button>
+                            <!-- Notif items in here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="vertical-bar"></div>
+                <a class="user-profile-button" href="/user/{{.Session.User.EncodedName}}">
+                    {{if .Session.User.ProfilePic}}
+                        <img class="profile-pic-mini" src="/action/profile-pic/mini?encoded_username={{.Session.User.EncodedName}}" alt="Profile Pic" />
+                    {{else}}
+                        <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic" />
+                    {{end}}
+                </a>
+            </div>
+        {{end}}
+    </header>
+    <main>
+        <input type="hidden" id="post-id" value="{{.Post.ID}}">
+        <div class="main-container">
+            <div class="content">
+                <div class="post-content">
+                    <div class="author-info-inline">
+                        <a href="/user/{{.Post.Author.EncodedName}}" onclick="event.stopPropagation();">
+                            {{if .Post.Author.ProfilePic}}
+                                <img class="profile-pic-mini" src="/action/profile-pic/mini?encoded_username={{.Post.Author.EncodedName}}" alt="Profile Pic">
+                            {{else}}
+                                <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
+                            {{end}}
+                        </a>
+                        <div class="author-name-date"><a href="/user/{{.Post.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Post.Author.Username}}</strong></a>   -   <strong>{{.Post.Date}}</strong></div>
+                    </div>
+                    <h1>{{.Post.Title}}</h1>
+                    <div class="post-text-image">
+                        <div id="post-text"><p>{{.Post.Content}}</p></div>
+                        {{if .Post.Image}}
+                            <img class="post-image" src="/action/image?post_id={{.Post.ID}}" alt="Post Image">
+                        {{end}}
+                    </div>
+                    {{if eq .Post.Author.Username .Session.User.Username}}
+                        <div id="post-edit-container">
+                            <form id="post-edit-form">
+                                <input type="text" id="edit-post-title" name="post-title" value="{{.Post.Title}}">
+                                <textarea id="edit-post" name="post-content">{{.Post.Content}}</textarea>
+                                <div id="suggestionBox-post" class="suggestion-box"></div>
+                                <div class="visibility-container">
+                                    <p>Select Post Visibility:</p>
+                                    <div class="visibility-buttons">
+                                        <label><input type="radio" name="post-visibility" value="1">  Public</label>
+                                        <label><input type="radio" name="post-visibility" value="0">  Private</label>
+                                    </div>
+                                </div>
+                                <button class="post-edit-button" type="submit">Confirm</button>
+                            </form>
+                        </div>
+                    {{end}}
+                    <br>
+                    <div class="rating-container">
+                        <div class="rating-text">Rating</div>
+                        <div class="rating"><strong>{{.Post.Rating}}</strong></div>
+                        {{if $.Session.IsAuthenticated}}
+                            <div class="rate-buttons">
+                                <button id="post-rate-up-button"><i class="fa-solid fa-thumbs-up"></i></button>
+                                <input type="hidden" id="post-rating-hidden" value="{{.Post.UserRating}}" />
+                                <button id="post-rate-down-button"><i class="fa-solid fa-thumbs-down"></i></button>
+                            </div>
+                        {{end}}
+                    </div>
+                    {{if eq .Post.Author.Username .Session.User.Username}}
+                        <div class="post-buttons">
+                            <button id="post-editor-button">Edit</button>
+                            <button id="post-deleter-button">Delete</button>
+                        </div>
+                    {{end}}
+                </div>
+            </div>
+            <div class="comment-section">
+                {{if .Session.IsAuthenticated}}
+                    <div class="add-comment-form">
+                        <div><p><strong>ADD A COMMENT:</strong></p></div>
+                        <div class="comment-form">
+                            <form id="add-comment-form">
+                                <div><textarea id="newComment-textarea" name="comment_text" placeholder="Your Comments"></textarea></div>
+                                <div id="suggestionBox-newComment" class="suggestion-box"></div>
+                                <button id="add-comment-button" type="submit">Add Comment</button>
+                            </form>
+                        </div>
+                    </div>
+                {{end}}
+                <div class="comments">
+                    {{range .Post.Comments}}
+                        <div class="comment-container" id="comment-{{.ID}}" data-id="{{.ID}}">
+                            <div class="comment-content">
+                                <div class="author-info-inline">
+                                    <a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();">
+                                        {{if .Author.ProfilePic}}
+                                            <img class="profile-pic-mini" src="/action/profile-pic/mini?encoded_username={{.Author.EncodedName}}" alt="Profile Pic">
+                                        {{else}}
+                                            <img class="profile-pic-mini" src="/static/img/no-profile-pic.jpg" alt="Profile Pic">
+                                        {{end}}
+                                    </a>
+                                    <div><a href="/user/{{.Author.EncodedName}}" onclick="event.stopPropagation();"><strong>{{.Author.Username}}</strong></a>   -   <strong>{{.Date}}</strong></div>
+                                </div>
+                                <div class="comment-text" id="comment-text-{{.ID}}"><p>{{.Content}}</p></div>
+                                {{if eq .Author.Username $.Session.User.Username}}
+                                    <div class="comment-edit-container" id="comment-editor-{{.ID}}">
+                                        <form class="comment-edit-form">
+                                            <input type="hidden" class="comment_id" value="{{.ID}}" />
+                                            <textarea id="edit-comment-{{.ID}}" type="textarea" class="edit_comment" name="comment">{{.Content}}</textarea>
+                                            <div id="suggestionBox-editComment-{{.ID}}" class="suggestion-box"></div>
+                                            <input type="submit" value="Confirm" />
+                                        </form>
+                                    </div>
+                                {{end}}
+                                <br>
+                                <div class="comment-rating-container">
+                                    <div class="comment-rating-text">Rating</div>
+                                    <div class="comment-rating"><strong>{{.Rating}}</strong></div>
+                                    {{if $.Session.IsAuthenticated}}
+                                        <div class="comment-rate-buttons">
+                                            <button id="comment-rate-up-button-{{.ID}}"><i class="comment-rate-up-button fa-solid fa-thumbs-up" data-id="{{.ID}}"></i></button>
+                                            <input type="hidden" class="comment-rating-hidden" data-id="{{.ID}}" value="{{.UserRating}}" />
+                                            <button id="comment-rate-down-button-{{.ID}}"><i class="comment-rate-down-button fa-solid fa-thumbs-down" data-id="{{.ID}}"></i></button>
+                                        </div>
+                                    {{end}}
+                                </div>
+                            </div>
+                            {{if eq .Author.Username $.Session.User.Username}}
+                                <div class="comment-buttons">
+                                    <button class="comment-editor-button" data-id="{{.ID}}">Edit</button>
+                                    <button class="comment-deleter-button" data-id="{{.ID}}">Delete</button>
+                                </div>
+                            {{end}}
+                        </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+        <div id="modal-post-image">
+            <div class="modal-border">
+                <div class="image-modal-content">
+                    <img id="post-image-big" src="/action/image?post_id={{.Post.ID}}" alt="Post Image">
+                    <button id="close-image-modal">Close</button>
+                </div>
+            </div>
+        </div>
+        <div id="modal-container-post">
+            <div class="modal-border">
+                <div class="modal-content">
+                    <p>Are you sure you want to delete this post?</p>
+                    <br>
+                    <div class="modal-buttons">
+                        <button id="delete-post-sure-no">Cancel</button>
+                        <button id="delete-post-sure-yes">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="modal-container-comment">
+            <div class="modal-border">
+                <div class="modal-content">
+                    <p>Are you sure you want to delete this comment?</p>
+                    <br>
+                    <div class="modal-buttons">
+                        <button id="delete-comment-sure-no">Cancel</button>
+                        <button id="delete-comment-sure-yes">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <div id="dm-window" class="hidden">
+            <div class="dm-header">
+                <span id="dm-title"></span>
+                <button id="close-dm-btn">&times;</button>
+            </div>
+            <div id="dm-content" class="dm-content">
+                <!-- DM messages will be populated here -->
+            </div>
+            <div class="dm-input">
+                <input id="dm-input-field" type="text" placeholder="Type a message...">
+                <button id="send-message-btn">OK</button>
+            </div>
+        </div>
+    </footer>
+    <script type="module" src="/static/js/auth.js"></script>
+    <script type="module" src="/static/js/post.js"></script>
+    <script type="module" src="/static/js/comment.js"></script>
+</body>
+</html>

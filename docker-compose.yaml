@@ -1,0 +1,53 @@
+networks:
+  lenic-network:
+
+volumes:
+  lenic-log-volume:
+  lenic-images-volume:
+
+services:
+  lenic:
+    image: ghcr.io/Anacardo89/lenic:latest
+    container_name: lenic-app
+    restart: unless-stopped
+    environment:
+      HOST: ${HOST}
+      PORT: ${PORT}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_DSN: postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require
+      SESSION_SECRET: ${SESSION_SECRET}
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      CFG_PATH: ${CFG_PATH}
+      CFG_FILE: ${CFG_FILE}
+      IMG_PATH: ${IMG_PATH}
+      LOG_PATH: ${LOG_PATH}
+      LOG_FILE: ${LOG_FILE}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+    ports:
+      - "80:${PORT}"
+    networks:
+      - lenic-network
+    volumes:
+      - ./config/config.yaml:/lenic/${CFG_FILE}:ro
+      - lenic-log-volume:${LOG_PATH}
+      - lenic-images-volume:${IMG_PATH}
+  migrate:
+    image: ghcr.io/Anacardo89/lenic-migrate:latest
+    container_name: migrate
+    depends_on:
+      - lenic
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    networks:
+      - lenic-network

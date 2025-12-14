@@ -1,0 +1,2 @@
+DROP TRIGGER IF EXISTS follows_set_updated_at
+    ON follows;

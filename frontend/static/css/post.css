@@ -1,0 +1,290 @@
+/* Post */
+.content {
+    margin-top: 30px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    padding: 20px;
+    overflow: visible;
+}
+
+.content-container h1 {
+    margin-top: 20px;
+    text-align: center;
+}
+.post-image {
+    max-width: 30%;
+    max-height: 350px;
+    cursor: pointer;
+}
+
+.post-text-image {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.post-content a {
+    color: #fff;
+}
+
+#post-text {
+    font-size: 1.1rem;
+    margin-right: 1.5rem;
+}
+
+#post-edit-container {
+    display: none;
+}
+
+.suggestion-box {
+    position: absolute;
+    display: none;
+    color: #333;
+    width: 500px;
+    overflow-y: auto;
+    max-height: 300px;
+    z-index: 1000;
+}
+
+.suggestion-item {
+    display: flex;
+    flex-direction: column;
+    background-color: #333;
+    color: white;
+    cursor: pointer;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.suggestion-item:hover {
+    background-color: #090909;
+}
+
+label {
+    margin-right: 40px;
+}
+
+.rating-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.rating-text {
+    margin-right: 2rem;
+}
+
+.rating {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+.post-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.rating-container button {
+    background-color: transparent;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+
+#post-rate-up-button {
+    margin-left: 10px;
+}
+
+/* Comments */
+.comment-section {
+    margin: 40px 1rem;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    width: 80%;
+}
+
+.comments {
+    margin: 10px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    
+}
+
+.comment-container {
+    background-color: #464646;
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 4px 0;
+}
+
+.comment-content {
+    width: 100%;
+}
+
+.comment-content a {
+    color: white;
+}
+
+
+.comment-text {
+    display: block;
+}
+
+.comment-edit-container {
+    display: none;
+}
+
+.comment-edit-container textarea{
+    width: 100%;
+}
+
+.comment-rating-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.comment-rating-text {
+    margin-right: 2rem;
+}
+
+.comment-rating {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+.comment-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.comment-rating-container button {
+    background-color: transparent;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+
+.comment-rate-up-button {
+    margin-left: 10px;
+}
+
+/* Modal */
+.post-buttons {
+    display: flex;
+    justify-content: flex-end;
+}
+
+#modal-container-post {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, .4);
+}
+
+#modal-container-comment {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, .4);
+}
+
+.modal-border {
+    padding: 15px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    animation-name: animatemodal;
+    animation-duration: 0.5s;
+}
+
+.modal-content {
+    background-color: #333;
+    padding: 10px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+#modal-post-image {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.image-modal-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 80vw;
+    height: 80vh;
+    max-width: 1000px;
+    max-height: 700px;
+    background-color: #333;
+    padding: 20px;
+    animation: grow 0.5s forwards;
+    overflow: hidden;
+}
+
+#post-image-big {
+    width: 100%;
+    height: auto;  
+    max-height: 90%;
+    object-fit: contain;
+}
+
+#close-image-modal {
+    margin-top: 20px;
+}
+
+
+@keyframes animatemodal {
+    from {
+        top: -300px;
+        opacity: 0;
+    }
+
+    to {
+        top: 50%;
+        opacity: 1;
+    }
+}
+
+@keyframes grow {
+    from {
+        transform: translate(-50%, -50%) scale(0); 
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}

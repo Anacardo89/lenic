@@ -1,46 +1,49 @@
 package logger
 
 import (
-	"log"
+	"log/slog"
 	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/natefinch/lumberjack"
+
+	"github.com/Anacardo89/lenic/config"
 )
 
-var (
-	Debug *log.Logger
-	Error *log.Logger
-	Info  *log.Logger
-	Warn  *log.Logger
-)
-
-func CreateLogger() error {
-	makeLogsDir()
-	debugFile, err := os.OpenFile("logs/debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
-	if err != nil {
-		log.Fatal("Cannot access DEBUG log file:", err)
-	}
-	errorFile, err := os.OpenFile("logs/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
-	if err != nil {
-		log.Fatal("Cannot access ERROR log file:", err)
-	}
-	infoFile, err := os.OpenFile("logs/info.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
-	if err != nil {
-		log.Fatal("Cannot access INFO log file:", err)
-	}
-	warnFile, err := os.OpenFile("logs/warn.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
-	if err != nil {
-		log.Fatal("Cannot access WARN log file:", err)
-	}
-	Debug = log.New(debugFile, "DEBUG:", log.Ldate|log.Ltime|log.Lshortfile)
-	Error = log.New(errorFile, "ERROR:", log.Ldate|log.Ltime|log.Lshortfile)
-	Info = log.New(infoFile, "INFO:", log.Ldate|log.Ltime|log.Lshortfile)
-	Warn = log.New(warnFile, "INFO:", log.Ldate|log.Ltime|log.Lshortfile)
-	return nil
+type Logger struct {
+	*slog.Logger
 }
 
-func makeLogsDir() {
-	if _, err := os.Stat("./logs"); err != nil {
-		if os.IsNotExist(err) {
-			os.Mkdir("./logs", 0777)
-		}
+func NewLogger(cfg config.Log) (*Logger, error) {
+	if err := os.MkdirAll(cfg.Path, 0755); err != nil {
+		return nil, err
 	}
+	logLevel := strings.ToUpper(cfg.Level)
+	level := slog.LevelInfo
+	switch logLevel {
+	case "DEBUG":
+		level = slog.LevelDebug
+	case "INFO":
+		level = slog.LevelInfo
+	case "WARN", "WARNING":
+		level = slog.LevelWarn
+	case "ERROR":
+		level = slog.LevelError
+	}
+	lj := &lumberjack.Logger{
+		Filename:   filepath.Join(cfg.Path, cfg.File),
+		MaxSize:    cfg.MaxSize,
+		MaxBackups: cfg.MaxBackups,
+		MaxAge:     cfg.MaxAge,
+		Compress:   cfg.Compress,
+	}
+	fileJSONHandler := NewLoggerHandler(lj, level)
+	stderrHandler := NewLoggerHandler(os.Stderr, level)
+	multiHandler := NewMultiHandler(fileJSONHandler, stderrHandler)
+	logger := slog.New(multiHandler)
+	slog.SetDefault(logger)
+	return &Logger{
+		logger,
+	}, nil
 }

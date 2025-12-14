@@ -1,0 +1,2 @@
+DROP TRIGGER IF EXISTS follows_delete_accepted_decrement
+    ON follows;

@@ -1,30 +1,28 @@
 package db
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/Anacardo89/lenic/config"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var (
-	Dbase      *sql.DB
-	DateLayout = "2006-01-02 15:04:05"
-)
-
-type Config struct {
-	DBHost string `yaml:"dbHost"`
-	DBPort string `yaml:"dbPort"`
-	DBUser string `yaml:"dbUser"`
-	DBPass string `yaml:"dbPass"`
-	Dbase  string `yaml:"dbase"`
-}
-
-func LoginDB(db *Config) (*sql.DB, error) {
-	dbConn := fmt.Sprintf("%s:%s@tcp(%s)/%s", db.DBUser, db.DBPass, db.DBHost, db.Dbase)
-	database, err := sql.Open("mysql", dbConn)
+func Connect(cfg config.DB) (*pgxpool.Pool, error) {
+	config, err := pgxpool.ParseConfig(cfg.DSN)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
-	return database, nil
+	config.MaxConns = cfg.MaxConns
+	config.MinConns = cfg.MinConns
+	config.MaxConnLifetime = cfg.MaxConnLifetime
+	config.MaxConnIdleTime = cfg.MaxConnIdleTime
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create pool: %w", err)
+	}
+	if err := pool.Ping(context.Background()); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+	return pool, nil
 }
