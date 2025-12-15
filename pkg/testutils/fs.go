@@ -6,7 +6,7 @@ import (
 )
 
 // gets the project root path
-func GetProjectRoot() (string, error) {
+func FindDevRoot() (string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
 		return "", err
@@ -27,7 +27,7 @@ func GetProjectRoot() (string, error) {
 
 // goes to the root of the project and makes a path to a file
 func MakeFilePath(location string) (string, error) {
-	root, err := GetProjectRoot()
+	root, err := FindDevRoot()
 	if err != nil {
 		return "", err
 	}

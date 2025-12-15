@@ -6,12 +6,10 @@ COPY . .
 RUN go build -o migrate ./cmd/migrate
 
 FROM alpine:3.18
-WORKDIR /migrate_svc
-COPY --from=builder /app/migrate .
-COPY db/migrations ./db/migrations
+WORKDIR /opt/migrate_svc
+RUN mkdir -p ./bin
+COPY --from=builder /app/migrate ./bin
+COPY db/migrations ./migrations
 COPY config/config.yaml ./config/config.yaml
-COPY .env ./
-ENV APP_ENV=docker
-ENV ROOT_PATH=/migrate_svc
 
-ENTRYPOINT ["./migrate"]
+ENTRYPOINT ["./bin/migrate"]

@@ -3,14 +3,14 @@ package config
 import "time"
 
 type Config struct {
-	Server   Server  `yaml:"server"`
-	Session  Session `yaml:"pagination"`
-	Token    Token   `yaml:"token"`
-	DB       DB      `yaml:"db"`
-	Log      Log     `yaml:"logging"`
-	Img      Img     `yaml:"img"`
-	Mail     Mail
-	RootPath string
+	AppHome string  `env:"APP_HOME" envDefault:""`
+	Server  Server  `yaml:"server"`
+	Session Session `yaml:"session"`
+	Token   Token   `yaml:"token"`
+	DB      DB      `yaml:"db"`
+	Log     Log     `yaml:"log"`
+	Img     Img     `yaml:"img"`
+	Mail    Mail    `yaml:"mail"`
 }
 
 type Server struct {
@@ -40,27 +40,24 @@ type DB struct {
 }
 
 type Log struct {
-	Path       string `env:"LOG_PATH" envDefault:"/lenic/logs"`
-	File       string `env:"LOG_FILE" envDefault:"lenic.log"`
+	Path       string `env:"LOG_PATH" envDefault:"logs/lenic.log"`
 	Level      string `env:"LOG_LEVEL" envDefault:"info"`
 	MaxSize    int    `yaml:"max_size"` // MB
+	MaxAge     int    `yaml:"max_age"`  // days
 	MaxBackups int    `yaml:"max_backups"`
-	MaxAge     int    `yaml:"max_age"` // days
 	Compress   bool   `yaml:"compress"`
 }
 
 type Img struct {
-	BasePath      string `env:"IMG_PATH" envDefault:"/lenic/img"`
-	OriginalsDir  string `yaml:"originals_dir"`
-	PreviewsDir   string `yaml:"previews_dir"`
-	PreviewWidth  int    `yaml:"preview_width"`  // pixels
-	PreviewHeight int    `yaml:"preview_height"` // pixels
-	JPEGQuality   int    `yaml:"jpeg_quality"`
+	Path        string            `env:"IMG_PATH" envDefault:"img"`
+	ImgDirs     map[string]string `yaml:"img_dirs"`
+	PreviewDims map[string]int    `yaml:"preview_dims"`
+	JPEGQuality int               `yaml:"jpeg_quality"`
 }
 
 type Mail struct {
-	Host string `env:"MAIL_HOST" envDefault:"smtp.gmail.com"`
-	Port int    `env:"MAIL_PORT" envDefault:"587"`
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 	User string `env:"MAIL_USER" envDefault:"user"`
 	Pass string `env:"MAIL_PASS" envDefault:"passs"`
 }

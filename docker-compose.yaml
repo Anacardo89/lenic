@@ -1,53 +1,74 @@
+
 networks:
   lenic-network:
 
 volumes:
+  lenic-db-volume:
   lenic-log-volume:
   lenic-images-volume:
 
 services:
+  # App
   lenic:
-    image: ghcr.io/Anacardo89/lenic:latest
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
     container_name: lenic-app
-    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
-      HOST: ${HOST}
-      PORT: ${PORT}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_DSN: postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require
+      APP_HOME:       ${APP_HOME}
+      CFG_PATH:       ${CFG_PATH}
+      HOST:           ${HOST}
+      PORT:           ${PORT}
+      DB_DSN:         postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable
       SESSION_SECRET: ${SESSION_SECRET}
-      TOKEN_SECRET: ${TOKEN_SECRET}
-      CFG_PATH: ${CFG_PATH}
-      CFG_FILE: ${CFG_FILE}
-      IMG_PATH: ${IMG_PATH}
-      LOG_PATH: ${LOG_PATH}
-      LOG_FILE: ${LOG_FILE}
-      MAIL_HOST: ${MAIL_HOST}
-      MAIL_PORT: ${MAIL_PORT}
-      MAIL_USER: ${MAIL_USER}
-      MAIL_PASS: ${MAIL_PASS}
+      TOKEN_SECRET:   ${TOKEN_SECRET}
+      IMG_PATH:       ${IMG_PATH}
+      LOG_PATH:       ${LOG_PATH}
+      MAIL_USER:      ${MAIL_USER}
+      MAIL_PASS:      ${MAIL_PASS}
     ports:
-      - "80:${PORT}"
+      - "${PORT}:${PORT}"
     networks:
       - lenic-network
     volumes:
-      - ./config/config.yaml:/lenic/${CFG_FILE}:ro
-      - lenic-log-volume:${LOG_PATH}
-      - lenic-images-volume:${IMG_PATH}
+      - lenic-log-volume:/lenic/log
+      - lenic-images-volume:/lenic/img
+  # Migration Runner
   migrate:
-    image: ghcr.io/Anacardo89/lenic-migrate:latest
+    build:
+      context: .
+      dockerfile: docker/migrate.Dockerfile
     container_name: migrate
     depends_on:
-      - lenic
+      db:
+        condition: service_healthy
     environment:
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
+      APP_HOME: /opt/migrate_svc
+      CFG_PATH: ${CFG_PATH}
+      DB_DSN:   postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable
     networks:
       - lenic-network
+  # DB
+  db:
+    image: postgres:16
+    container_name: lenic-db
+    environment:
+      POSTGRES_USER:     ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB:       ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout:  5s
+      retries:  10
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    networks:
+      - lenic-network
+    volumes:
+      - lenic-db-volume:/var/lib/postgresql/data

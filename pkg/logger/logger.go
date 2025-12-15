@@ -15,8 +15,8 @@ type Logger struct {
 	*slog.Logger
 }
 
-func NewLogger(cfg config.Log) (*Logger, error) {
-	if err := os.MkdirAll(cfg.Path, 0755); err != nil {
+func NewLogger(cfg *config.Log, homeDir string) (*Logger, error) {
+	if err := os.MkdirAll(filepath.Join(homeDir, cfg.Path), 0755); err != nil {
 		return nil, err
 	}
 	logLevel := strings.ToUpper(cfg.Level)
@@ -32,7 +32,7 @@ func NewLogger(cfg config.Log) (*Logger, error) {
 		level = slog.LevelError
 	}
 	lj := &lumberjack.Logger{
-		Filename:   filepath.Join(cfg.Path, cfg.File),
+		Filename:   strings.Split(cfg.Path, "/")[1],
 		MaxSize:    cfg.MaxSize,
 		MaxBackups: cfg.MaxBackups,
 		MaxAge:     cfg.MaxAge,
