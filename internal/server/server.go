@@ -29,7 +29,7 @@ type ServerTimeouts struct {
 }
 
 func NewServer(
-	cfg config.Server,
+	cfg *config.Server,
 	l *logger.Logger,
 	ah *api.APIHandler,
 	ph *page.PageHandler,

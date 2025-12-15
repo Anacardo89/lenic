@@ -44,7 +44,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
-	logg, err := logger.NewLogger(cfg.Log)
+	logg, err := logger.NewLogger(&cfg.Log, cfg.AppHome)
 	if err != nil {
 		log.Fatalf("failed start logger: %v", err)
 	}
@@ -55,9 +55,9 @@ func main() {
 	}
 	defer dbRepo.Close()
 	tokenMan := auth.NewTokenManager(&cfg.Token)
-	sm := session.NewSessionManager(context.Background(), cfg.Session, dbRepo)
-	mailClient := mail.NewClient(cfg.Mail)
-	im, err := img.NewImgManager(&cfg.Img)
+	sm := session.NewSessionManager(context.Background(), &cfg.Session, dbRepo)
+	mailClient := mail.NewClient(&cfg.Mail)
+	im, err := img.NewImgManager(&cfg.Img, cfg.AppHome)
 	if err != nil {
 		logg.Error("failed to start image manager", "error", err)
 		os.Exit(1)
@@ -67,7 +67,7 @@ func main() {
 	ph := page.NewHandler(ctx, logg, dbRepo, sm)
 	mw := middleware.NewMiddlewareHandler(sm, logg, cfg.Server.WriteTimeout)
 
-	srv := server.NewServer(cfg.Server, logg, ah, ph, mw, wsh)
+	srv := server.NewServer(&cfg.Server, logg, ah, ph, mw, wsh)
 
 	// Serve
 	stopChan := make(chan os.Signal, 1)

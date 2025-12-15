@@ -18,14 +18,14 @@ import (
 
 type SessionManager struct {
 	ctx      context.Context
-	cfg      config.Session
+	cfg      *config.Session
 	mu       sync.Mutex
 	db       repo.DBRepo
 	store    *sessions.CookieStore
 	sessions map[uuid.UUID]*Session
 }
 
-func NewSessionManager(ctx context.Context, cfg config.Session, db repo.DBRepo) *SessionManager {
+func NewSessionManager(ctx context.Context, cfg *config.Session, db repo.DBRepo) *SessionManager {
 	store := sessions.NewCookieStore([]byte(cfg.Secret))
 	store.Options = &sessions.Options{
 		Path:     "/",

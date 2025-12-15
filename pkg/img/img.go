@@ -18,15 +18,17 @@ import (
 )
 
 type ImageManager struct {
-	cfg *config.Img
+	homeDir string
+	cfg     *config.Img
 }
 
-func NewImgManager(cfg *config.Img) (*ImageManager, error) {
-	if err := os.MkdirAll(cfg.BasePath, 0755); err != nil {
+func NewImgManager(cfg *config.Img, homeDir string) (*ImageManager, error) {
+	if err := os.MkdirAll(cfg.Path, 0755); err != nil {
 		return nil, err
 	}
 	return &ImageManager{
-		cfg: cfg,
+		homeDir: homeDir,
+		cfg:     cfg,
 	}, nil
 }
 
@@ -39,7 +41,7 @@ func (m *ImageManager) SaveImg(file io.Reader, filename string) error {
 		return fmt.Errorf("unsupported file type: %s", ext)
 	}
 	// Make path
-	dir := filepath.Join(m.cfg.BasePath, m.cfg.OriginalsDir)
+	dir := filepath.Join(m.homeDir, m.cfg.Path, m.cfg.ImgDirs["originals"])
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
@@ -93,16 +95,16 @@ func (m *ImageManager) SaveImg(file io.Reader, filename string) error {
 
 func (m *ImageManager) CreatePreview(filename string) error {
 	// Get original
-	originalDir := filepath.Join(m.cfg.BasePath, m.cfg.OriginalsDir)
+	originalDir := filepath.Join(m.homeDir, m.cfg.Path, m.cfg.ImgDirs["originals"])
 	originalImgPath := filepath.Join(originalDir, filename)
 	imgData, err := imaging.Open(originalImgPath)
 	if err != nil {
 		return err
 	}
 	// Make preview
-	preview := imaging.Thumbnail(imgData, m.cfg.PreviewWidth, m.cfg.PreviewHeight, imaging.Lanczos)
+	preview := imaging.Thumbnail(imgData, m.cfg.PreviewDims["width"], m.cfg.PreviewDims["height"], imaging.Lanczos)
 	// Store preview
-	previewDir := filepath.Join(m.cfg.BasePath, m.cfg.PreviewsDir)
+	previewDir := filepath.Join(m.homeDir, m.cfg.Path, m.cfg.ImgDirs["previews"])
 	if err := os.MkdirAll(previewDir, 0755); err != nil {
 		return err
 	}
@@ -117,9 +119,9 @@ func (m *ImageManager) CreatePreview(filename string) error {
 func (m *ImageManager) GetImg(original bool, filename string) (*os.File, error) {
 	var dir string
 	if original {
-		dir = filepath.Join(m.cfg.BasePath, m.cfg.OriginalsDir)
+		dir = filepath.Join(m.homeDir, m.cfg.Path, m.cfg.ImgDirs["originals"])
 	} else {
-		dir = filepath.Join(m.cfg.BasePath, m.cfg.PreviewsDir)
+		dir = filepath.Join(m.homeDir, m.cfg.Path, m.cfg.ImgDirs["previews"])
 	}
 	path := filepath.Join(dir, filename)
 	f, err := os.Open(path)

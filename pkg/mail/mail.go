@@ -23,7 +23,7 @@ type Client struct {
 	Password string
 }
 
-func NewClient(cfg config.Mail) *Client {
+func NewClient(cfg *config.Mail) *Client {
 	return &Client{
 		Host:     cfg.Host,
 		Port:     cfg.Port,
