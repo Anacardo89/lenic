@@ -2,16 +2,13 @@ package repo
 
 import (
 	"context"
-	"time"
 
-	"github.com/Anacardo89/lenic/config"
-	"github.com/Anacardo89/lenic/pkg/db"
 	"github.com/Anacardo89/lenic/pkg/fs"
 	"github.com/Anacardo89/lenic/pkg/testutils"
 )
 
-func InitDB(cfg config.DB) (DBRepo, error) {
-	pool, err := db.Connect(cfg)
+func InitDB(ctx context.Context, dsn string) (DBRepo, error) {
+	pool, err := testutils.ConnectDB(ctx, dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -24,14 +21,7 @@ func BuildTestDBEnv(ctx context.Context) (DBRepo, string, func(), string, error)
 	if err != nil {
 		return nil, "", nil, "", err
 	}
-	cfgDB := config.DB{
-		DSN:             dsn,
-		MaxConns:        5,
-		MinConns:        2,
-		MaxConnLifetime: 30 * time.Minute,
-		MaxConnIdleTime: 5 * time.Minute,
-	}
-	db, err := InitDB(cfgDB)
+	db, err := InitDB(ctx, dsn)
 	if err != nil {
 		closeDB()
 		return nil, "", nil, "", err

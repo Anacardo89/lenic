@@ -70,7 +70,7 @@ func (h *PageHandler) Post(w http.ResponseWriter, r *http.Request) {
 		Post:    p,
 		Session: session,
 	}
-	t, err := template.ParseFiles("./templates/authorized/post.html")
+	t, err := template.ParseFiles("/opt/lenic/templates/authorized/post.html")
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

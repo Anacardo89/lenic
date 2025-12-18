@@ -26,11 +26,6 @@ import (
 	"github.com/Anacardo89/lenic/pkg/mail"
 )
 
-var (
-	httpServer  = &http.Server{}
-	httpsServer = &http.Server{}
-)
-
 func main() {
 	// Dependencies
 	log.SetOutput(os.Stdout)
@@ -48,7 +43,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed start logger: %v", err)
 	}
-	dbRepo, err := initDB(cfg.DB)
+	dbRepo, err := initDB(cfg)
 	if err != nil {
 		logg.Error("failed to init db", "error", err)
 		os.Exit(1)

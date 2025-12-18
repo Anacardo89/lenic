@@ -20,6 +20,7 @@ services:
       migrate:
         condition: service_completed_successfully
     environment:
+      APP_ENV:        docker
       APP_HOME:       ${APP_HOME}
       CFG_PATH:       ${CFG_PATH}
       HOST:           ${HOST}

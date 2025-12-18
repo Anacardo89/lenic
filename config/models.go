@@ -3,14 +3,16 @@ package config
 import "time"
 
 type Config struct {
-	AppHome string  `env:"APP_HOME" envDefault:""`
-	Server  Server  `yaml:"server"`
-	Session Session `yaml:"session"`
-	Token   Token   `yaml:"token"`
-	DB      DB      `yaml:"db"`
-	Log     Log     `yaml:"log"`
-	Img     Img     `yaml:"img"`
-	Mail    Mail    `yaml:"mail"`
+	AppEnv     string  `env:"APP_ENV" envDefault:"local"`
+	AWS_Region string  `env:"AWS_REGION" envDefault:"eu-west-3"`
+	AppHome    string  `env:"APP_HOME" envDefault:""`
+	Server     Server  `yaml:"server"`
+	Session    Session `yaml:"session"`
+	Token      Token   `yaml:"token"`
+	DB         DB      `yaml:"db"`
+	Log        Log     `yaml:"log"`
+	Img        Img     `yaml:"img"`
+	Mail       Mail    `yaml:"mail"`
 }
 
 type Server struct {
@@ -32,7 +34,13 @@ type Token struct {
 }
 
 type DB struct {
-	DSN             string        `env:"DB_DSN" envDefault:"postgres://user:pass@db:5432/dbname?sslmode=disable"`
+	Host            string        `env:"DB_HOST" envDefault:""`
+	Port            uint16        `env:"DB_PORT" envDefault:"5432"`
+	UserRun         string        `env:"DB_USER_RUN" envDefault:"lenic_runner"`
+	UserMigrate     string        `env:"DB_USER_MIGRATE" envDefault:"lenic_migrator"`
+	Pass            string        `env:"DB_PASSWORD" envDefault:""`
+	Name            string        `env:"DB_NAME" envDefault:"lenicDB"`
+	SSL             string        `env:"DB_SSL" envDefault:"disable"`
 	MaxConns        int32         `yaml:"max_conns"`
 	MinConns        int32         `yaml:"min_conns"`
 	MaxConnLifetime time.Duration `yaml:"max_conn_lifetime"`  // minutes

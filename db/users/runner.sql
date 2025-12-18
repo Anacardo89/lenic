@@ -1,5 +1,6 @@
 CREATE USER lenic_runner WITH LOGIN;
 
+GRANT rds_iam TO lenic_runner;
 GRANT CONNECT ON DATABASE "lenicDB" TO lenic_runner;
 GRANT USAGE ON SCHEMA public TO lenic_runner;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO lenic_runner;

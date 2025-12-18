@@ -1,5 +1,6 @@
 CREATE USER lenic_migrator WITH LOGIN;
 
+GRANT rds_iam TO lenic_migrator;
 GRANT ALL PRIVILEGES ON DATABASE "lenicDB" TO lenic_migrator;
 ALTER SCHEMA public OWNER TO lenic_migrator;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO lenic_migrator;
