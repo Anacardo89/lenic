@@ -10,11 +10,26 @@ import (
 	"github.com/Anacardo89/lenic/config"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	rdsutils "github.com/aws/aws-sdk-go-v2/feature/rds/auth"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func Connect(dsn string) (*pgxpool.Pool, error) {
-	pool, err := pgxpool.New(context.Background(), dsn)
+func Connect(cfg *config.Config, dsn, user string) (*pgxpool.Pool, error) {
+	poolConfig, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse DSN: %w", err)
+	}
+	poolConfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		if cfg.AppEnv == "aws" {
+			token, err := GetRDSToken(cfg, user)
+			if err != nil {
+				return fmt.Errorf("failed to get RDS token: %w", err)
+			}
+			conn.Config().Password = token
+		}
+		return nil
+	}
+	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create pool: %w", err)
 	}

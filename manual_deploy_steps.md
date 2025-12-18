@@ -23,4 +23,4 @@ Back In EC2
 4. `/opt/lenic/bin/migrate`
 2. `psql -h <rds_endpoint> -p 5432 -U lenic_admin -d lenicDB -f /opt/lenic/users/runner.sql`
 3. `rm -rf /opt/lenic/users`
-5. `sudo -E /opt/lenic/bin/lenic &`
+5. `sudo -E -b /opt/lenic/bin/lenic > /opt/lenic/log/lenic_out.log 2>&1`

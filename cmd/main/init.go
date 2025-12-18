@@ -16,7 +16,7 @@ func initDB(cfg *config.Config) (repo.DBRepo, error) {
 	if err != nil {
 		return nil, err
 	}
-	pool, err := db.Connect(dsn)
+	pool, err := db.Connect(cfg, dsn, cfg.DB.UserRun)
 	if err != nil {
 		return nil, err
 	}

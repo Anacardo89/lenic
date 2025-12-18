@@ -9,7 +9,7 @@ token:
 db:
   max_conns:          10
   min_conns:          2
-  max_conn_lifetime:  "30m"
+  max_conn_lifetime:  "10m"
   max_conn_idle_time: "5m"
 img:
   img_dirs:
