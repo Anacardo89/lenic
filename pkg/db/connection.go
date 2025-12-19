@@ -7,11 +7,12 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/Anacardo89/lenic/config"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	rdsutils "github.com/aws/aws-sdk-go-v2/feature/rds/auth"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/Anacardo89/lenic/config"
 )
 
 func Connect(cfg *config.Config, dsn, user string) (*pgxpool.Pool, error) {
@@ -19,13 +20,13 @@ func Connect(cfg *config.Config, dsn, user string) (*pgxpool.Pool, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse DSN: %w", err)
 	}
-	poolConfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+	poolConfig.BeforeConnect = func(ctx context.Context, cc *pgx.ConnConfig) error {
 		if cfg.AppEnv == "aws" {
 			token, err := GetRDSToken(cfg, user)
 			if err != nil {
 				return fmt.Errorf("failed to get RDS token: %w", err)
 			}
-			conn.Config().Password = token
+			cc.Password = token
 		}
 		return nil
 	}
