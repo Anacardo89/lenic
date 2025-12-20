@@ -56,6 +56,12 @@
     color: white;
 }
 
+.register-info {
+    margin-top: 1rem;
+    text-align: center;
+    width: 90%;
+}
+
 .login-container {
     margin: 0.5rem 0;
 }

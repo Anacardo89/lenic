@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
 
@@ -12,7 +13,7 @@ import (
 	"github.com/Anacardo89/lenic/internal/server/wshandle"
 )
 
-func NewRouter(ah *api.APIHandler, ph *page.PageHandler, wsh *wshandle.WSHandler, mw *middleware.MiddlewareHandler) http.Handler {
+func NewRouter(homeDir string, ah *api.APIHandler, ph *page.PageHandler, wsh *wshandle.WSHandler, mw *middleware.MiddlewareHandler) http.Handler {
 
 	r := mux.NewRouter()
 
@@ -70,7 +71,6 @@ func NewRouter(ah *api.APIHandler, ph *page.PageHandler, wsh *wshandle.WSHandler
 	authRoutes.HandleFunc("/post/{post_id}/comment/{comment_id}/up", ah.RateCommentUp).Methods("POST").Schemes("http")
 	authRoutes.HandleFunc("/post/{post_id}/comment/{comment_id}/down", ah.RateCommentDown).Methods("POST").Schemes("http")
 	// Password
-
 	authRoutes.HandleFunc("/change-password", ah.ChangePassword).Methods("POST").Schemes("http")
 	// Image
 	authRoutes.HandleFunc("/image", ah.GetPostImage).Schemes("http")
@@ -82,9 +82,8 @@ func NewRouter(ah *api.APIHandler, ph *page.PageHandler, wsh *wshandle.WSHandler
 	r.Handle("/ws", mw.Auth(http.HandlerFunc(wsh.HandleWSMsg)))
 
 	// Static
-	staticDir := "/opt/lenic/static"
 	r.PathPrefix("/static/").Handler(
-		http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))),
+		http.StripPrefix("/static/", http.FileServer(http.Dir(filepath.Join(homeDir, "static")))),
 	)
 
 	return mw.Wrap(r)

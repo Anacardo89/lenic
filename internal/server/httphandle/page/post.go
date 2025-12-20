@@ -4,6 +4,7 @@ import (
 	"errors"
 	"html/template"
 	"net/http"
+	"path/filepath"
 
 	"github.com/Anacardo89/lenic/internal/middleware"
 	"github.com/Anacardo89/lenic/internal/models"
@@ -70,7 +71,7 @@ func (h *PageHandler) Post(w http.ResponseWriter, r *http.Request) {
 		Post:    p,
 		Session: session,
 	}
-	t, err := template.ParseFiles("/opt/lenic/templates/authorized/post.html")
+	t, err := template.ParseFiles(filepath.Join(h.homeDir, "templates/authorized/post.html"))
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

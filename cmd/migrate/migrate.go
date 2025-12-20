@@ -15,13 +15,20 @@ func main() {
 		slog.Error("failed to load config", "error", err)
 		os.Exit(1)
 	}
-	dbToken, err := db.GetRDSToken(cfg, cfg.DB.UserMigrate)
-	if err != nil {
-		slog.Error("failed to get RDS token", "error", err)
-		os.Exit(1)
+	var user string
+	if cfg.AppEnv == "aws" {
+		dbToken, err := db.GetRDSToken(cfg, cfg.DB.UserMigrate)
+		if err != nil {
+			slog.Error("failed to get RDS token", "error", err)
+			os.Exit(1)
+		}
+		cfg.DB.Pass = dbToken
+		user = cfg.DB.UserMigrate
+	} else {
+		user = cfg.DB.UserRun
 	}
-	cfg.DB.Pass = dbToken
-	dsn, err := db.BuildDSN_URL(cfg, cfg.DB.UserMigrate)
+
+	dsn, err := db.BuildDSN_URL(cfg, user)
 	if err != nil {
 		slog.Error("failed to build DSN", "error", err)
 		os.Exit(1)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"html/template"
 	"net/http"
+	"path/filepath"
 
 	"github.com/Anacardo89/lenic/internal/middleware"
 	"github.com/Anacardo89/lenic/internal/models"
@@ -12,7 +13,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type FeedPage struct {
+type Feed struct {
 	Session *session.Session
 	Posts   []*models.Post
 }
@@ -55,7 +56,7 @@ func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	feed := FeedPage{
+	feed := Feed{
 		Session: session,
 	}
 	for _, p := range postsDB {
@@ -69,7 +70,7 @@ func (h *PageHandler) Feed(w http.ResponseWriter, r *http.Request) {
 		post.Content = template.HTML(post.RawContent)
 		feed.Posts = append(feed.Posts, post)
 	}
-	t, err := template.ParseFiles("/opt/lenic/templates/authorized/feed.html")
+	t, err := template.ParseFiles(filepath.Join(h.homeDir, "templates/authorized/feed.html"))
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

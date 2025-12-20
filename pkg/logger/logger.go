@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"errors"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -15,10 +16,7 @@ type Logger struct {
 	*slog.Logger
 }
 
-func NewLogger(cfg *config.Log, homeDir string) (*Logger, error) {
-	if err := os.MkdirAll(filepath.Join(homeDir, cfg.Path), 0755); err != nil {
-		return nil, err
-	}
+func NewLogger(cfg *config.Log, homeDir string, appEnv string) (*Logger, error) {
 	logLevel := strings.ToUpper(cfg.Level)
 	level := slog.LevelInfo
 	switch logLevel {
@@ -31,17 +29,29 @@ func NewLogger(cfg *config.Log, homeDir string) (*Logger, error) {
 	case "ERROR":
 		level = slog.LevelError
 	}
-	lj := &lumberjack.Logger{
-		Filename:   strings.Split(cfg.Path, "/")[1],
-		MaxSize:    cfg.MaxSize,
-		MaxBackups: cfg.MaxBackups,
-		MaxAge:     cfg.MaxAge,
-		Compress:   cfg.Compress,
+	var handler slog.Handler
+	if appEnv == "aws" {
+		handler = NewLoggerHandler(os.Stdout, level)
+	} else {
+		if err := os.MkdirAll(filepath.Join(homeDir, cfg.Path), 0755); err != nil {
+			return nil, err
+		}
+		fileName := strings.Split(cfg.Path, "/")
+		if len(fileName) < 2 {
+			return nil, errors.New("badly formed log path, ensure the format is: <logDir>/<logFile>.log")
+		}
+		lj := &lumberjack.Logger{
+			Filename:   fileName[1],
+			MaxSize:    cfg.MaxSize,
+			MaxBackups: cfg.MaxBackups,
+			MaxAge:     cfg.MaxAge,
+			Compress:   cfg.Compress,
+		}
+		fileJSONHandler := NewLoggerHandler(lj, level)
+		stdoutHandler := NewLoggerHandler(os.Stdout, level)
+		handler = NewMultiHandler(fileJSONHandler, stdoutHandler)
 	}
-	fileJSONHandler := NewLoggerHandler(lj, level)
-	stderrHandler := NewLoggerHandler(os.Stderr, level)
-	multiHandler := NewMultiHandler(fileJSONHandler, stderrHandler)
-	logger := slog.New(multiHandler)
+	logger := slog.New(handler)
 	slog.SetDefault(logger)
 	return &Logger{
 		logger,

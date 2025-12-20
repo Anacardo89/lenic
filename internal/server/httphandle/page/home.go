@@ -2,35 +2,27 @@ package page
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/Anacardo89/lenic/internal/server/httphandle/redirect"
-	"github.com/Anacardo89/lenic/internal/session"
 )
 
-type HomePage struct {
-	Session *session.Session
-}
-
 func (h *PageHandler) Home(w http.ResponseWriter, r *http.Request) {
-	feed := HomePage{
-		Session: h.sm.ValidateSession(w, r),
-	}
-	t, err := template.ParseFiles("/opt/lenic/templates/home.html")
+	body, err := os.ReadFile(filepath.Join(h.homeDir, "templates/home.html"))
 	if err != nil {
-		h.log.Error("/home - Could not parse template", "error", err)
+		h.log.Error("/home - Could not read template", "error", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
-	t.Execute(w, feed)
+	fmt.Fprint(w, string(body))
 }
 
 func (h *PageHandler) Login(w http.ResponseWriter, r *http.Request) {
-	body, err := os.ReadFile("/opt/lenic/templates/login.html")
+	body, err := os.ReadFile(filepath.Join(h.homeDir, "templates/login.html"))
 	if err != nil {
-		h.log.Error("/login - Could not parse template", "error", err)
+		h.log.Error("/login - Could not read template", "error", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}
@@ -38,9 +30,9 @@ func (h *PageHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PageHandler) Register(w http.ResponseWriter, r *http.Request) {
-	body, err := os.ReadFile("/opt/lenic/templates/register.html")
+	body, err := os.ReadFile(filepath.Join(h.homeDir, "templates/register.html"))
 	if err != nil {
-		h.log.Error("/register - Could not parse template", "error", err)
+		h.log.Error("/register - Could not read template", "error", err)
 		redirect.RedirectToError(w, r, err.Error())
 		return
 	}

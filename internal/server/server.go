@@ -30,6 +30,7 @@ type ServerTimeouts struct {
 
 func NewServer(
 	cfg *config.Server,
+	homeDir string,
 	l *logger.Logger,
 	ah *api.APIHandler,
 	ph *page.PageHandler,
@@ -42,7 +43,7 @@ func NewServer(
 		ShutdownTimeout: cfg.ShutdownTimeout,
 	}
 	s := &Server{
-		router:   NewRouter(ah, ph, wsh, mw),
+		router:   NewRouter(homeDir, ah, ph, wsh, mw),
 		addr:     fmt.Sprintf(":%s", cfg.Port),
 		log:      l,
 		timeouts: to,
