@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	dateLayout = "2006-12-22 15:04:05"
+	dateLayout = "2006-01-02 15:04:05"
 )
 
 // User
