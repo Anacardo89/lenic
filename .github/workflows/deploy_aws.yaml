@@ -69,11 +69,11 @@ jobs:
             mv /tmp/upload/migrate /opt/lenic/bin/
             # Move configs and templates
             mv /tmp/upload/prod.env /opt/lenic/
-            mv /tmp/upload/config.yaml /opt/lenic/config/
-            mv /tmp/upload/migrations /opt/lenic/
-            mv /tmp/upload/users /opt/lenic/
-            mv /tmp/upload/templates /opt/lenic/
-            mv /tmp/upload/static /opt/lenic/
+            mv /tmp/upload/config/config.yaml /opt/lenic/config/
+            mv /tmp/upload/db/migrations /opt/lenic/
+            mv /tmp/upload/db/users /opt/lenic/
+            mv /tmp/upload/frontend/templates /opt/lenic/
+            mv /tmp/upload/frontend/static /opt/lenic/
             # Move systemd service files
             sudo mv /tmp/upload/lenic.service /etc/systemd/system/lenic.service
             sudo chown root:root /etc/systemd/system/lenic.service
@@ -81,7 +81,6 @@ jobs:
             sudo mv /tmp/upload/lenic-migrator.service /etc/systemd/system/lenic-migrator.service
             sudo chown root:root /etc/systemd/system/lenic-migrator.service
             sudo chmod 644 /etc/systemd/system/lenic-migrator.service
-            rm -rf /tmp/upload
             # Create DB users & run SQL
             psql_host=${{ secrets.RDS_ENDPOINT }}
             psql_host=${psql_host/:5432/}
