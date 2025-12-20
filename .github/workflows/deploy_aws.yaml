@@ -49,17 +49,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
-          source: |
-            lenic
-            migrate
-            prod.env
-            ./config/config.yaml
-            ./db/users
-            ./db/migrations
-            ./frontend/templates
-            ./frontend/static
-            ./lenic.service
-            ./lenic-migrator.service
+          source: "lenic,migrate,prod.env,config/config.yaml,db/users,db/migrations,frontend/templates,frontend/static,lenic.service,lenic-migrator.service"
           target: /tmp/upload
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v0.1.5
@@ -80,10 +70,10 @@ jobs:
             # Move configs and templates
             mv /tmp/upload/prod.env /opt/lenic/
             mv /tmp/upload/config.yaml /opt/lenic/config/
-            mv /tmp/upload/db/migrations /opt/lenic/
-            mv /tmp/upload/db/users /opt/lenic/
-            mv /tmp/upload/frontend/templates /opt/lenic/
-            mv /tmp/upload/frontend/static /opt/lenic/
+            mv /tmp/upload/migrations /opt/lenic/
+            mv /tmp/upload/users /opt/lenic/
+            mv /tmp/upload/templates /opt/lenic/
+            mv /tmp/upload/static /opt/lenic/
             # Move systemd service files
             sudo mv /tmp/upload/lenic.service /etc/systemd/system/lenic.service
             sudo chown root:root /etc/systemd/system/lenic.service
