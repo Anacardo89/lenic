@@ -39,7 +39,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
-	logg, err := logger.NewLogger(&cfg.Log, cfg.AppHome)
+	logg, err := logger.NewLogger(&cfg.Log, cfg.AppHome, cfg.AppEnv)
 	if err != nil {
 		log.Fatalf("failed start logger: %v", err)
 	}
@@ -59,10 +59,10 @@ func main() {
 	}
 	wsh := wshandle.NewHandler(ctx, dbRepo, logg, sm, wsconnman.NewWSConnMan())
 	ah := api.NewHandler(ctx, logg, &cfg.Server, dbRepo, tokenMan, sm, wsh, mailClient, im)
-	ph := page.NewHandler(ctx, logg, dbRepo, sm)
+	ph := page.NewHandler(ctx, cfg.AppHome, logg, dbRepo, sm)
 	mw := middleware.NewMiddlewareHandler(sm, logg, cfg.Server.WriteTimeout)
 
-	srv := server.NewServer(&cfg.Server, logg, ah, ph, mw, wsh)
+	srv := server.NewServer(&cfg.Server, cfg.AppHome, logg, ah, ph, mw, wsh)
 
 	// Serve
 	stopChan := make(chan os.Signal, 1)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"html/template"
 	"net/http"
+	"path/filepath"
 
 	"github.com/Anacardo89/lenic/internal/middleware"
 	"github.com/Anacardo89/lenic/internal/models"
@@ -81,7 +82,7 @@ func (h *PageHandler) UserFollowers(w http.ResponseWriter, r *http.Request) {
 		u := models.FromDBUser(uDB)
 		fp.Followers = append(fp.Followers, u)
 	}
-	t, err := template.ParseFiles("/opt/lenic/templates/authorized/followers.html")
+	t, err := template.ParseFiles(filepath.Join(h.homeDir, "templates/authorized/followers.html"))
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return
@@ -146,7 +147,7 @@ func (h *PageHandler) UserFollowing(w http.ResponseWriter, r *http.Request) {
 		u := models.FromDBUser(dbUser)
 		fp.Following = append(fp.Following, u)
 	}
-	t, err := template.ParseFiles("/opt/lenic/templates/authorized/following.html")
+	t, err := template.ParseFiles(filepath.Join(h.homeDir, "templates/authorized/following.html"))
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

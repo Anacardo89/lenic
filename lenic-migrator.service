@@ -1,0 +1,15 @@
+[Unit]
+Description=Lenic DB Migrator
+After=network.target
+
+[Service]
+Type=oneshot
+User=ec2-user
+WorkingDirectory=/opt/lenic
+EnvironmentFile=/opt/lenic/prod.env
+ExecStart=/opt/lenic/bin/migrate
+SyslogIdentifier=lenic-migrator
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

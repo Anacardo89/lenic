@@ -23,7 +23,7 @@ type ImageManager struct {
 }
 
 func NewImgManager(cfg *config.Img, homeDir string) (*ImageManager, error) {
-	if err := os.MkdirAll(cfg.Path, 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(homeDir, cfg.Path), 0755); err != nil {
 		return nil, err
 	}
 	return &ImageManager{

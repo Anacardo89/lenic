@@ -5,6 +5,7 @@ import (
 	"errors"
 	"html/template"
 	"net/http"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
 
@@ -107,7 +108,7 @@ func (h *PageHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 	} else if followStatus == "accepted" {
 		pp.Follows = 1
 	}
-	t, err := template.ParseFiles("/opt/lenic/templates/authorized/user-profile.html")
+	t, err := template.ParseFiles(filepath.Join(h.homeDir, "templates/authorized/user-profile.html"))
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

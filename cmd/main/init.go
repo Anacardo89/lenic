@@ -7,11 +7,13 @@ import (
 )
 
 func initDB(cfg *config.Config) (repo.DBRepo, error) {
-	token, err := db.GetRDSToken(cfg, cfg.DB.UserRun)
-	if err != nil {
-		return nil, err
+	if cfg.AppEnv == "aws" {
+		token, err := db.GetRDSToken(cfg, cfg.DB.UserRun)
+		if err != nil {
+			return nil, err
+		}
+		cfg.DB.Pass = token
 	}
-	cfg.DB.Pass = token
 	dsn, err := db.BuildDSN_URL(cfg, cfg.DB.UserRun)
 	if err != nil {
 		return nil, err

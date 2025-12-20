@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
 
@@ -17,7 +18,7 @@ import (
 )
 
 func (h *PageHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
-	body, err := os.ReadFile("/opt/lenic/templates/forgot-password.html")
+	body, err := os.ReadFile(filepath.Join(h.homeDir, "templates/forgot-password.html"))
 	if err != nil {
 		h.log.Error("/forgot-password - Could not parse template", "error", err)
 		redirect.RedirectToError(w, r, err.Error())
@@ -73,7 +74,7 @@ func (h *PageHandler) RecoverPassword(w http.ResponseWriter, r *http.Request) {
 		User:  u,
 		Token: token,
 	}
-	t, err := template.ParseFiles("/opt/lenic/templates/recover-password.html")
+	t, err := template.ParseFiles(filepath.Join(h.homeDir, "templates/recover-password.html"))
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return
@@ -104,7 +105,7 @@ func (h *PageHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Response
-	t, err := template.ParseFiles("/opt/lenic/templates/authorized/change-password.html")
+	t, err := template.ParseFiles(filepath.Join(h.homeDir, "templates/authorized/change-password.html"))
 	if err != nil {
 		fail("could not parse template", err, true, http.StatusInternalServerError, "internal error")
 		return

@@ -25,7 +25,12 @@ services:
       CFG_PATH:       ${CFG_PATH}
       HOST:           ${HOST}
       PORT:           ${PORT}
-      DB_DSN:         postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable
+      DB_HOST:        ${DB_HOST}
+      DB_PORT:        ${DB_PORT}
+      DB_NAME:        ${DB_NAME}
+      DB_USER_RUN:    ${DB_USER_RUN}
+      DB_PASSWORD:    ${DB_PASSWORD}
+      DB_SSL:         ${DB_SSL}
       SESSION_SECRET: ${SESSION_SECRET}
       TOKEN_SECRET:   ${TOKEN_SECRET}
       IMG_PATH:       ${IMG_PATH}
@@ -51,7 +56,12 @@ services:
     environment:
       APP_HOME: /opt/migrate_svc
       CFG_PATH: ${CFG_PATH}
-      DB_DSN:   postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable
+      DB_HOST:        ${DB_HOST}
+      DB_PORT:        ${DB_PORT}
+      DB_NAME:        ${DB_NAME}
+      DB_USER_RUN:    ${DB_USER_RUN}
+      DB_PASSWORD:    ${DB_PASSWORD}
+      DB_SSL:         ${DB_SSL}
     networks:
       - lenic-network
   # DB
@@ -59,11 +69,11 @@ services:
     image: postgres:16
     container_name: lenic-db
     environment:
-      POSTGRES_USER:     ${DB_USER}
+      POSTGRES_USER:     ${DB_USER_RUN}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB:       ${DB_NAME}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER_RUN} -d ${DB_NAME}"]
       interval: 5s
       timeout:  5s
       retries:  10
