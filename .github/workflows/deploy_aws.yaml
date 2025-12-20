@@ -1,0 +1,108 @@
+name: Deploy Lenic to AWS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.25
+      - name: Build Lenic binaries
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o lenic ./cmd/main
+          GOOS=linux GOARCH=amd64 go build -o migrate ./cmd/migrate
+      - name: Create prod.env
+        run: |
+          cat <<EOF > prod.env
+          APP_ENV=aws
+          AWS_REGION=eu-west-3
+          HOST=${{ secrets.EC2_HOST }}
+          PORT=80
+          APP_HOME=/opt/lenic
+          CFG_PATH=config/config.yaml
+          IMG_PATH=img
+          LOG_PATH=log/lenic.log
+          LOG_LEVEL=info
+          DB_HOST=${{ secrets.RDS_ENDPOINT }}
+          DB_PORT=5432
+          DB_NAME=lenicDB
+          DB_USER_RUN=lenic_runner
+          DB_USER_MIGRATE=lenic_migrator
+          DB_SSL=require
+          SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+          TOKEN_SECRET=${{ secrets.TOKEN_SECRET }}
+          MAIL_USER=${{ secrets.MAIL_USER }}
+          MAIL_PASS=${{ secrets.MAIL_PASS }}
+          EOF
+      - name: Fix indentation
+        run: sed -i 's/^[[:space:]]*//' prod.env
+      - name: SCP files to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: |
+            lenic
+            migrate
+            prod.env
+            ./config/config.yaml
+            ./db/users
+            ./db/migrations
+            ./frontend/templates
+            ./frontend/static
+            ./lenic.service
+            ./lenic-migrator.service
+          target: /tmp/upload
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # System update and PostgreSQL
+            sudo dnf update -y && sudo dnf upgrade -y
+            sudo dnf install -y postgresql17
+            sudo mkdir -p /opt/lenic/bin /opt/lenic/config
+            sudo chown -R ec2-user:ec2-user /opt/lenic
+            # Move binaries
+            mv /tmp/upload/lenic /opt/lenic/bin/
+            mv /tmp/upload/migrate /opt/lenic/bin/
+            # Move configs and templates
+            mv /tmp/upload/prod.env /opt/lenic/
+            mv /tmp/upload/config.yaml /opt/lenic/config/
+            mv /tmp/upload/db/migrations /opt/lenic/
+            mv /tmp/upload/db/users /opt/lenic/
+            mv /tmp/upload/frontend/templates /opt/lenic/
+            mv /tmp/upload/frontend/static /opt/lenic/
+            # Move systemd service files
+            sudo mv /tmp/upload/lenic.service /etc/systemd/system/lenic.service
+            sudo chown root:root /etc/systemd/system/lenic.service
+            sudo chmod 644 /etc/systemd/system/lenic.service
+            sudo mv /tmp/upload/lenic-migrator.service /etc/systemd/system/lenic-migrator.service
+            sudo chown root:root /etc/systemd/system/lenic-migrator.service
+            sudo chmod 644 /etc/systemd/system/lenic-migrator.service
+            rm -rf /tmp/upload
+            # Create DB users & run SQL
+            psql_host=${{ secrets.RDS_ENDPOINT }}
+            psql_host=${psql_host/:5432/}
+            PGPASSWORD=${{ secrets.DB_ADMIN_PASSWORD }} psql -h $psql_host -U lenic_admin -d lenicDB -f /opt/lenic/users/migrator.sql -f /opt/lenic/users/runner.sql
+            rm -rf /opt/lenic/users
+            # Allow binding to port 80
+            sudo setcap 'cap_net_bind_service=+ep' /opt/lenic/bin/lenic
+            # Reload and enable systemd services
+            sudo systemctl daemon-reload
+            sudo systemctl enable lenic-migrator
+            sudo systemctl enable lenic
+            # Run migrator once, then start app
+            sudo systemctl start lenic-migrator
+            sudo systemctl restart lenic
