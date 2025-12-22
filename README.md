@@ -72,24 +72,31 @@ The deployment to AWS is a major milestone, but the project is ongoing. Planned 
 
 ### Docker
 Follow these steps to run the app locally and execute the tests.
+
 #### 0. Prerequisites
 - [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/)
 - [Go](https://go.dev/dl/) 1.25.0+ installed (for running tests locally)
+
 #### 1. Clone the repository and navigate inside it
 ```bash
 git clone git@github.com:Anacardo89/lenic.git
 cd lenic
 ```
+
 #### 2. Copy .env from provided sample
 ```bash
 cp sample.env .env
 ```
+
 #### 3. Edit .env file with email information
 While for the most part the default config can be used, the system does rely on authentication with Gmail [App password](https://myaccount.google.com/apppasswords).
 - Get the app password
-- edit `sample.env` `MAIL_USER` and `MAIL_PASS` with the correct info
-**OR**
+- edit `sample.env` `MAIL_USER` and `MAIL_PASS` with the correct info  
+
+**OR**  
+
 Alternatively you can bypass the email verification by manually changing the `is_active` field in the `users` table.
+
 #### 4. Run tests
 Repository tests are included and use testcontainers.  
 Ensure the service is **NOT** running since the DB port was kept as default, it will conflict and the tests will fail.
@@ -97,6 +104,7 @@ From the project root run:
 ```bash
 go test ./...
 ```
+
 #### 5. Start the services
 The project uses Docker Compose to run the app and the DB migration runner.
 ```bash
